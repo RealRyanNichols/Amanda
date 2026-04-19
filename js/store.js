@@ -15,6 +15,22 @@ const defaults = () => ({
     students: [],
     course: { seeded: false, modules: [] },
   },
+  life: {
+    activeView: "faith",
+    partnerName: "",
+    faith: { prayers: [], notes: "" },
+    family: { kids: [], events: [], supporters: [] },
+    pregnancy: {
+      dueDate: "",
+      lastMenstrualPeriod: "",
+      appointments: [],
+      kickSessions: [],
+      hospitalBag: { seeded: false, items: [] },
+      symptoms: [],
+    },
+    loveNotes: { seeded: false, notes: [] },
+    gratitude: { entries: [] },
+  },
 });
 
 function load() {
