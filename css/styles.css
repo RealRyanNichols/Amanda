@@ -604,6 +604,44 @@ details.pathway ol li strong { color: var(--text); }
   font-size: 1rem; white-space: pre-wrap; word-break: break-word;
 }
 
+/* Baby-size-by-week card */
+.baby-size {
+  text-align: center;
+  background: linear-gradient(160deg,
+    color-mix(in oklab, var(--accent) 14%, var(--bg-elev)),
+    var(--bg-elev));
+}
+.baby-size h2 { font-size: .9375rem; font-weight: 600; color: var(--text-dim); }
+.baby-size-label {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.75rem; font-weight: 700; color: var(--accent);
+  margin: 8px 0 4px;
+}
+.baby-size-note {
+  font-size: .9375rem; line-height: 1.45; color: var(--text);
+}
+
+/* Letters to baby */
+.letter-item {
+  background: #fdf6e3; color: #3b2f1c;
+  border-radius: 8px; padding: 14px 16px;
+  font-family: Georgia, "Times New Roman", serif;
+  line-height: 1.55;
+  display: flex; flex-direction: column; gap: 6px;
+  border: 1px solid #eadcb5;
+}
+.letter-date {
+  font-size: .6875rem; letter-spacing: 1.2px; text-transform: uppercase;
+  color: #7a6540;
+}
+.letter-body { white-space: pre-wrap; word-break: break-word; font-size: .9375rem; }
+.letter-sig { font-style: italic; color: #5a4a27; }
+.letter-item .btn.small.danger {
+  background: rgba(0,0,0,.05) !important;
+  color: #8a3c3c !important;
+  border-color: rgba(138,60,60,.3) !important;
+}
+
 /* Respect users who prefer reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

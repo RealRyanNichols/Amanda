@@ -2,7 +2,7 @@ import { state } from "../store.js";
 import { money, friendlyDate, daysFromNow, h } from "../util.js";
 import { currentBrand } from "../branding.js";
 import { TX_RDA_REQUIREMENTS } from "./rda-seed.js";
-import { verseOfTheDay } from "./life-seeds.js";
+import { verseOfTheDay, babySizeForWeek } from "./life-seeds.js";
 
 function incomeSummary() {
   const { deposits, bills } = state.income;
@@ -103,9 +103,12 @@ function renderPregnancyCard() {
   const conception = new Date(dueDate.getTime() - 280 * 86400000);
   const weeks = Math.max(0, Math.floor((Date.now() - conception) / (7 * 86400000)));
   const daysLeft = daysFromNow(p.dueDate);
+  const name = (p.babyName || "").trim();
+  const size = babySizeForWeek(weeks);
 
   return h("section", { class: "card" }, [
-    h("h2", {}, "Baby countdown"),
+    h("h2", {}, name ? `${name}'s countdown` : "Baby countdown"),
+    size && h("div", { class: "sub" }, `${name || "He"} is about the size of a ${size.size.toLowerCase()} this week.`),
     h("div", { class: "stat-grid" }, [
       h("div", { class: "stat" }, [h("div", { class: "label" }, "Weeks"), h("div", { class: "value" }, weeks)]),
       h("div", { class: "stat" }, [h("div", { class: "label" }, "Due"), h("div", { class: "value" }, friendlyDate(p.dueDate))]),

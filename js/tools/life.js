@@ -1,7 +1,7 @@
 import { state, save, uid } from "../store.js";
 import { h, toast, confirmAction, todayISO, friendlyDate, daysFromNow } from "../util.js";
 import { currentBrand } from "../branding.js";
-import { VERSES, verseOfTheDay, HOSPITAL_BAG_SEED, LOVE_NOTES_SEED } from "./life-seeds.js";
+import { VERSES, verseOfTheDay, HOSPITAL_BAG_SEED, LOVE_NOTES_SEED, babySizeForWeek } from "./life-seeds.js";
 
 function ensureSeeds() {
   if (!state.life.loveNotes.seeded) {
@@ -287,17 +287,31 @@ function renderPregnancy(rerender) {
   const p = state.life.pregnancy;
   const weeks = weeksPregnant(p.dueDate);
   const daysLeft = p.dueDate ? daysFromNow(p.dueDate) : null;
+  const name = (p.babyName || "").trim();
+  const him = name || "Baby";
 
-  // Status card
+  // Status card — name + countdown
   const status = h("section", { class: "card" }, [
-    h("h2", {}, "Baby countdown"),
+    h("h2", {}, name ? `${name}'s countdown` : "Baby countdown"),
     p.dueDate
-      ? h("div", { class: "sub" }, `${trimesterLabel(weeks)}${weeks != null ? " · " + weeks + " weeks along" : ""}`)
+      ? h("div", { class: "sub" }, `${trimesterLabel(weeks)}${weeks != null ? ` · ${him} is ${weeks} weeks along` : ""}`)
       : h("div", { class: "sub" }, "Set a due date to see your countdown."),
   ]);
 
+  // Baby name — prominent, editable
+  status.append(h("label", { class: "field", style: "margin-top:8px" }, [
+    "Baby's name (so everything refers to him by name)",
+    h("input", {
+      type: "text",
+      value: p.babyName || "",
+      placeholder: "e.g. Thomas",
+      oninput: (e) => { p.babyName = e.target.value; save(); },
+      onblur: () => rerender(),
+    }),
+  ]));
+
   if (p.dueDate) {
-    status.append(h("div", { class: "stat-grid" }, [
+    status.append(h("div", { class: "stat-grid", style: "margin-top:10px" }, [
       h("div", { class: "stat" }, [h("div", { class: "label" }, "Weeks"), h("div", { class: "value" }, weeks != null ? weeks : "—")]),
       h("div", { class: "stat" }, [h("div", { class: "label" }, "Due"), h("div", { class: "value" }, friendlyDate(p.dueDate))]),
       h("div", { class: "stat ok" }, [h("div", { class: "label" }, "Days left"), h("div", { class: "value" }, daysLeft != null ? Math.max(0, daysLeft) : "—")]),
@@ -315,14 +329,28 @@ function renderPregnancy(rerender) {
 
   wrap.append(status);
 
-  // Photo gallery summary (top of the section — most recent appt photos)
-  wrap.append(renderBabyGallery());
+  // Baby size by week
+  const size = weeks != null ? babySizeForWeek(weeks) : null;
+  if (size) {
+    wrap.append(h("section", { class: "card baby-size" }, [
+      h("h2", {}, name ? `This week — ${name} is about the size of a…` : "This week — baby is about the size of a…"),
+      h("div", { class: "baby-size-label" }, size.size),
+      h("div", { class: "baby-size-note" }, size.note),
+      h("div", { class: "meta", style: "margin-top:6px" }, `Week ${size.week}`),
+    ]));
+  }
+
+  // Photo gallery summary
+  wrap.append(renderBabyGallery(name));
 
   // Doctor visits
-  wrap.append(renderVisits(rerender));
+  wrap.append(renderVisits(rerender, him));
 
   // Kick counter
-  wrap.append(renderKickCounter(rerender));
+  wrap.append(renderKickCounter(rerender, him));
+
+  // Letters to him
+  wrap.append(renderLetters(rerender, name));
 
   // Hospital bag
   wrap.append(renderHospitalBag(rerender));
@@ -330,7 +358,65 @@ function renderPregnancy(rerender) {
   return wrap;
 }
 
-function renderBabyGallery() {
+function renderLetters(rerender, name) {
+  const p = state.life.pregnancy;
+  const target = name || "baby";
+  const card = h("section", { class: "card" }, [
+    h("h2", {}, `Letters to ${target}`),
+    h("div", { class: "sub" }, `Little notes for ${target} to read one day. From mom, from dad, from anyone who loves him.`),
+  ]);
+
+  const form = h("form", { class: "form-row", onsubmit: (e) => {
+    e.preventDefault();
+    const f = new FormData(e.target);
+    const body = (f.get("body") || "").toString().trim();
+    const author = (f.get("author") || "").toString().trim();
+    if (!body) return;
+    p.letters.unshift({
+      id: uid(),
+      body,
+      author: author || "",
+      createdAt: Date.now(),
+    });
+    save(); toast("Saved"); e.target.reset(); rerender();
+  } }, [
+    h("label", { class: "field" }, [
+      "A note for him",
+      h("textarea", { name: "body", required: true, placeholder: "What do you want him to know?" }),
+    ]),
+    h("label", { class: "field" }, [
+      "Signed",
+      h("input", { type: "text", name: "author", placeholder: "Mom / Dad / etc." }),
+    ]),
+    h("div", { class: "btn-row" }, [h("button", { class: "btn", type: "submit" }, "Save letter")]),
+  ]);
+  card.append(form);
+
+  const list = h("div", { class: "list", style: "margin-top:10px" });
+  if (!p.letters.length) list.append(h("div", { class: "empty" }, `No letters yet. Write ${target} one.`));
+  else p.letters.forEach((l) => {
+    const d = new Date(l.createdAt);
+    list.append(h("div", { class: "letter-item" }, [
+      h("div", { class: "letter-date" }, d.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })),
+      h("div", { class: "letter-body" }, l.body),
+      l.author && h("div", { class: "letter-sig" }, "— " + l.author),
+      h("button", {
+        class: "btn small danger",
+        style: "align-self:flex-end",
+        onclick: () => {
+          if (!confirmAction("Remove this letter?")) return;
+          p.letters = p.letters.filter((x) => x.id !== l.id);
+          save(); rerender();
+        },
+      }, "×"),
+    ]));
+  });
+  card.append(list);
+
+  return card;
+}
+
+function renderBabyGallery(name) {
   const photos = [];
   for (const v of state.life.pregnancy.appointments) {
     for (const p of v.photos || []) photos.push({ ...p, when: v.date, caption: p.caption || v.notes?.slice(0, 60) });
@@ -347,17 +433,18 @@ function renderBabyGallery() {
   });
 
   return h("section", { class: "card" }, [
-    h("h2", {}, "Baby photo gallery"),
+    h("h2", {}, name ? `Photos of ${name}` : "Baby photo gallery"),
     h("div", { class: "sub" }, "Most recent sonograms and photos from your visits."),
     grid,
   ]);
 }
 
-function renderVisits(rerender) {
+function renderVisits(rerender, him) {
   const p = state.life.pregnancy;
+  const target = him || "baby";
   const card = h("section", { class: "card" }, [
     h("h2", {}, "Doctor visits"),
-    h("div", { class: "sub" }, "Log visits. Add sonogram photos from each one."),
+    h("div", { class: "sub" }, `Log visits. Add sonogram photos of ${target} from each one.`),
   ]);
 
   const form = h("form", { class: "form-row two", onsubmit: onAdd }, [
@@ -489,13 +576,14 @@ async function compressImage(file, maxDim = 800, quality = 0.72) {
   }
 }
 
-function renderKickCounter(rerender) {
+function renderKickCounter(rerender, him) {
   const p = state.life.pregnancy;
+  const target = him || "baby";
   const active = p.kickSessions.find((s) => !s.endedAt);
   const kickCount = active ? active.kicks.length : 0;
 
   const card = h("section", { class: "card" }, [
-    h("h2", {}, "Kick counter"),
+    h("h2", {}, `${target}'s kick counter`),
     h("div", { class: "sub" }, "Many providers suggest 10 kicks in 2 hours after week 28. Ask yours."),
   ]);
 

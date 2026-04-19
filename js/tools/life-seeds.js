@@ -63,6 +63,60 @@ export const HOSPITAL_BAG_SEED = [
   { category: "Docs",     item: "Pediatrician name & phone" },
 ];
 
+// Week-by-week fruit/size comparisons. Generalized, non-clinical.
+// Sources: common pregnancy-app comparisons; lengths/weights are ballpark.
+export const BABY_SIZE_BY_WEEK = [
+  { week: 4,  size: "Poppy seed",       note: "Barely there, but very real." },
+  { week: 5,  size: "Sesame seed",      note: "Tiny heart starting to form." },
+  { week: 6,  size: "Sweet pea",        note: "Heartbeat may be detectable on ultrasound." },
+  { week: 7,  size: "Blueberry",        note: "Little arm + leg buds are forming." },
+  { week: 8,  size: "Raspberry",        note: "Fingers and toes are webbed but taking shape." },
+  { week: 9,  size: "Cherry",           note: "The tail is gone. Baby is fully an embryo-to-baby now." },
+  { week: 10, size: "Strawberry",       note: "Vital organs are starting to work." },
+  { week: 11, size: "Fig",              note: "Hair follicles, tooth buds, nails start forming." },
+  { week: 12, size: "Lime",             note: "End of the first trimester — hi, second tri 👋" },
+  { week: 13, size: "Peach",            note: "Baby can make tiny fists." },
+  { week: 14, size: "Lemon",            note: "Face muscles let baby squint and frown." },
+  { week: 15, size: "Apple",            note: "Can sense light through the womb." },
+  { week: 16, size: "Avocado",          note: "You may start feeling flutters soon." },
+  { week: 17, size: "Pear",             note: "Baby hears more sounds from the outside." },
+  { week: 18, size: "Bell pepper",      note: "Kicks are getting stronger." },
+  { week: 19, size: "Mango",            note: "Vernix (protective coating) is forming." },
+  { week: 20, size: "Banana",           note: "Halfway there!" },
+  { week: 21, size: "Carrot",           note: "Baby is practicing swallowing." },
+  { week: 22, size: "Spaghetti squash", note: "Eyebrows and eyelids are in place." },
+  { week: 23, size: "Large mango",      note: "Can recognize your voice." },
+  { week: 24, size: "Ear of corn",      note: "Baby's face is fully formed." },
+  { week: 25, size: "Rutabaga",         note: "Skin is less translucent now." },
+  { week: 26, size: "Head of lettuce",  note: "Eyes may open soon." },
+  { week: 27, size: "Cauliflower",      note: "Third trimester begins. Sleep cycles are forming." },
+  { week: 28, size: "Eggplant",         note: "Kick counts officially matter here." },
+  { week: 29, size: "Butternut squash", note: "Bones are hardening." },
+  { week: 30, size: "Large cabbage",    note: "Baby can distinguish light from dark." },
+  { week: 31, size: "Coconut",          note: "Rapid brain growth right now." },
+  { week: 32, size: "Jicama",           note: "Baby is settling into position." },
+  { week: 33, size: "Pineapple",        note: "Bones continue to harden (skull stays soft)." },
+  { week: 34, size: "Cantaloupe",       note: "Nearly ready lungs." },
+  { week: 35, size: "Honeydew",         note: "Packing on fat for warmth." },
+  { week: 36, size: "Romaine lettuce",  note: "Considered 'early term' soon." },
+  { week: 37, size: "Swiss chard",      note: "Baby is nearly full-term." },
+  { week: 38, size: "Leek",             note: "Lanugo (baby fur) mostly gone." },
+  { week: 39, size: "Small watermelon", note: "Baby is fully cooked, just waiting." },
+  { week: 40, size: "Small pumpkin",    note: "Due date! Babies arrive when they arrive." },
+  { week: 41, size: "Small watermelon", note: "Still waiting — lots of babies come this week." },
+  { week: 42, size: "Small pumpkin",    note: "Your provider is watching closely now." },
+];
+
+export function babySizeForWeek(week) {
+  if (week == null) return null;
+  if (week < 4) return { week, size: "Just starting", note: "Very early. Your body is already doing big work." };
+  const match = BABY_SIZE_BY_WEEK.find((e) => e.week === week);
+  if (match) return match;
+  const last = BABY_SIZE_BY_WEEK[BABY_SIZE_BY_WEEK.length - 1];
+  if (week >= last.week) return last;
+  return null;
+}
+
 // Love notes — envelopes with gentle placeholder text meant for Ryan to edit
 // on his desktop. They're written to feel warm but obviously awaiting his words.
 export const LOVE_NOTES_SEED = [
