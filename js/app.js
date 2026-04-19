@@ -20,6 +20,7 @@ import { renderHabits } from "./tools/habits.js";
 import { renderBabyYear } from "./tools/baby-year.js";
 import { renderSearch } from "./tools/search.js";
 import { renderVault } from "./tools/vault.js";
+import { renderStore } from "./tools/store.js";
 
 const TOOLS = {
   dashboard: renderDashboard,
@@ -30,6 +31,7 @@ const TOOLS = {
   habits: renderHabits,
   vault: renderVault,
   babyyear: renderBabyYear,
+  store: renderStore,
   income: renderIncome,
   booking: renderBooking,
   career: renderCareer,

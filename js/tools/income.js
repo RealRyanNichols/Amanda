@@ -1,5 +1,6 @@
 import { state, save, uid } from "../store.js";
 import { money, todayISO, friendlyDate, daysFromNow, h, toast, confirmAction } from "../util.js";
+import { currentBrand } from "../branding.js";
 
 const PRIORITIES = [
   { value: 1, label: "Must pay (rent, utilities, car)" },
@@ -71,8 +72,160 @@ function render(mount, { rerender }) {
     ])
   );
 
+  mount.append(renderTrendsCard(rerender));
   mount.append(renderDepositsCard(rerender));
   mount.append(renderBillsCard(rerender));
+}
+
+function renderTrendsCard(rerender) {
+  const { deposits, bills } = state.income;
+  if (deposits.length < 4) return h("span"); // need history
+
+  // Last 30 vs previous 30 days
+  const now = Date.now();
+  const DAY = 86400000;
+  const last30 = deposits.filter((d) => new Date(d.date + "T00:00:00").getTime() > now - 30 * DAY)
+    .reduce((s, d) => s + Number(d.amount || 0), 0);
+  const prev30 = deposits.filter((d) => {
+    const t = new Date(d.date + "T00:00:00").getTime();
+    return t <= now - 30 * DAY && t > now - 60 * DAY;
+  }).reduce((s, d) => s + Number(d.amount || 0), 0);
+
+  const delta = prev30 > 0 ? Math.round(((last30 - prev30) / prev30) * 100) : null;
+  const trendClass = delta == null ? "" : (delta >= 10 ? "ok" : delta <= -10 ? "bad" : "warn");
+  const upcomingBillsTotal = bills.filter((b) => !b.paid).reduce((s, b) => s + Number(b.amount || 0), 0);
+
+  const card = h("section", { class: "card" }, [
+    h("h2", {}, "Revenue trends"),
+    h("div", { class: "sub" }, "Last 30 days vs the 30 before. Real talk — no glossing over."),
+    h("div", { class: "stat-grid" }, [
+      h("div", { class: "stat" }, [
+        h("div", { class: "label" }, "Last 30 days"),
+        h("div", { class: "value" }, money(last30)),
+      ]),
+      h("div", { class: "stat" }, [
+        h("div", { class: "label" }, "30 days before"),
+        h("div", { class: "value" }, money(prev30)),
+      ]),
+      h("div", { class: `stat ${trendClass}` }, [
+        h("div", { class: "label" }, "Change"),
+        h("div", { class: "value" }, delta == null ? "—" : `${delta >= 0 ? "+" : ""}${delta}%`),
+      ]),
+    ]),
+  ]);
+
+  // Built-in honest read even without Claude
+  card.append(renderBuiltInAssessment(last30, prev30, delta, upcomingBillsTotal));
+
+  // Claude analysis button
+  if (state.brain?.apiKey) {
+    const result = h("div", { class: "trend-ai", style: "margin-top:10px" });
+    card.append(h("div", { class: "btn-row", style: "margin-top:10px" }, [
+      h("button", {
+        class: "btn",
+        onclick: () => runClaudeAnalysis(result),
+      }, "Ask the Brain for an honest read"),
+    ]));
+    card.append(result);
+  } else {
+    card.append(h("div", { class: "alert", style: "margin-top:10px" },
+      "Connect your Claude key in Settings → Brain to get an AI-powered honest read of your finances."));
+  }
+
+  return card;
+}
+
+function renderBuiltInAssessment(last30, prev30, delta, upcomingBills) {
+  let level = "ok";
+  let msg = "You're holding steady. Keep the consistency going.";
+  if (prev30 === 0 && last30 > 0) { level = "ok"; msg = "You're off the ground this month — protect that momentum."; }
+  else if (last30 === 0) { level = "bad"; msg = "No income recorded in the last 30 days. That's not sustainable. What's one client or bill you can close this week?"; }
+  else if (delta <= -25) { level = "bad"; msg = `Income is down ${Math.abs(delta)}% vs last month. That's a real dip — not a hiccup. Look at what changed and what you can reactivate this week.`; }
+  else if (delta <= -10) { level = "warn"; msg = `You're down ${Math.abs(delta)}% month-over-month. Watch this — don't assume it'll rebound on its own.`; }
+  else if (delta >= 25) { level = "ok"; msg = `Up ${delta}% — great. Don't coast. Bank the windfall toward your next 30 days.`; }
+  else if (delta >= 10) { level = "ok"; msg = `Up ${delta}% — genuinely growing. Keep the habits that got you here.`; }
+
+  if (upcomingBills > last30 * 0.8) {
+    level = "bad";
+    msg += ` Your unpaid bills (${money(upcomingBills)}) are close to your whole month's income. Don't spend on extras until bills are covered.`;
+  }
+
+  return h("div", { class: `alert ${level}`, style: "margin-top:10px" }, msg);
+}
+
+async function runClaudeAnalysis(resultEl) {
+  const b = state.brain;
+  if (!b?.apiKey) { toast("Connect Claude first"); return; }
+
+  resultEl.innerHTML = "";
+  resultEl.append(h("div", { class: "meta" }, "Thinking…"));
+
+  // Compact summary of her financial state to send to Claude
+  const now = Date.now();
+  const DAY = 86400000;
+  const recentDeposits = state.income.deposits
+    .filter((d) => new Date(d.date + "T00:00:00").getTime() > now - 90 * DAY)
+    .map((d) => ({ date: d.date, amount: d.amount, source: d.source || "" }));
+  const activeBills = state.income.bills
+    .filter((x) => !x.paid)
+    .map((b) => ({ name: b.name, amount: b.amount, due: b.due, priority: b.priority }));
+
+  const br = currentBrand();
+  const personalContext = br.business
+    ? `Runs ${br.business.name}, ${br.business.program?.name || ""} with tuition around ${br.business.program?.tuition || "?"}`
+    : "";
+
+  const body = {
+    model: b.model || "claude-opus-4-7",
+    max_tokens: 1500,
+    system:
+      "You are a warm but genuinely honest financial advisor for a mom small-business-owner. Read her real deposit + bill data and give her 4-6 bullets of real talk. Style:\n" +
+      "- Direct. No corporate hedging. No 'consider exploring options'. Say 'you need to X'.\n" +
+      "- Kind. She's a human, not a spreadsheet. No shame.\n" +
+      "- Specific. Point at numbers from her data.\n" +
+      "- Actionable. Each bullet ends with a concrete next step she could do this week.\n" +
+      "- NEVER pretend things are fine if they aren't. If she's losing money, say she's losing money.\n" +
+      "- NEVER medical/legal/tax advice — redirect to a professional for those.\n" +
+      "Return plain text bullets, one per line starting with '- '. No preamble.",
+    messages: [{
+      role: "user",
+      content:
+`My last 90 days of deposits (newest first): ${JSON.stringify(recentDeposits.slice(-20))}
+My unpaid bills right now: ${JSON.stringify(activeBills)}
+Context: ${personalContext}
+Give me your honest read.`,
+    }],
+  };
+  if (/opus-4-7|opus-4-6|sonnet-4-6/.test(body.model)) body.thinking = { type: "adaptive" };
+
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": b.apiKey,
+        "anthropic-version": "2023-06-01",
+        "anthropic-dangerous-direct-browser-access": "true",
+      },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) throw new Error(`Claude ${res.status}`);
+    const data = await res.json();
+    const textBlock = (data.content || []).find((x) => x.type === "text");
+    const text = textBlock?.text || "";
+    resultEl.innerHTML = "";
+    const lines = text.split(/\n+/).filter((l) => l.trim().startsWith("-"));
+    if (!lines.length) {
+      resultEl.append(h("div", { class: "script-box" }, text));
+    } else {
+      const ul = h("ul", { class: "trend-bullets" });
+      lines.forEach((l) => ul.append(h("li", {}, l.replace(/^-\s*/, ""))));
+      resultEl.append(ul);
+    }
+  } catch (err) {
+    resultEl.innerHTML = "";
+    resultEl.append(h("div", { class: "alert bad" }, err.message || "Couldn't get analysis"));
+  }
 }
 
 function renderDepositsCard(rerender) {

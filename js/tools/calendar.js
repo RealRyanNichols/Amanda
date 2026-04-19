@@ -147,14 +147,58 @@ function renderEventRow(e, muted = false) {
       h("div", { class: "title" }, e.title),
       h("div", { class: "meta" }, dateLabel + (e.subtitle ? " · " + e.subtitle : "")),
     ]),
-    h("button", {
-      class: "btn small secondary",
-      onclick: () => {
-        const btn = document.querySelector(`.tab[data-tab="${e.go}"]`);
-        if (btn) btn.click();
-      },
-    }, "Open"),
+    h("div", { class: "actions" }, [
+      h("button", {
+        class: "btn small secondary",
+        onclick: () => downloadIcs(e),
+        title: "Add to iPhone/Google Calendar",
+      }, "📅 +Cal"),
+      h("button", {
+        class: "btn small secondary",
+        onclick: () => {
+          const btn = document.querySelector(`.tab[data-tab="${e.go}"]`);
+          if (btn) btn.click();
+        },
+      }, "Open"),
+    ]),
   ]);
+}
+
+function downloadIcs(e) {
+  const icsContent = buildIcs(e);
+  const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${e.title.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}.ics`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function buildIcs(e) {
+  const start = new Date(e.date + "T" + (e.time || "09:00") + ":00");
+  const end = new Date(start.getTime() + 60 * 60 * 1000); // 1-hr default
+  const fmt = (d) => d.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+  const uid = Math.random().toString(36).slice(2) + "@amanda-toolkit";
+  return [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//Amanda's Toolkit//EN",
+    "CALSCALE:GREGORIAN",
+    "BEGIN:VEVENT",
+    `UID:${uid}`,
+    `DTSTAMP:${fmt(new Date())}`,
+    `DTSTART:${fmt(start)}`,
+    `DTEND:${fmt(end)}`,
+    `SUMMARY:${escapeIcs(e.title)}`,
+    `DESCRIPTION:${escapeIcs(e.subtitle || "")}`,
+    "END:VEVENT",
+    "END:VCALENDAR",
+  ].join("\r\n");
+}
+
+function escapeIcs(s) {
+  return (s || "").replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\n/g, "\\n");
 }
 
 function renderMonthGrid(events) {

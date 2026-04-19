@@ -833,6 +833,32 @@ body[data-brand="pda"] .bible-content {
 }
 .vault-viewer-meta { margin-top: 10px; }
 
+/* Store */
+.store-hero { background: linear-gradient(160deg, color-mix(in oklab, var(--accent) 14%, var(--bg-elev)), var(--bg-elev)); }
+.store-item { transition: border-color .15s; }
+.store-item.owned { border-color: var(--ok); }
+.store-header { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.store-emoji-big { font-size: 2.25rem; line-height: 1; flex-shrink: 0; }
+.store-price { color: var(--accent); font-weight: 700; margin-top: 2px; font-size: .9375rem; }
+.store-blurb { color: var(--text-dim); font-size: .9375rem; line-height: 1.5; margin-bottom: 10px; }
+.store-perks {
+  margin: 0 0 12px 18px; padding: 0;
+  color: var(--text-dim); font-size: .9375rem; line-height: 1.5;
+}
+.store-perks li { margin: 4px 0; }
+.store-checkout-row {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--bg-elev-2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 10px; margin-top: 10px;
+}
+
+/* Revenue trends */
+.trend-bullets {
+  margin: 10px 0 0 18px; padding: 0;
+  line-height: 1.6; font-size: .9375rem;
+}
+.trend-bullets li { margin: 6px 0; }
+
 /* Calendar */
 .cal-dow {
   display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px;

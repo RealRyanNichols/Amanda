@@ -43,6 +43,7 @@ const defaults = () => ({
   vault: {
     items: [],           // { id, title, category, dataUrl, mime, note, createdAt }
   },
+  purchases: {},         // { [itemId]: { unlockedAt } }
   babyYear: {
     milestones: [],      // { id, title, due: "ageMonths:N", completedAt, photoUrl, note }
     seeded: false,
