@@ -5,6 +5,8 @@ import { TX_RDA_REQUIREMENTS } from "./rda-seed.js";
 import { verseOfTheDay, babySizeForWeek } from "./life-seeds.js";
 import { scanForReminders } from "./reminders.js";
 import { getSaved, savedHoursThisWeek } from "../time-saved.js";
+import { isInTrial, isPaid, trialDaysLeft, tier } from "../plan.js";
+import { getPaymentLink } from "../stripe-config.js";
 
 function incomeSummary() {
   const { deposits, bills } = state.income;
@@ -144,6 +146,40 @@ function renderHero() {
   return h("section", { class: "card" }, [
     h("h2", {}, `${greeting()}, ${who.split(" ")[0]}`),
     h("div", { class: "sub" }, b.business ? b.business.name : "Here's where everything stands right now."),
+  ]);
+}
+
+function renderPlanBanner() {
+  if (isPaid()) return null; // no banner for paid users
+  const t = tier();
+  const coreLink = getPaymentLink("core-monthly");
+
+  if (t === "trial") {
+    const days = trialDaysLeft();
+    if (days <= 0) return null; // will transition to 'free' on next load
+    const urgency = days <= 3;
+    return h("section", { class: "card plan-banner" + (urgency ? " urgent" : "") }, [
+      h("div", { class: "sub" }, urgency ? "Trial almost up" : "Full access trial"),
+      h("h2", {}, `${days} day${days === 1 ? "" : "s"} left`),
+      h("div", { class: "sub" },
+        urgency
+          ? "Lock it in before everything tied to your business + baby locks. $19/mo covers the whole app."
+          : `Everything unlocked for ${days} more day${days === 1 ? "" : "s"}. No surprises — we'll remind you before trial ends.`),
+      coreLink && h("div", { class: "btn-row", style: "margin-top:10px" }, [
+        h("a", { class: "btn", href: coreLink }, "Subscribe now · $19/mo"),
+      ]),
+    ]);
+  }
+
+  // Free tier
+  return h("section", { class: "card plan-banner" }, [
+    h("div", { class: "sub" }, "You're on the free tier"),
+    h("h2", {}, "Unlock the full toolkit"),
+    h("div", { class: "sub" },
+      "Bible, gratitude, prayers, letters, and a few minutes of Brain stay free forever. The rest unlocks with one subscription."),
+    coreLink && h("div", { class: "btn-row", style: "margin-top:10px" }, [
+      h("a", { class: "btn", href: coreLink }, "Unlock everything · $19/mo"),
+    ]),
   ]);
 }
 
@@ -384,6 +420,7 @@ function renderAcademyCard() {
 // User can reorder, hide, or toggle layout in Customize mode.
 const CARDS = [
   { key: "hero",       label: "Greeting",        render: renderHero,          always: true },
+  { key: "plan",       label: "Trial / upgrade", render: renderPlanBanner,    show: () => !isPaid() },
   { key: "reminders",  label: "Smart reminders", render: renderSmartReminders                 },
   { key: "focus",      label: "Focus",           render: renderFocus                          },
   { key: "timesaved",  label: "Time given back", render: renderTimeSavedCard                  },

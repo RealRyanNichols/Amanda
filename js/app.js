@@ -24,6 +24,8 @@ import { renderStore } from "./tools/store.js";
 import { renderCapture } from "./tools/capture.js";
 import { renderMeTime } from "./tools/metime.js";
 import { mountFloatingBrain } from "./floating-brain.js";
+import { initPlan, canAccessTab, isPaid, isInTrial, upgradeMessage, tier } from "./plan.js";
+import { renderUpgradeWall } from "./tools/upgrade.js";
 
 const TOOLS = {
   dashboard: renderDashboard,
@@ -55,6 +57,7 @@ const shellHTML = document.body.innerHTML;
 
 function bootApp() {
   document.body.innerHTML = shellHTML;
+  initPlan();
   applyBrand();
   initBrandToggle(() => { syncTabVisibility(); render(); });
   wireTabs();
@@ -87,6 +90,11 @@ function syncTabVisibility() {
 function render() {
   const mount = document.getElementById("app");
   mount.innerHTML = "";
+  // If this tab is locked for her plan, show an upgrade wall instead of content
+  if (!canAccessTab(currentTab)) {
+    renderUpgradeWall(mount, currentTab);
+    return;
+  }
   const tool = TOOLS[currentTab] || TOOLS.dashboard;
   tool(mount, { rerender: render });
 }

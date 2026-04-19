@@ -46,6 +46,12 @@ const defaults = () => ({
     items: [],           // { id, title, category, dataUrl, mime, note, createdAt }
   },
   purchases: {},         // { [itemId]: { unlockedAt } }
+  plan: {
+    tier: "trial",       // 'trial' | 'free' | 'core' | 'ultra' (tiers updated by backend when Supabase live)
+    trialStartedAt: null,
+    brainMinutesToday: 0,
+    brainMinutesDate: "", // date key for daily reset
+  },
   dashboard: {
     // order: ordered list of card keys. If null, we use the default order.
     order: null,

@@ -1092,6 +1092,53 @@ body[data-brand="pda"] .bible-content {
     var(--bg-elev));
 }
 
+/* Upgrade wall (locked tab) */
+.upgrade-wall {
+  text-align: center;
+  background: linear-gradient(160deg,
+    color-mix(in oklab, var(--accent) 18%, var(--bg-elev)),
+    var(--bg-elev));
+  padding: 28px 22px;
+}
+.upgrade-emoji { font-size: 3.5rem; margin-bottom: 8px; }
+.upgrade-wall h2 {
+  font-family: Georgia, serif;
+  font-size: 1.75rem; margin: 8px 0 10px;
+}
+.upgrade-bullets {
+  margin: 14px auto; padding: 0; list-style: none;
+  max-width: 360px; text-align: left;
+}
+.upgrade-bullets li {
+  padding: 6px 0;
+  color: var(--text-dim); font-size: .9375rem;
+}
+.upgrade-bullets li::before { content: "✓  "; color: var(--ok); font-weight: 700; }
+.upgrade-price-box {
+  background: var(--bg-elev-2); border: 2px solid var(--accent);
+  border-radius: var(--radius); padding: 18px;
+  margin: 18px auto; max-width: 320px;
+}
+.upgrade-price { font-size: 2.25rem; font-weight: 800; }
+.upgrade-annual { color: var(--ok); font-weight: 600; font-size: .8125rem; margin-top: 2px; }
+.upgrade-includes { color: var(--text-dim); font-size: .8125rem; margin-top: 10px; }
+.upgrade-btn-main { font-size: 1rem; padding: 14px 22px; }
+.upgrade-status { margin-top: 12px; color: var(--text-dim); font-size: .875rem; font-style: italic; }
+
+/* Plan banner on Home */
+.plan-banner {
+  border: 1px solid var(--accent);
+  background: linear-gradient(160deg,
+    color-mix(in oklab, var(--accent) 16%, var(--bg-elev)),
+    var(--bg-elev));
+}
+.plan-banner.urgent {
+  border-color: var(--warn);
+  background: linear-gradient(160deg,
+    color-mix(in oklab, var(--warn) 22%, var(--bg-elev)),
+    var(--bg-elev));
+}
+
 /* Capture */
 .capture-thumb {
   width: 56px; height: 56px; object-fit: cover;
