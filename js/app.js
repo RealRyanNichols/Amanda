@@ -74,6 +74,7 @@ function bootApp() {
   initSync().catch((e) => console.warn("[sync init]", e));
   document.addEventListener("sync:pulled", render);
   document.addEventListener("sync:realtime", render);
+  document.addEventListener("sync:status", render);
   document.addEventListener("tabs:refresh", syncTabVisibility);
 
   // Restore-your-data prompt — if the sync layer detects a new device

@@ -7,7 +7,28 @@
 - Tables: **NOT YET CREATED** — apply `supabase/migrations/0001_initial.sql`
 - Account tab: **live in app** at `/account` (sign-in form ready)
 
-### Apply the initial migration (1 minute)
+### Apply ALL the migrations (2 minutes)
+
+There are now **4 migration files** in `supabase/migrations/`. Run them in order:
+
+1. `0001_initial.sql`       — 18 core tables (profiles, income, leads, etc.)
+2. `0002_complete_schema.sql` — 18 more tables (vault, meals, social, academy, captures, family, love-notes, baby-year) + profile columns
+3. `0003_households.sql`    — partner linking (§17 family sharing)
+4. `0004_realtime.sql`      — enables live multi-device sync on all tables
+
+For each: open the SQL Editor, copy the file contents, paste, Run. Wait for
+"Success" between each one. All CREATE statements use `IF NOT EXISTS` so
+re-running is safe.
+
+Direct raw-file links (open each, Select All, Copy):
+- https://raw.githubusercontent.com/RealRyanNichols/Amanda/claude/amanda-business-tools-RpCj8/supabase/migrations/0001_initial.sql
+- https://raw.githubusercontent.com/RealRyanNichols/Amanda/claude/amanda-business-tools-RpCj8/supabase/migrations/0002_complete_schema.sql
+- https://raw.githubusercontent.com/RealRyanNichols/Amanda/claude/amanda-business-tools-RpCj8/supabase/migrations/0003_households.sql
+- https://raw.githubusercontent.com/RealRyanNichols/Amanda/claude/amanda-business-tools-RpCj8/supabase/migrations/0004_realtime.sql
+
+SQL Editor: https://supabase.com/dashboard/project/mccjgijnbstduhyuvwwo/sql/new
+
+### Apply the initial migration (legacy section — superseded by the above)
 
 **Option A — Supabase Dashboard SQL editor (easiest, do this first):**
 1. Open https://supabase.com/dashboard → your project → **SQL Editor**

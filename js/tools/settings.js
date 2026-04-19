@@ -3,6 +3,8 @@ import { h, toast, confirmAction } from "../util.js";
 import { ROLES, INTERESTS, setPin, hasPin } from "../auth.js";
 import { MODEL_OPTIONS } from "./brain.js";
 import { showSafetyNet } from "../safety-net.js";
+import { currentUser, isSupabaseConfigured } from "../supabase.js";
+import { ensureHousehold, getHousehold, inviteMember, updateMemberVisibility, removeMember } from "../household.js";
 
 // Capture the beforeinstallprompt event for a friendly in-app install button (Chrome/Edge/Android).
 let deferredInstallPrompt = null;
@@ -360,9 +362,133 @@ function reviewFlagged(rerender) {
   document.body.append(overlay);
 }
 
+function renderHouseholdCard(rerender) {
+  const card = h("section", { class: "card" }, [
+    h("h2", {}, "👨‍👩‍👧 Partner + family"),
+    h("div", { class: "sub" }, "Share selected parts of your account with your partner, parent, or friend. You pick what they can see. They never see your private data unless you opt each thing in."),
+  ]);
+
+  if (!isSupabaseConfigured()) {
+    card.append(h("div", { class: "alert" }, "Backend not configured yet — this activates when Supabase is fully wired."));
+    return card;
+  }
+
+  const body = h("div");
+  card.append(body);
+  body.append(h("div", { class: "meta" }, "Loading…"));
+
+  (async () => {
+    try {
+      const user = await currentUser();
+      if (!user) {
+        body.innerHTML = "";
+        body.append(h("div", { class: "alert" }, "Sign in on the Account tab first."));
+        return;
+      }
+      const household = await getHousehold();
+      body.innerHTML = "";
+
+      const members = (household?.household_members || []).filter((m) => m.role !== "primary");
+
+      // Member list
+      if (members.length) {
+        body.append(h("h3", { style: "margin:12px 0 6px; font-size:13px; color:var(--text-dim); text-transform:uppercase; letter-spacing:.8px" }, "Sharing with"));
+        const list = h("div", { class: "list" });
+        members.forEach((m) => {
+          list.append(h("div", { class: "item" }, [
+            h("div", {}, [
+              h("div", { class: "title" }, m.relation || m.role),
+              h("div", { class: "meta" },
+                `${m.pending_email || "linked"} · ${m.status}`),
+              h("div", { class: "meta", style: "margin-top:4px" },
+                [
+                  m.can_see_calendar && "calendar",
+                  m.can_see_baby_year && "baby year",
+                  m.can_see_pregnancy && "pregnancy",
+                  m.can_see_kids && "kids",
+                  m.can_see_me_time && "me-time",
+                ].filter(Boolean).join(" · ") || "(nothing shared yet)"),
+            ]),
+            h("div", { class: "actions" }, [
+              h("button", {
+                class: "btn small danger",
+                onclick: async () => {
+                  if (!confirm(`Remove ${m.relation || "this member"}? They won't see your data anymore.`)) return;
+                  try { await removeMember(m.id); toast("Removed"); rerender(); }
+                  catch (e) { toast(e.message || "Couldn't remove"); }
+                },
+              }, "Remove"),
+            ]),
+          ]));
+        });
+        body.append(list);
+      }
+
+      // Invite form
+      body.append(h("h3", { style: "margin:14px 0 6px; font-size:13px; color:var(--text-dim); text-transform:uppercase; letter-spacing:.8px" }, "Invite someone"));
+
+      const form = h("form", { class: "form-row two", onsubmit: async (e) => {
+        e.preventDefault();
+        const f = new FormData(e.target);
+        const email = (f.get("email") || "").toString().trim();
+        if (!email) return;
+        const relation = (f.get("relation") || "").toString().trim();
+        const role = (f.get("role") || "partner").toString();
+        const visibility = {
+          can_see_calendar: !!f.get("can_calendar"),
+          can_see_baby_year: !!f.get("can_baby"),
+          can_see_pregnancy: !!f.get("can_pregnancy"),
+          can_see_kids: !!f.get("can_kids"),
+          can_see_me_time: !!f.get("can_metime"),
+          alert_on_concerning: !!f.get("alert_concerning"),
+        };
+        try {
+          await inviteMember({ email, relation, role, visibility });
+          toast(`Invite saved. When ${email} signs up, they'll join automatically.`);
+          e.target.reset();
+          rerender();
+        } catch (err) {
+          toast(err.message || "Invite failed");
+        }
+      } }, [
+        h("label", { class: "field" }, ["Their email", h("input", { type: "email", name: "email", required: true })]),
+        h("label", { class: "field" }, ["Relation", h("input", { type: "text", name: "relation", placeholder: "husband, mom, best friend" })]),
+        h("label", { class: "field", style: "grid-column: 1 / -1" }, [
+          "Role",
+          h("select", { name: "role" }, [
+            h("option", { value: "partner" }, "Partner / spouse"),
+            h("option", { value: "grandparent" }, "Grandparent"),
+            h("option", { value: "helper" }, "Friend / helper"),
+          ]),
+        ]),
+        h("fieldset", { class: "field", style: "grid-column: 1 / -1" }, [
+          h("legend", {}, "What they can see"),
+          h("label", { class: "radio" }, [h("input", { type: "checkbox", name: "can_calendar" }), h("span", {}, "My calendar (appointments + events)")]),
+          h("label", { class: "radio" }, [h("input", { type: "checkbox", name: "can_baby" }), h("span", {}, "Baby Year tracker (milestones + photos)")]),
+          h("label", { class: "radio" }, [h("input", { type: "checkbox", name: "can_pregnancy" }), h("span", {}, "Pregnancy visits + growth (letters and body-log stay private)")]),
+          h("label", { class: "radio" }, [h("input", { type: "checkbox", name: "can_kids" }), h("span", {}, "Kids roster")]),
+          h("label", { class: "radio" }, [h("input", { type: "checkbox", name: "can_metime" }), h("span", {}, "My Me-Time streak (summary only — no session text)")]),
+          h("label", { class: "radio" }, [h("input", { type: "checkbox", name: "alert_concerning" }), h("span", {}, "Alert them if I'm in crisis (§20 — they only get a content-free 'reach out' ping)")]),
+        ]),
+        h("div", { class: "btn-row", style: "grid-column: 1 / -1" }, [h("button", { class: "btn", type: "submit" }, "Send invite")]),
+      ]);
+      body.append(form);
+
+      body.append(h("div", { class: "pda-contact" },
+        "What stays ALWAYS private: your Brain chat history, prayer journal, gratitude, love notes, financial details, safety flags. Those are never shareable, period."));
+    } catch (err) {
+      body.innerHTML = "";
+      body.append(h("div", { class: "alert bad" }, err.message || "Couldn't load household"));
+    }
+  })();
+
+  return card;
+}
+
 export function renderSettings(mount, { rerender }) {
   mount.append(renderProfileCard(rerender));
   mount.append(renderBrainCard(rerender));
+  mount.append(renderHouseholdCard(rerender));
   mount.append(renderSafetyNetCard(rerender));
   mount.append(renderSecurityCard(rerender));
   mount.append(renderInstallCard());

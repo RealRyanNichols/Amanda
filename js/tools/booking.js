@@ -131,6 +131,7 @@ function renderList(rerender) {
         h("div", { class: "actions" }, [
           h("button", { class: "btn small", onclick: () => recordPayment(appt, rerender) }, "Payment"),
           h("button", { class: "btn small secondary", onclick: () => reschedule(appt, rerender) }, "Reschedule"),
+          h("button", { class: "btn small secondary", onclick: () => downloadAppointmentIcs(appt), title: "Add to iPhone / Google Calendar with 1-hour reminder" }, "📅 +Cal"),
           h("button", { class: "btn small danger", onclick: () => remove(appt, rerender) }, "Remove"),
         ]),
       ]);
@@ -158,6 +159,48 @@ function recordPayment(appt, rerender) {
   save();
   toast(`+${money(n)} recorded`);
   rerender();
+}
+
+function downloadAppointmentIcs(appt) {
+  const start = new Date(appt.date + "T" + (appt.time ? parseTime(appt.time) : "09:00") + ":00");
+  const end = new Date(start.getTime() + 60 * 60 * 1000);
+  const fmt = (d) => d.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+  const uidStr = Math.random().toString(36).slice(2) + "@amanda-toolkit";
+  const esc = (s) => (s || "").replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\n/g, "\\n");
+  const title = `${appt.client}${appt.service ? " · " + appt.service : ""}`;
+  const ics = [
+    "BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Amanda's Toolkit//EN","CALSCALE:GREGORIAN",
+    "BEGIN:VEVENT",
+    `UID:${uidStr}`,
+    `DTSTAMP:${fmt(new Date())}`,
+    `DTSTART:${fmt(start)}`,
+    `DTEND:${fmt(end)}`,
+    `SUMMARY:${esc(title)}`,
+    `DESCRIPTION:${esc(appt.note || "From Amanda's Toolkit")}`,
+    "BEGIN:VALARM","ACTION:DISPLAY","TRIGGER:-PT1H","DESCRIPTION:Appointment in 1 hour","END:VALARM",
+    "BEGIN:VALARM","ACTION:DISPLAY","TRIGGER:-PT15M","DESCRIPTION:Appointment in 15 minutes","END:VALARM",
+    "END:VEVENT","END:VCALENDAR",
+  ].join("\r\n");
+  const blob = new Blob([ics], { type: "text/calendar;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${appt.client.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}.ics`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast("Open in your calendar");
+}
+
+function parseTime(t) {
+  // "2:30 PM" → "14:30"; "09:15" → "09:15"
+  const m = t.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
+  if (!m) return "09:00";
+  let hr = parseInt(m[1], 10);
+  const min = m[2];
+  const ampm = m[3]?.toUpperCase();
+  if (ampm === "PM" && hr < 12) hr += 12;
+  if (ampm === "AM" && hr === 12) hr = 0;
+  return String(hr).padStart(2, "0") + ":" + min;
 }
 
 function reschedule(appt, rerender) {

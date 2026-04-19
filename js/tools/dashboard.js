@@ -5,6 +5,8 @@ import { TX_RDA_REQUIREMENTS } from "./rda-seed.js";
 import { verseOfTheDay, babySizeForWeek } from "./life-seeds.js";
 import { scanForReminders } from "./reminders.js";
 import { getSaved, savedHoursThisWeek } from "../time-saved.js";
+import { getSyncStatus } from "../sync.js";
+import { isSupabaseConfigured, currentUser } from "../supabase.js";
 import { isInTrial, isPaid, trialDaysLeft, tier } from "../plan.js";
 import { getPaymentLink } from "../stripe-config.js";
 
@@ -137,6 +139,23 @@ function renderLoveNotePeek() {
     h("div", { class: "btn-row" }, [
       h("button", { class: "btn small", onclick: () => { state.life.activeView = "love"; jumpTo("life"); } }, "Open it →"),
     ]),
+  ]);
+}
+
+function renderSyncStatusLine() {
+  if (!isSupabaseConfigured()) return null;
+  const s = getSyncStatus();
+  const label = s.syncing
+    ? "Syncing…"
+    : s.lastSyncAt
+    ? `Synced ${Math.round((Date.now() - s.lastSyncAt) / 1000)}s ago · everything saved to your account`
+    : "Local only — sign in on the Account tab to sync";
+  return h("div", { class: "sync-status", onclick: () => {
+    const btn = document.querySelector('.tab[data-tab="account"]');
+    if (btn) btn.click();
+  } }, [
+    h("span", { class: "sync-dot" + (s.syncing ? " on" : "") }),
+    h("span", {}, label),
   ]);
 }
 
@@ -420,6 +439,7 @@ function renderAcademyCard() {
 // User can reorder, hide, or toggle layout in Customize mode.
 const CARDS = [
   { key: "hero",       label: "Greeting",        render: renderHero,          always: true },
+  { key: "syncstatus", label: "Sync status",     render: renderSyncStatusLine, show: () => isSupabaseConfigured() },
   { key: "plan",       label: "Trial / upgrade", render: renderPlanBanner,    show: () => !isPaid() },
   { key: "reminders",  label: "Smart reminders", render: renderSmartReminders                 },
   { key: "focus",      label: "Focus",           render: renderFocus                          },

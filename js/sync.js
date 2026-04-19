@@ -32,6 +32,15 @@ import { getSupabase, currentUser, onAuthStateChange, isSupabaseConfigured } fro
 let syncing = false;
 let pushTimer = null;
 let authListenerAttached = false;
+let _lastSyncAt = 0;
+
+export function getSyncStatus() {
+  return {
+    configured: isSupabaseConfigured(),
+    syncing,
+    lastSyncAt: _lastSyncAt,
+  };
+}
 
 const SLICES = [
   {
@@ -449,9 +458,11 @@ export async function syncPullAll() {
     await pullProfile(sb, user.id);
     for (const slice of SLICES) await pullSlice(sb, slice, user.id);
     save();
+    _lastSyncAt = Date.now();
     console.log("[sync] pull complete");
   } finally {
     syncing = false;
+    document.dispatchEvent(new CustomEvent("sync:status"));
   }
 }
 
@@ -464,9 +475,11 @@ export async function syncPushAll() {
     if (!user) return;
     await pushProfile(sb, user.id);
     for (const slice of SLICES) await pushSlice(sb, slice, user.id);
+    _lastSyncAt = Date.now();
     console.log("[sync] push complete");
   } finally {
     syncing = false;
+    document.dispatchEvent(new CustomEvent("sync:status"));
   }
 }
 
