@@ -93,7 +93,12 @@ const defaults = () => ({
       facebook:  { handle: "", url: "" },
       instagram: { handle: "", url: "" },
       tiktok:    { handle: "", url: "" },
+      x:         { handle: "", url: "" },
+      linkedin:  { handle: "", url: "" },
     },
+    // One-time paste of her public bio. We reuse it as a default signature
+    // and in caption templates so her posts sound like her, not generic.
+    bio: "",
     posts: [],
     hashtagSets: [],
   },

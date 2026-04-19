@@ -26,6 +26,7 @@
 
 import { state, save, uid } from "../store.js";
 import { h, toast } from "../util.js";
+import { shareSheet } from "../share.js";
 
 const TEMPLATES = [
   {
@@ -294,7 +295,7 @@ export function renderReels(rerender) {
       }, "⬇ Download"),
       h("button", {
         class: "btn secondary",
-        onclick: () => shareCanvas(canvas, tpl, r.caption),
+        onclick: () => shareCanvasAnywhere(canvas, tpl, r.caption),
       }, "📤 Share"),
       h("button", {
         class: "btn ghost",
@@ -334,25 +335,19 @@ function downloadCanvas(canvas, key) {
   }, "image/png");
 }
 
-async function shareCanvas(canvas, tpl, captionOverride) {
-  if (!navigator.share) {
-    downloadCanvas(canvas, tpl.key);
-    toast("Share sheet not supported — downloaded instead");
-    return;
-  }
-  canvas.toBlob(async (blob) => {
-    if (!blob) return;
+// Export canvas to a File + open the multi-platform share sheet. On mobile
+// the first option is the native share sheet (which lists IG/TikTok/CapCut);
+// on desktop she gets X / FB / LinkedIn / email / copy fallbacks.
+function shareCanvasAnywhere(canvas, tpl, captionOverride) {
+  canvas.toBlob((blob) => {
+    if (!blob) { toast("Couldn't export"); return; }
     const file = new File([blob], `${tpl.key}.png`, { type: "image/png" });
     const text = captionOverride || fillTemplate(tpl.caption, templateVars());
-    try {
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({ files: [file], text });
-      } else {
-        await navigator.share({ text });
-      }
-    } catch {
-      // user cancelled — no-op
-    }
+    shareSheet({
+      text,
+      title: tpl.label,
+      files: [file],
+    });
   }, "image/png");
 }
 

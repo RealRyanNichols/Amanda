@@ -746,6 +746,67 @@ body[data-brand="pda"] .bible-content {
 }
 .btn.tiny { padding: 4px 8px; font-size: 0.8rem; }
 
+/* Share sheet — bottom modal with platform grid */
+.share-sheet-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex; align-items: flex-end; justify-content: center;
+  z-index: 1000;
+  animation: fade-in .18s ease-out;
+}
+.share-sheet {
+  background: var(--card, #fff);
+  color: inherit;
+  width: 100%; max-width: 520px;
+  border-radius: 20px 20px 0 0;
+  padding: 20px 18px 16px;
+  box-shadow: 0 -8px 30px rgba(0,0,0,0.2);
+  animation: slide-up .22s ease-out;
+}
+@media (min-width: 600px) {
+  .share-sheet-backdrop { align-items: center; }
+  .share-sheet { border-radius: 16px; max-width: 440px; }
+}
+.share-sheet-header {
+  font-weight: 600; font-size: 1.05rem;
+  text-align: center; margin-bottom: 14px;
+}
+.share-sheet-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.share-option {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 12px 6px;
+  border: 1px solid var(--border, rgba(0,0,0,0.1));
+  border-radius: 14px;
+  background: transparent;
+  cursor: pointer;
+  transition: transform .1s, background .1s;
+}
+.share-option:active { transform: scale(0.96); }
+.share-option:hover { background: rgba(0,0,0,0.04); }
+.share-emoji { font-size: 1.5rem; }
+.share-label { font-size: 0.72rem; line-height: 1.1; text-align: center; }
+.share-sheet-note {
+  font-size: 0.8rem; opacity: 0.75;
+  padding: 8px 4px 0;
+}
+.share-cancel {
+  width: 100%;
+  padding: 12px;
+  margin-top: 8px;
+  border: none;
+  background: rgba(0,0,0,0.06);
+  border-radius: 10px;
+  font-weight: 500;
+  cursor: pointer;
+}
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slide-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
 /* Dashboard verse card — expanded study zone */
 .verse-card .verse-context {
   border-top: 1px dashed rgba(0,0,0,0.12);

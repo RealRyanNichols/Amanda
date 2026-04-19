@@ -9,6 +9,7 @@ import { getSyncStatus } from "../sync.js";
 import { isSupabaseConfigured, currentUser } from "../supabase.js";
 import { isInTrial, isPaid, trialDaysLeft, tier } from "../plan.js";
 import { getPaymentLink } from "../stripe-config.js";
+import { shareSheet } from "../share.js";
 
 function incomeSummary() {
   const { deposits, bills } = state.income;
@@ -151,8 +152,15 @@ function renderVerseCard() {
     class: "btn small ghost",
     onclick: () => jumpToBibleVerse(v.ref),
   }, "Open in Bible");
+  const shareBtn = h("button", {
+    class: "btn small ghost",
+    onclick: () => shareSheet({
+      title: `${v.ref}`,
+      text: `"${v.text}" — ${v.ref}`,
+    }),
+  }, "📤 Share");
 
-  actions.append(readBtn, studyBtn, nextBtn, openBible);
+  actions.append(readBtn, studyBtn, nextBtn, openBible, shareBtn);
   card.append(actions);
   return card;
 }

@@ -2,11 +2,14 @@ import { state, save, uid } from "../store.js";
 import { h, toast, confirmAction, todayISO, friendlyDate } from "../util.js";
 import { micButton, speechSupported } from "../voice.js";
 import { renderReels } from "./reels.js";
+import { shareSheet } from "../share.js";
 
 const PLATFORMS = [
   { key: "facebook",  label: "Facebook",  emoji: "📘", base: "https://facebook.com/" },
   { key: "instagram", label: "Instagram", emoji: "📷", base: "https://instagram.com/" },
   { key: "tiktok",    label: "TikTok",    emoji: "🎵", base: "https://tiktok.com/@" },
+  { key: "x",         label: "X",         emoji: "✖️", base: "https://x.com/" },
+  { key: "linkedin",  label: "LinkedIn",  emoji: "💼", base: "https://linkedin.com/in/" },
 ];
 
 const POST_STATUS = [
@@ -39,9 +42,28 @@ function subNav() {
 
 function renderProfiles(rerender) {
   const wrap = h("div");
+  // Migrate state: ensure x + linkedin keys exist on older accounts.
+  if (!state.social.profiles.x) state.social.profiles.x = { handle: "", url: "" };
+  if (!state.social.profiles.linkedin) state.social.profiles.linkedin = { handle: "", url: "" };
+  if (state.social.bio === undefined) state.social.bio = "";
+
   wrap.append(h("section", { class: "card" }, [
     h("h2", {}, "Your handles"),
-    h("div", { class: "sub" }, "Save your handles once. Tap to open your profile from anywhere in the app."),
+    h("div", { class: "sub" }, "Save your handles once. Tap to open your profile from anywhere in the app, or share straight to that platform."),
+  ]));
+
+  // Bio — one paste, reused in caption templates throughout the app.
+  wrap.append(h("section", { class: "card" }, [
+    h("h2", { style: "font-size:14px" }, "Your bio (for post templates)"),
+    h("div", { class: "sub" },
+      "Paste your short bio/tagline once. We'll reuse it when the app drafts posts for you — so captions sound like you, not like a generic app."),
+    h("label", { class: "field" }, [
+      h("textarea", {
+        rows: 3,
+        placeholder: "e.g. Dental assistant educator · mom · Longview, TX · Phil 4:13",
+        oninput: (e) => { state.social.bio = e.target.value; save(); },
+      }, state.social.bio || ""),
+    ]),
   ]));
 
   PLATFORMS.forEach((pl) => {
@@ -81,8 +103,30 @@ function renderProfiles(rerender) {
     wrap.append(card);
   });
 
+  // X-specific extras — Amanda writes long-form, and X Articles is her lane.
+  const xh = state.social.profiles.x?.handle;
+  if (xh) {
+    wrap.append(h("section", { class: "card" }, [
+      h("h2", { style: "font-size:14px" }, "✖️ X extras"),
+      h("div", { class: "sub" },
+        "You write long-form. X Articles is built for that. We'll open compose in a new tab — come back here to share the published URL to the other platforms."),
+      h("div", { class: "btn-row" }, [
+        h("a", {
+          class: "btn small", target: "_blank", rel: "noopener",
+          href: "https://x.com/compose/post",
+        }, "✍️ Compose post"),
+        h("a", {
+          class: "btn small secondary", target: "_blank", rel: "noopener",
+          href: "https://x.com/i/articles/compose",
+        }, "📝 New Article"),
+      ]),
+      h("div", { class: "meta", style: "margin-top:6px" },
+        "X Articles requires X Premium+. If the compose link doesn't open for you, your account isn't eligible yet."),
+    ]));
+  }
+
   wrap.append(h("div", { class: "alert", style: "margin-top:4px" },
-    "Heads up: connecting these accounts directly (auto-posting, comments, DMs) needs a developer account with Meta/TikTok and a backend. That's a later upgrade — for now use the Planner below to draft + schedule, and post manually with one tap."));
+    "Heads up: connecting these accounts directly (auto-posting, comments, DMs) needs OAuth + a backend — that's the next phase. Today you paste your handle, we open share sheets and compose URLs for you, and you confirm with one tap."));
 
   return wrap;
 }
@@ -203,11 +247,15 @@ function renderPostRow(p, rerender) {
     h("div", { class: "btn-row", style: "margin-top:10px" }, [
       h("button", {
         class: "btn small",
+        onclick: () => shareSheet({ text: p.body, title: "From my feed" }),
+      }, "📤 Share"),
+      h("button", {
+        class: "btn small secondary",
         onclick: () => {
           try { navigator.clipboard?.writeText(p.body); toast("Copied"); }
           catch { prompt("Copy caption:", p.body); }
         },
-      }, "Copy caption"),
+      }, "Copy"),
       ...platforms.map((k) => {
         const pl = PLATFORMS.find((x) => x.key === k);
         if (!pl) return null;
@@ -234,7 +282,9 @@ function renderPostRow(p, rerender) {
 }
 
 function platformShareUrl(key, body) {
-  if (key === "facebook") return `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent("https://example.com")}&quote=${encodeURIComponent(body)}`;
+  if (key === "facebook") return `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(location.origin || "https://example.com")}`;
+  if (key === "x") return `https://x.com/intent/post?text=${encodeURIComponent(body)}`;
+  if (key === "linkedin") return `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(location.origin || "https://example.com")}`;
   // Instagram and TikTok don't accept pre-filled text via web — just open the app
   if (key === "instagram") return "https://www.instagram.com/";
   if (key === "tiktok") return "https://www.tiktok.com/upload";
