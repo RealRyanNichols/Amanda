@@ -833,6 +833,13 @@ body[data-brand="pda"] .bible-content {
 }
 .vault-viewer-meta { margin-top: 10px; }
 
+/* Capture */
+.capture-thumb {
+  width: 56px; height: 56px; object-fit: cover;
+  border-radius: 8px; flex-shrink: 0;
+  border: 1px solid var(--border);
+}
+
 /* Next-offer overlay (depth-layer pattern) */
 .next-offer {
   position: fixed;

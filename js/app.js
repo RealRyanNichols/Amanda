@@ -21,11 +21,13 @@ import { renderBabyYear } from "./tools/baby-year.js";
 import { renderSearch } from "./tools/search.js";
 import { renderVault } from "./tools/vault.js";
 import { renderStore } from "./tools/store.js";
+import { renderCapture } from "./tools/capture.js";
 import { mountFloatingBrain } from "./floating-brain.js";
 
 const TOOLS = {
   dashboard: renderDashboard,
   brain: renderBrain,
+  capture: renderCapture,
   calendar: renderCalendar,
   bible: renderBible,
   search: renderSearch,

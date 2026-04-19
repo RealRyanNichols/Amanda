@@ -492,6 +492,82 @@ ALSO:
   — same mechanics, different onboarding copy.
 ```
 
+## 14. Bank + QuickBooks integration
+
+```
+Wire two financial integrations. Both require a backend proxy (Supabase
+Edge Function holds the secrets).
+
+PLAID (bank connections):
+- Plaid Link.js flow on the frontend — opens the bank-picker modal
+- Backend exchange-public-token endpoint stores the access_token
+  encrypted in users.plaid_items (one row per linked bank)
+- Nightly Supabase cron pulls transactions via /transactions/sync
+- Each transaction auto-appears in Income tab's deposits/bills with
+  a "from bank" pill
+- Match incoming transactions to existing Bills by amount + date
+  window, auto-mark paid
+- Categorize using Plaid's category field + LLM refinement
+
+QUICKBOOKS ONLINE (for moms who already use QBO):
+- OAuth 2.0 redirect flow, backend stores refresh_token
+- Sync appointments → invoices in QBO
+- Sync deposits → bank deposits in QBO
+- 2-way sync on a schedule
+
+Positioning note: eventually build our own bookkeeping so users can
+DROP QuickBooks entirely. For year 1, integrate rather than compete.
+```
+
+## 15. Premium Bible translations (NIV, ESV, NKJV, etc.)
+
+```
+Currently the Bible reader supports 6 free public-domain translations
+via bible-api.com (KJV, ASV, WEB, BBE, YLT, Darby). State tracks
+requestedTranslations[] — every user who taps "Request another
+translation" and types NIV/ESV/NKJV/NASB/CSB/NLT/NRSV/AMP/MSG gets
+logged.
+
+Wire scripture.api.bible with a paid account:
+1. Sign up at https://scripture.api.bible/ (American Bible Society)
+2. License the premium translations you want (each has its own
+   publisher agreement — expect 2-4 weeks for approval)
+3. Add a Supabase Edge Function proxy: /api/bible/:translation/:book/:chapter
+   — holds the API key server-side, returns chapter JSON to the client.
+4. Add the new translations to TRANSLATIONS in js/tools/bible.js
+5. Route calls through the proxy instead of bible-api.com when the
+   translation is one of the licensed ones.
+
+Per-translation monthly cost: $50-300 depending on the publisher.
+Worth it because "Does it have NIV?" is the #1 question faith users
+ask, and having 10+ translations is a marketing bullet.
+```
+
+## 16. Acquisition positioning (long game)
+
+Ryan's thesis: build a SaaS with 1k-5k paid subscribers (in the
+mom-small-biz-faith demo), get acquired by a larger SaaS or
+portfolio company for $10M-$50M. Sector comps:
+
+- **Cozi** (family organizer) acquired by Time Inc (undisclosed)
+- **BabyCenter** acquired by Johnson & Johnson then spun out
+- **Dubsado** / **HoneyBook** — private, rumored valuations >$100M
+- **Calm / Headspace** — $1B+ each
+- **Hallow** — $100M raised in 2024 (Christian audience)
+
+For acquisition attractiveness, track these metrics from day 1 and
+surface them in a founder dashboard (section 10):
+
+- **MRR + growth rate** (month-over-month)
+- **Net revenue retention** (existing cohort revenue vs 12 mo ago)
+- **Churn rate** (monthly + annual)
+- **CAC + payback period** (how long to pay back a customer)
+- **ARPU with IAPs** (avg revenue per user including micro-purchases)
+- **Engagement: DAU/MAU ratio** (stickiness)
+- **Retention curves** (% of cohort still active at months 1, 3, 6, 12)
+
+Keep metrics VC-ready from the start. Strong numbers = higher multiple.
+
 ---
 
 ## Reset notes
