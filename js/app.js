@@ -1,7 +1,7 @@
 import { state, save, exportJson, importJson } from "./store.js";
 import { toast } from "./util.js";
 import { applyBrand, initBrandToggle } from "./branding.js";
-import { renderWelcome, renderLock, needsOnboarding, hasPin, setPin } from "./auth.js";
+import { renderWelcome, renderLock, needsOnboarding, hasPin, enabledTabsForProfile } from "./auth.js";
 import { renderDashboard } from "./tools/dashboard.js";
 import { renderIncome } from "./tools/income.js";
 import { renderBooking } from "./tools/booking.js";
@@ -9,15 +9,19 @@ import { renderCareer } from "./tools/career.js";
 import { renderAcademy } from "./tools/academy.js";
 import { renderOverload } from "./tools/overload.js";
 import { renderFollowup } from "./tools/followup.js";
+import { renderBrain } from "./tools/brain.js";
+import { renderSettings } from "./tools/settings.js";
 
 const TOOLS = {
   dashboard: renderDashboard,
+  brain: renderBrain,
   income: renderIncome,
   booking: renderBooking,
   career: renderCareer,
   academy: renderAcademy,
   overload: renderOverload,
   followup: renderFollowup,
+  settings: renderSettings,
 };
 
 let currentTab = "dashboard";
@@ -30,19 +34,28 @@ function bootApp() {
   initBrandToggle(() => { syncTabVisibility(); render(); });
   wireTabs();
   wireExportImport();
-  wireSettings();
   syncTabVisibility();
   render();
+  document.addEventListener("tabs:refresh", syncTabVisibility);
 }
 
 function syncTabVisibility() {
   const isPda = state.brand === "pda";
-  const career = document.querySelector('.tab[data-tab="career"]');
-  const academy = document.querySelector('.tab[data-tab="academy"]');
-  if (career) career.hidden = isPda;
-  if (academy) academy.hidden = !isPda;
-  if (isPda && currentTab === "career") currentTab = "academy";
-  if (!isPda && currentTab === "academy") currentTab = "career";
+  const enabled = new Set(enabledTabsForProfile(state.profile || {}));
+  // Brand rule: PDA hides Career, default hides Academy — keeps white-label clean.
+  if (isPda) enabled.delete("career");
+  else enabled.delete("academy");
+
+  document.querySelectorAll(".tab").forEach((btn) => {
+    btn.hidden = !enabled.has(btn.dataset.tab);
+  });
+
+  if (!enabled.has(currentTab)) {
+    currentTab = "dashboard";
+    document.querySelectorAll(".tab").forEach((b) =>
+      b.setAttribute("aria-selected", b.dataset.tab === currentTab ? "true" : "false")
+    );
+  }
 }
 
 function render() {
@@ -84,6 +97,7 @@ function wireExportImport() {
       const text = await file.text();
       importJson(text);
       applyBrand();
+      syncTabVisibility();
       render();
       toast("Data imported");
     } catch {
@@ -94,35 +108,13 @@ function wireExportImport() {
   });
 }
 
-function wireSettings() {
-  const btn = document.getElementById("settingsBtn");
-  if (!btn) return;
-  btn.addEventListener("click", async () => {
-    const current = hasPin();
-    const msg = current
-      ? "Change PIN? Type the new PIN, or leave blank to remove the lock."
-      : "Set a 4–6 digit PIN?";
-    const pin = prompt(msg, "");
-    if (pin === null) return;
-    if (!pin) { await setPin(""); toast("PIN removed"); return; }
-    if (!/^\d{4,6}$/.test(pin)) { toast("PIN must be 4–6 digits"); return; }
-    await setPin(pin);
-    toast("PIN updated");
-  });
-}
-
-// Boot flow: onboarding → lock → app.
 (function boot() {
   if (needsOnboarding()) {
-    renderWelcome(() => {
-      bootApp();
-    });
+    renderWelcome(() => { bootApp(); });
     return;
   }
   if (hasPin()) {
-    renderLock(() => {
-      bootApp();
-    });
+    renderLock(() => { bootApp(); });
     return;
   }
   bootApp();

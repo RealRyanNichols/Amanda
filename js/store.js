@@ -2,8 +2,23 @@ const KEY = "amanda-toolkit:v1";
 
 const defaults = () => ({
   brand: "default",
-  profile: { firstName: "", businessName: "", setupDone: false },
+  profile: {
+    firstName: "",
+    partnerName: "",
+    businessName: "",
+    setupDone: false,
+    roles: [],
+    interests: [],
+    enabledTabs: null,
+  },
   auth: { pinHash: "", salt: "" },
+  brain: {
+    provider: "",
+    apiKey: "",
+    model: "claude-opus-4-7",
+    history: [],
+    systemExtras: "",
+  },
   income: { deposits: [], bills: [] },
   booking: { clients: [], appointments: [] },
   career: { selected: "dental-assisting", completedSteps: {} },
