@@ -27,6 +27,7 @@ function subNav() {
     { key: "faith",     label: "Faith" },
     { key: "family",    label: "Family" },
     { key: "pregnancy", label: "Pregnancy" },
+    { key: "heart",     label: "Heart" },
     { key: "love",      label: "Love" },
     { key: "gratitude", label: "Gratitude" },
   ];
@@ -1160,6 +1161,12 @@ export function renderLife(mount, { rerender }) {
   if (v === "faith") mount.append(renderFaith(rerender));
   else if (v === "family") mount.append(renderFamily(rerender));
   else if (v === "pregnancy") mount.append(renderPregnancy(rerender));
+  else if (v === "heart") {
+    import("./heart.js").then(({ renderHeart }) => {
+      const wrap = renderHeart(rerender);
+      mount.append(wrap);
+    });
+  }
   else if (v === "love") mount.append(renderLove(rerender));
   else if (v === "gratitude") mount.append(renderGratitude(rerender));
 }

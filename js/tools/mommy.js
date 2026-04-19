@@ -1,8 +1,18 @@
 // Mommy Analytics — the "how am I doing?" tab.
 //
-// This app's center of gravity is the mom. The positioning is:
-//   "pregnancy is when this app starts for you; it stays with you as you
-//    grow a family and invite your people in."
+// Audience (per Ryan's refined brief):
+//   "The prerequisite for this app is being a mom. That includes pregnancy
+//    if you just got pregnant — you're already a mom, you're taking care
+//    of another human life inside of you. But it's also moms who already
+//    have children. Moms with a spouse who want to get closer to God.
+//    Moms with kids who want to walk with God alongside them. Single moms
+//    who want to get closer to God themselves. Moms who need help with
+//    everyday life and tax structure alongside a better walk with Jesus.
+//    That's who this app is for."
+//
+// So: ANY mom. Any stage. Any relationship status. The one constant is
+// motherhood and (usually) a faith component she's either holding onto
+// or reaching for. We never assume pregnancy, spouse, or denomination.
 //
 // Mommy Analytics pulls from every other tool to tell her, in a warm and
 // non-judgmental way, how her week has actually been. Never scored, never
@@ -51,11 +61,21 @@ function renderHero() {
   const p = state.life?.pregnancy;
   const profile = state.profile || {};
   const name = (profile.firstName || "").trim();
+  const heart = state.life?.heart?.status;
 
   const card = h("section", { class: "card mommy-hero" }, [
     h("h2", { style: "margin-bottom:4px" }, name ? `${name}, this is your week` : "Your week, mom"),
     h("div", { class: "sub" }, weeklyAffirmation(name)),
   ]);
+
+  // Acknowledge where she is relationally, warmly — if she's told us.
+  if (heart === "peace") {
+    card.append(h("div", { class: "sub", style: "margin-top:8px; font-style:italic" },
+      "You + your kid(s) are a whole family. This week is yours to shape."));
+  } else if (heart === "complicated") {
+    card.append(h("div", { class: "sub", style: "margin-top:8px; font-style:italic" },
+      "We see you in the hard middle. You're not behind. You're doing something difficult that looks like nothing from the outside."));
+  }
 
   if (p?.dueDate) {
     const due = new Date(p.dueDate + "T00:00:00");

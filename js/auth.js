@@ -73,8 +73,11 @@ export function enabledTabsForProfile(profile) {
   if (roles.includes("faith")) tabs.add("bible");
   // Baby Year tab: once Thomas is born (pregnant role — they'll keep using it forever)
   if (roles.includes("pregnant") || roles.includes("mom")) tabs.add("babyyear");
-  // Mommy Analytics: whole-journey mirror, for pregnant + mom users
-  if (roles.includes("pregnant") || roles.includes("mom")) tabs.add("mommy");
+  // Mommy Analytics: whole-journey mirror. The prerequisite for this app
+  // is motherhood — any stage, any status. If she's a mom, she sees it.
+  // When no roles are picked yet we show it so first-run onboarding feels
+  // complete rather than locked.
+  if (roles.includes("pregnant") || roles.includes("mom") || roles.length === 0) tabs.add("mommy");
   // Meals tab: moms mostly, plus default
   if (roles.includes("mom") || roles.includes("pregnant")) {
     tabs.add("meals");

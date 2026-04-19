@@ -122,6 +122,16 @@ const defaults = () => ({
     },
     loveNotes: { seeded: false, notes: [] },
     gratitude: { entries: [] },
+    // Heart — where she's at relationally. Status-driven, never assumes a
+    // partner is the goal. All fields stay on her device only unless she
+    // explicitly exports.
+    heart: {
+      status: "",              // "" | peace | open | getting-to-know | together | complicated | private
+      reflections: [],         // { id, createdAt, text, tags[] }
+      traitAssessment: {},     // { [trait.key]: "strong" | "ok" | "concern" | "unknown" }
+      askedHim: [],            // { id, askedAt, question, hisAnswer }
+      lastStatusChangeAt: 0,
+    },
   },
 });
 
