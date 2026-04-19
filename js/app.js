@@ -15,11 +15,13 @@ import { renderLife } from "./tools/life.js";
 import { renderMeals } from "./tools/meals.js";
 import { renderSocial } from "./tools/social.js";
 import { renderCalendar } from "./tools/calendar.js";
+import { renderBible } from "./tools/bible.js";
 
 const TOOLS = {
   dashboard: renderDashboard,
   brain: renderBrain,
   calendar: renderCalendar,
+  bible: renderBible,
   income: renderIncome,
   booking: renderBooking,
   career: renderCareer,

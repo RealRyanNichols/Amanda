@@ -69,6 +69,8 @@ export function enabledTabsForProfile(profile) {
   if (roles.includes("mom") || roles.includes("pregnant") || roles.includes("faith")) {
     tabs.add("life");
   }
+  // Bible tab: faith-forward
+  if (roles.includes("faith")) tabs.add("bible");
   // Meals tab: moms mostly, plus default
   if (roles.includes("mom") || roles.includes("pregnant")) {
     tabs.add("meals");

@@ -642,6 +642,79 @@ details.pathway ol li strong { color: var(--text); }
   border-color: rgba(138,60,60,.3) !important;
 }
 
+/* Bible reader */
+.bible-continue {
+  background: linear-gradient(160deg,
+    color-mix(in oklab, var(--accent) 14%, var(--bg-elev)),
+    var(--bg-elev));
+}
+.bible-books, .bible-chapters {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+}
+.bible-chapters { grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); }
+.bible-book-btn, .bible-chapter-btn {
+  appearance: none;
+  background: var(--bg-elev-2); color: var(--text);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 14px 10px; font-size: .9375rem; font-weight: 600;
+  cursor: pointer; min-height: var(--tap);
+  font-family: inherit;
+}
+.bible-chapter-btn { padding: 12px 6px; font-size: 1rem; }
+.bible-chapter-btn.read {
+  background: color-mix(in oklab, var(--ok) 18%, var(--bg-elev-2));
+  border-color: color-mix(in oklab, var(--ok) 50%, var(--border));
+  color: var(--ok);
+}
+.bible-book-btn:active, .bible-chapter-btn:active { transform: translateY(1px); }
+
+.bible-toolbar h2 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.5rem;
+  text-align: center;
+  margin: 0;
+}
+
+.bible-content {
+  background: #fdf8ec;
+  color: #2a2415;
+  border-color: #e8dcb8;
+}
+body[data-brand="pda"] .bible-content {
+  background: #f5efe0;
+}
+.bible-verse {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.0625rem;
+  line-height: 1.7;
+  margin: 0 0 8px;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 4px;
+  transition: background .12s;
+}
+.bible-verse:hover { background: rgba(0, 0, 0, 0.04); }
+.bible-vnum {
+  color: #8a7a4a;
+  font-weight: 600;
+  font-size: .75em;
+  margin-right: 4px;
+  vertical-align: super;
+}
+.bible-verse.highlight-yellow { background: rgba(250, 204, 21, 0.35); }
+.bible-verse.highlight-pink   { background: rgba(244, 114, 182, 0.30); }
+.bible-verse.highlight-blue   { background: rgba(125, 211, 252, 0.32); }
+
+.bible-loading {
+  font-family: Georgia, serif;
+  color: #6a5d3a;
+  font-style: italic;
+  text-align: center;
+  padding: 24px;
+}
+
 /* Calendar */
 .cal-dow {
   display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px;
