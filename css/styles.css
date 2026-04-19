@@ -252,3 +252,33 @@ details.pathway ol li strong { color: var(--text); }
   display: block; height: 100%;
   background: linear-gradient(90deg, var(--accent), var(--accent-strong));
 }
+
+.auth-wrap {
+  min-height: 100dvh;
+  display: grid; place-items: center;
+  padding: 24px 16px;
+}
+.auth-card {
+  width: 100%; max-width: 420px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px;
+  box-shadow: var(--shadow);
+}
+.auth-title { margin: 0 0 4px; font-size: 22px; text-align: center; }
+.auth-sub { margin: 0 0 18px; color: var(--text-dim); font-size: 13px; text-align: center; }
+.auth-form { display: flex; flex-direction: column; gap: 12px; }
+.auth-form fieldset {
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 10px 12px; margin: 0;
+}
+.auth-form legend { padding: 0 6px; font-size: 12px; color: var(--text-dim); }
+.radio {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 4px; font-size: 14px; cursor: pointer;
+}
+.auth-error {
+  color: var(--bad); font-size: 13px; min-height: 1em; text-align: center;
+}
+.footer-actions { display: flex; gap: 10px; }

@@ -22,7 +22,16 @@ The tools come from Amanda's own list of real pain points:
    contact dates, one-tap text/call, copy-ready scripts, and "don't lose this
    lead" alerts.
 
-## Run it
+## First-run experience
+
+1. **Welcome screen** asks first name, business name (optional), and brand
+   preset (Default or Premier Dental Academy).
+2. **Optional PIN** — 4–6 digits. Protects the app on her device. It's a
+   salted SHA-256 hash stored in `localStorage`; nothing leaves the device.
+   She can change or remove it any time via the **PIN** button in the footer.
+3. Boot flow after that: Lock → Dashboard.
+
+## Run it locally
 
 No build. No server required.
 
@@ -37,12 +46,25 @@ python3 -m http.server 8080
 
 Works offline after first load — data is stored in `localStorage`.
 
-## Deploy it (5 minutes, free)
+## Deploy via GitHub Pages (automatic)
 
-It's a static site, so any of these will host it for free:
+A workflow is included at `.github/workflows/pages.yml`. It deploys on every
+push to `main` or to the feature branch. To enable it **once**:
 
-- **GitHub Pages**: Settings → Pages → deploy from `main` branch, root.
-- **Netlify / Vercel / Cloudflare Pages**: drop the repo in, no config needed.
+1. Go to **Settings → Pages** on the repo.
+2. Under *Build and deployment*, set **Source** to **GitHub Actions**.
+3. Push anything — the workflow runs and publishes the URL.
+
+The URL will look like `https://realryannichols.github.io/amanda/`.
+
+Alternatives if you'd rather: **Netlify / Vercel / Cloudflare Pages** — drop
+the repo in, no config needed.
+
+## Install as a PWA
+
+On iOS Safari: Share → *Add to Home Screen*.
+On Android Chrome: the browser offers an **Install app** prompt.
+It then launches full-screen like a native app.
 
 ## White-label vs. Premier Dental Academy branding
 

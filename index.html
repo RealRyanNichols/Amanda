@@ -6,7 +6,12 @@
   <meta name="theme-color" content="#0b1020" />
   <title>Amanda's Toolkit</title>
   <link rel="stylesheet" href="./css/styles.css" />
-  <link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='78' font-size='80'>💎</text></svg>" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="./assets/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="./assets/icon-192.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Toolkit" />
 </head>
 <body data-brand="default">
   <header class="app-header">
@@ -50,8 +55,11 @@
 
   <footer class="app-footer">
     <span>Built with love for Amanda Williams</span>
-    <button id="exportBtn" class="link-btn" type="button">Export data</button>
-    <button id="importBtn" class="link-btn" type="button">Import</button>
+    <div class="footer-actions">
+      <button id="settingsBtn" class="link-btn" type="button">PIN</button>
+      <button id="exportBtn" class="link-btn" type="button">Export</button>
+      <button id="importBtn" class="link-btn" type="button">Import</button>
+    </div>
     <input id="importFile" type="file" accept="application/json" hidden />
   </footer>
 

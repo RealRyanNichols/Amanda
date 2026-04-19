@@ -1,6 +1,7 @@
 import { state, save, exportJson, importJson } from "./store.js";
 import { toast } from "./util.js";
 import { applyBrand, initBrandToggle } from "./branding.js";
+import { renderWelcome, renderLock, needsOnboarding, hasPin, setPin } from "./auth.js";
 import { renderDashboard } from "./tools/dashboard.js";
 import { renderIncome } from "./tools/income.js";
 import { renderBooking } from "./tools/booking.js";
@@ -18,6 +19,18 @@ const TOOLS = {
 };
 
 let currentTab = "dashboard";
+
+const shellHTML = document.body.innerHTML;
+
+function bootApp() {
+  document.body.innerHTML = shellHTML;
+  applyBrand();
+  initBrandToggle(render);
+  wireTabs();
+  wireExportImport();
+  wireSettings();
+  render();
+}
 
 function render() {
   const mount = document.getElementById("app");
@@ -68,16 +81,42 @@ function wireExportImport() {
   });
 }
 
-applyBrand();
-initBrandToggle(render);
-wireTabs();
-wireExportImport();
-render();
+function wireSettings() {
+  const btn = document.getElementById("settingsBtn");
+  if (!btn) return;
+  btn.addEventListener("click", async () => {
+    const current = hasPin();
+    const msg = current
+      ? "Change PIN? Type the new PIN, or leave blank to remove the lock."
+      : "Set a 4–6 digit PIN?";
+    const pin = prompt(msg, "");
+    if (pin === null) return;
+    if (!pin) { await setPin(""); toast("PIN removed"); return; }
+    if (!/^\d{4,6}$/.test(pin)) { toast("PIN must be 4–6 digits"); return; }
+    await setPin(pin);
+    toast("PIN updated");
+  });
+}
+
+// Boot flow: onboarding → lock → app.
+(function boot() {
+  if (needsOnboarding()) {
+    renderWelcome(() => {
+      bootApp();
+    });
+    return;
+  }
+  if (hasPin()) {
+    renderLock(() => {
+      bootApp();
+    });
+    return;
+  }
+  bootApp();
+})();
 
 window.addEventListener("storage", () => {
-  // multi-tab sync: reload state-dependent UI if another tab saved.
-  render();
+  if (document.getElementById("app")) render();
 });
 
-// Auto-save on tab hide (belt-and-suspenders — tools save on every change).
 document.addEventListener("visibilitychange", () => { if (document.hidden) save(); });
