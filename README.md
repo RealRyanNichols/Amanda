@@ -1,104 +1,229 @@
 # Amanda's Toolkit
 
-A five-in-one business & life toolkit built for **Amanda Williams**, owner of
-**Premier Dental Academy of Longview** (Longview, TX · Gilmer Road) — and usable
-by anyone as a white-label app.
+A complete mobile-first PWA built as a gift for **Amanda Williams**, owner of
+**Premier Dental Academy of Longview** (Longview, TX) — and designed to
+white-label as a SaaS for any mom who runs a business.
 
-The tools come from Amanda's own list of real pain points:
+Every feature runs 100% in the browser. Works offline. Installable as a PWA.
+Optional Claude API integration for AI features.
 
-1. **💵 Income Stabilizer** — track deposits + bills with priority, and get a
-   "what can I safely spend this week?" number based on your actual deposit
-   history. Alerts when you're about to fall behind.
-2. **📅 Smart Booking + Payment** — bookings with required deposits, balance
-   tracking, rescheduling that keeps the deposit, and automatic follow-up
-   prompts for unpaid balances.
-3. **🧭 Career Pathway** — trade-focused (dental assisting, CDL trucking,
-   cosmetology, medical assisting, welding) with step-by-step enroll →
-   train → certify → hired checklists and progress tracking.
-4. **🧠 Life Overload Organizer** — dump everything on your mind, the app
-   auto-triages into Now / Today / This Week / Later / Feelings, and shows
-   **"Handle this first"** when things get heavy.
-5. **📲 Follow-Up System for Leads** — hot/warm/cold tagging, automatic next-
-   contact dates, one-tap text/call, copy-ready scripts, and "don't lose this
-   lead" alerts.
+---
+
+## Features (17 tabs)
+
+### Core
+- **🏠 Home dashboard** — smart reminders scanning your data, safe-to-spend
+  math, revenue trends, upcoming appointments, pipeline, pregnancy countdown,
+  verse of the day, love-note peek, academy stats
+- **✨ The Brain** — AI chat with 10 relational tones (best friend, mama bear,
+  strong dad, big sister, tough-love coach, teacher, cheerleader, confidant,
+  spiritual friend, childlike wonder). Includes **Vent Mode** — a full-screen
+  push-to-talk therapist flow that transcribes + reflects + gently pushes back
+- **🗓️ Calendar** — unified month + upcoming view pulling bookings, bills,
+  doctor visits, social posts, lead follow-ups, family events. Per-event
+  .ics export to iPhone/Google Calendar in one tap
+- **🔎 Search** — global search across every piece of data in the app with
+  voice dictation
+- **🎯 Habits** — daily habit tracker with streaks, 30-day completion rates,
+  week grid
+- **🔐 Brain Wallet** — on-device document vault (insurance cards, IDs,
+  baby records, tax docs) with camera capture and JPG compression
+- **🛍️ Store** — in-app micro-purchase catalog (Brain Pro, Caption Pack,
+  Letter Tidy Pack, Vault 5GB, Family Plan, Theme Pack)
+
+### Business
+- **💵 Income Stabilizer** — deposits, priority-tagged bills, safe-to-spend
+  calculator derived from recent deposit history, overdue alerts, revenue
+  trends with optional AI tough-love analysis
+- **📅 Smart Booking + Payment** — bookings with required deposits, balance
+  tracking, reschedule-keeps-deposit, auto follow-up prompts for unpaid
+  balances
+- **🎓 Academy (PDA-branded) or 🧭 Career (default)** — school features:
+  cohorts, students with Texas RDA readiness checklist, hours tracking,
+  tuition payments, daily attendance, and a pre-seeded 11-module Texas RDA
+  online course authoring tool with Kajabi copy/export
+- **📲 Leads** — hot/warm/cold CRM with auto next-contact dates, one-tap
+  text/call, context-aware AI-generated scripts, overdue alerts
+- **📣 Social** — profile handle storage, content planner with multi-platform
+  scheduling, AI caption writer (three variants), hashtag sets
+
+### Personal
+- **🍽️ Meals + Grocery** — weekly meal plan, grocery list grouped by
+  category with check-off, saved recipes with one-tap grocery push
+- **🗂 Organize (Overload)** — brain-dump textarea with auto-triage into
+  Now/Today/This Week/Later/Feelings, "Handle this first" emergency card
+- **🌿 Life** — faith (verse of day + prayer journal), family (kids +
+  supporter rolodex), pregnancy (due date, doctor visits with sonogram photo
+  upload, kick counter, hospital bag, **Letters to your baby** with
+  templates + voice + AI tidy + exports), love notes envelopes, gratitude
+- **🍼 Baby Year** — forward-looking first-year milestone tracker with
+  24 pre-seeded milestones, camera capture, well-baby visit schedule,
+  growth log
+- **✝️ Bible** — full KJV (via bible-api.com + local cache), 66-book
+  navigator, verse highlighting, bookmarks, A−/A+ font scaling, reading
+  progress
+
+### Settings
+- **⚙️ Settings** — profile editing, role/tab selection, Claude API key,
+  PIN lock, data export/import, erase everything, PWA install instructions
+
+### The Floating Brain
+A persistent ✨ bubble bottom-right on EVERY page. Tap or press `/` to open
+a chat drawer with tone switcher + mic + quick actions ("I'm overwhelmed",
+"Focus me on [current tab]", "Full Brain →"). Works with or without a
+Claude key.
+
+---
+
+## Pricing model
+
+**Base subscription: $19/mo or $190/yr (2 months free).**
+
+Covers all 17 feature tabs with included AI limits.
+
+**Micro-purchases (via in-app Store):**
+- Brain Pro — $10/mo — unlimited Claude Opus 4.7
+- Caption Pack — $5 one-time — 50 AI captions
+- Letter Tidy Pack — $3 one-time — 20 cleanups
+- Vault 5GB — $5/mo — cloud-backed encrypted storage
+- Family Plan — $10/mo — 4 seats
+- Theme Pack — $4 one-time — 6 custom themes
+
+**7-day free trial, no card required.**
+
+---
 
 ## First-run experience
 
-1. **Welcome screen** asks first name, business name (optional), and brand
-   preset (Default or Premier Dental Academy).
-2. **Optional PIN** — 4–6 digits. Protects the app on her device. It's a
-   salted SHA-256 hash stored in `localStorage`; nothing leaves the device.
-   She can change or remove it any time via the **PIN** button in the footer.
-3. Boot flow after that: Lock → Dashboard.
+5-step onboarding wizard:
+1. Welcome + your first name + (optional) partner's name
+2. Roles: pick all that apply (Mom, Business owner, Academy owner, Career
+   explorer, Pregnant, Faith matters) — drives which tabs you see
+3. Interests: what matters most right now (money, time, family, growth,
+   calm, encouragement)
+4. Business name + brand preset (Default / Premier Dental Academy)
+5. Optional 4–6 digit PIN
 
-## Run it locally
+Everything changeable any time in Settings.
+
+---
+
+## Running it
 
 No build. No server required.
 
 ```bash
-# Option A: open the file directly
+# Just open it
 open index.html
 
-# Option B: serve locally (recommended on mobile over your LAN)
+# Or serve locally (for mobile testing over LAN)
 python3 -m http.server 8080
-# then visit http://<your-ip>:8080
 ```
 
-Works offline after first load — data is stored in `localStorage`.
+After first load, the service worker caches everything for offline use.
 
-## Deploy via GitHub Pages (automatic)
+---
 
-A workflow is included at `.github/workflows/pages.yml`. It deploys on every
-push to `main` or to the feature branch. To enable it **once**:
+## Deploy
 
-1. Go to **Settings → Pages** on the repo.
-2. Under *Build and deployment*, set **Source** to **GitHub Actions**.
-3. Push anything — the workflow runs and publishes the URL.
+A GitHub Actions workflow at `.github/workflows/pages.yml` auto-deploys on
+push to `main` or the feature branch. One-time setup:
 
-The URL will look like `https://realryannichols.github.io/amanda/`.
+1. Settings → Pages → Source → **GitHub Actions**
+2. Push anything.
 
-Alternatives if you'd rather: **Netlify / Vercel / Cloudflare Pages** — drop
-the repo in, no config needed.
+Lives at `https://realryannichols.github.io/amanda/`.
+
+Alternatives: Netlify, Vercel, Cloudflare Pages — all work out of the box.
+
+---
 
 ## Install as a PWA
 
-On iOS Safari: Share → *Add to Home Screen*.
-On Android Chrome: the browser offers an **Install app** prompt.
-It then launches full-screen like a native app.
+- **iOS Safari:** Share → Add to Home Screen
+- **Android Chrome:** the browser offers "Install app" automatically, or
+  use Settings → Install card for the in-app button
+- **Desktop Chrome/Edge:** the install icon appears in the address bar
 
-## White-label vs. Premier Dental Academy branding
+Installed, it launches fullscreen like a native app.
 
-Toggle in the header:
+---
 
-- **Default** — "Amanda's Toolkit". Clean. Works for anyone.
-- **PDA branding** — "Premier Dental Academy · Longview, TX · Business Suite".
-  Career tool surfaces a local-program callout pointing at Amanda's school.
+## AI integration (optional)
 
-The branding is data-driven in `js/branding.js` — swap in a different business
-to white-label the app for a new customer.
+Settings → Brain card → paste your Anthropic API key.
+
+- Default model: `claude-opus-4-7` with adaptive thinking
+- Sonnet 4.6 and Haiku 4.5 also selectable
+- Key stored in `localStorage`, sent directly from your device to
+  api.anthropic.com — no proxy, no middleman
+- Prompt caching on system prompt for ~90% cost savings on repeat turns
+- Opt-in data-awareness: when enabled, a short anonymized summary of your
+  stats is included with each Brain message for smarter answers
+
+Without a key, the Brain still works in local mode (FAQ + app-data search).
+
+---
 
 ## Data ownership
 
-- All data lives in the browser (`localStorage`). Nothing is sent anywhere.
-- **Export** / **Import** buttons in the footer save / restore a JSON backup.
-- Works on phone, tablet, or desktop.
+- Everything stored in `localStorage` on the device
+- **Export / Import** JSON backup from the footer
+- No server logs, no telemetry, no tracking
+- When desktop phase ships Supabase sync: you opt in, your data stays in
+  your workspace, never sold, never used for training
 
-## Structure
+---
+
+## Repo layout
 
 ```
-index.html          # shell: header, tab bar, footer
-css/styles.css      # mobile-first dark theme + brand variant
+index.html                 # app shell (header, tab bar, footer)
+manifest.webmanifest       # PWA manifest
+sw.js                      # service worker (offline + cache)
+css/styles.css             # mobile-first dark theme + brand variant
+assets/                    # icons + PDA logo
 js/
-  app.js            # tab router, export/import wiring
-  store.js          # single shared state + localStorage
-  util.js           # DOM helpers, money/date formatters, toast
-  branding.js       # default vs. PDA brand
+  app.js                   # tab router, boot flow, export/import
+  store.js                 # single shared state + localStorage
+  util.js                  # DOM helpers, formatters
+  branding.js              # default vs PDA brand data
+  auth.js                  # onboarding wizard + PIN + tab visibility
+  voice.js                 # Web Speech API wrapper (push-to-talk)
+  floating-brain.js        # persistent chat bubble on every page
   tools/
-    income.js       # #1 Income Stabilizer
-    booking.js      # #2 Smart Booking + Payment
-    career.js       # #3 Career Pathway
-    overload.js     # #4 Life Overload Organizer
-    followup.js     # #5 Follow-Up System for Leads
+    dashboard.js           # Home
+    brain.js               # Brain chat + tones + Vent Mode
+    calendar.js            # unified calendar + .ics export
+    bible.js               # KJV reader
+    search.js              # global search
+    habits.js              # habit tracker
+    vault.js               # Brain Wallet (document vault)
+    baby-year.js           # Thomas's first-year tracker
+    store.js               # micro-purchase catalog
+    settings.js            # profile, key, PIN, data
+    income.js              # Income Stabilizer + AI trends
+    booking.js             # Smart Booking + Payment
+    academy.js             # School features + RDA course authoring
+    career.js              # Career pathways (default brand)
+    meals.js               # Meal plan + grocery + recipes
+    overload.js            # Organize (brain dump + triage)
+    followup.js            # Leads CRM
+    social.js              # Social planner + AI captions
+    life.js                # Faith/Family/Pregnancy/Love/Gratitude
+    life-seeds.js          # KJV verses + hospital bag + love notes + baby size
+    rda-seed.js            # Texas RDA requirements + course outline
+    reminders.js           # smart data-driven reminders for Home
+.github/workflows/pages.yml # auto-deploy to GitHub Pages
+marketing/index.html        # landing page stub
 ```
+
+Reference docs:
+- **DESKTOP_HANDOFF.md** — ready-to-paste Claude prompts for desktop phase
+  (Supabase, Stripe, Meta/TikTok developer accounts, domains, etc.)
+- **NAMES.md** — product name + domain shortlist with live availability
+  research
+
+---
 
 Built with ♡ for Amanda.

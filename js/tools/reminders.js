@@ -3,7 +3,7 @@
 // dashboard. No push notifications yet (that needs a backend + VAPID);
 // this is the "Hey Amanda, here are the things I noticed" passive version.
 
-import { state, save } from "../store.js";
+import { state } from "../store.js";
 import { daysFromNow } from "../util.js";
 
 export function scanForReminders() {

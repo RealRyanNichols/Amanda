@@ -22,6 +22,17 @@ export function mountFloatingBrain() {
   btn.addEventListener("click", toggleDrawer);
   document.body.append(btn);
 
+  // Hide the bubble when she's already on the Brain tab (redundant there)
+  const updateVisibility = () => {
+    const activeTab = document.querySelector('.tab[aria-selected="true"]')?.dataset?.tab;
+    btn.style.display = activeTab === "brain" ? "none" : "";
+    // Also close drawer if it's open when jumping to Brain tab
+    if (activeTab === "brain" && drawerOpen) closeDrawer();
+  };
+  // Run on any tab click
+  document.querySelectorAll(".tab").forEach((t) => t.addEventListener("click", () => setTimeout(updateVisibility, 10)));
+  updateVisibility();
+
   // Keyboard shortcut: press "/" anywhere (when not typing in a field) to open
   document.addEventListener("keydown", (e) => {
     if (e.key === "/" && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName || "")) {

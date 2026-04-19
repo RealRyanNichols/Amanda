@@ -438,6 +438,62 @@ Run it through a Core Web Vitals check before shipping — aim for
 
 ---
 
+## 13. Affiliate / referral program for pediatricians + OBs
+
+Ryan's insight: pediatricians and OB/GYN practices are a fantastic
+distribution channel — their patients are moms with babies, exactly
+our market. Pay them a commission for every patient who signs up.
+
+Paste this once Supabase + Stripe are in place:
+
+```
+Build an affiliate program for healthcare practices (pediatricians,
+OBs, midwives, doulas). Design:
+
+TABLES:
+- affiliates: id, name, practice_name, email, stripe_connect_id,
+  payout_rate (default 20%), status ('pending'|'active'|'paused'),
+  created_at
+- affiliate_codes: id, affiliate_id, code (6-char human-readable
+  e.g. 'DRJANE'), clicks, signups
+- referrals: id, affiliate_id, code, user_id, signed_up_at,
+  subscription_id, lifetime_value, commission_paid_cents, status
+
+FLOW:
+1. Affiliate signup page (/affiliates/apply) collects basic info,
+   creates a pending affiliate record, I review + approve.
+2. Approved affiliates get a dashboard at /affiliates/dashboard
+   with their code, total signups, lifetime commissions, stats.
+3. Each affiliate has a referral URL:
+   tendhq.com/join?via=DRJANE (or whatever we name it)
+4. When a user lands with ?via=DRJANE, set a cookie + the signup
+   form stores affiliate_code on the user record.
+5. When that user's Stripe subscription event fires, webhook
+   calculates 20% of the monthly revenue and accrues to the
+   affiliate's balance.
+6. Monthly Stripe Connect payout to the affiliate (automatic).
+
+PITCH DECK FOR PRACTICES:
+- 1-pager PDF: what the app does, screenshot of Home + Letters +
+  Baby Year, the 20% rev-share, QR code to their signup form.
+- Physical business cards for waiting rooms with QR code to
+  /join?via=[their code]
+
+COMPLIANCE:
+- This is not a medical product. No medical claims. The rev-share
+  is a marketing affiliate payment, not a kickback. Still —
+  consult a healthcare attorney re: Stark law / anti-kickback
+  exposure before launching to practices that take Medicare.
+  Out of an abundance of caution we might pay affiliates as a
+  flat referral fee rather than percentage in some states.
+
+ALSO:
+- Build a parallel affiliate path for mom influencers on Insta/TikTok
+  — same mechanics, different onboarding copy.
+```
+
+---
+
 ## Reset notes
 
 If something goes wrong and you want to pick up from a specific
