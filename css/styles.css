@@ -834,21 +834,6 @@ body[data-brand="pda"] .bible-content {
 .vault-viewer-meta { margin-top: 10px; }
 
 /* Safety Net */
-.sos-btn {
-  position: fixed;
-  bottom: calc(72px + var(--safe-bottom));
-  left: calc(16px + var(--safe-left));
-  z-index: 90;
-  width: 52px; height: 52px; border-radius: 50%;
-  border: 0; cursor: pointer;
-  background: #fff;
-  color: #d53f8c;
-  font-size: 1.5rem;
-  box-shadow: 0 10px 24px rgba(213, 63, 140, 0.4);
-  transition: transform .15s;
-}
-.sos-btn:hover, .sos-btn:active { transform: scale(1.08); }
-
 .safety-overlay {
   position: fixed; inset: 0; z-index: 300;
   background: rgba(0, 0, 0, 0.85);

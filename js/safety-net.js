@@ -164,16 +164,13 @@ export function showGentleCheckIn(level = "watch") {
   if (level !== "acute") setTimeout(() => banner.remove(), 30000);
 }
 
-// Floating SOS button that lives on every page (just under the Brain bubble).
-let sosMounted = false;
-export function mountSOSButton() {
-  if (sosMounted) return;
-  sosMounted = true;
-  const btn = document.createElement("button");
-  btn.className = "sos-btn";
-  btn.setAttribute("aria-label", "I need help");
-  btn.innerHTML = "🤍";
-  btn.title = "I'm not okay right now";
-  btn.addEventListener("click", () => showSafetyNet({ reason: "user" }));
-  document.body.append(btn);
-}
+// NOTE: a floating always-visible SOS button was removed deliberately.
+// A persistent "help" button signals fragility; it's not the vibe. Crisis
+// resources are surfaced two ways instead:
+//   1. Auto: scanForConcerns() detects concerning phrases in her writing
+//      and shows a dismissable gentle check-in banner (never intrusive,
+//      never blocks her).
+//   2. Intentional: she taps "Preview the help screen" from
+//      Settings → Safety Net, OR any future in-context entry point.
+// The crisis resources are THERE when she needs them — just not worn
+// on the outside of the app.

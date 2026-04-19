@@ -24,7 +24,6 @@ import { renderStore } from "./tools/store.js";
 import { renderCapture } from "./tools/capture.js";
 import { renderMeTime } from "./tools/metime.js";
 import { mountFloatingBrain } from "./floating-brain.js";
-import { mountSOSButton } from "./safety-net.js";
 
 const TOOLS = {
   dashboard: renderDashboard,
@@ -63,7 +62,6 @@ function bootApp() {
   syncTabVisibility();
   render();
   mountFloatingBrain();
-  mountSOSButton();
   document.addEventListener("tabs:refresh", syncTabVisibility);
 }
 
