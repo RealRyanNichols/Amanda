@@ -51,7 +51,7 @@ export function renderWelcome(onDone) {
     h("div", { class: "auth-card" }, [
       brandMark(),
       h("h1", { class: "auth-title" }, "Welcome"),
-      h("p", { class: "auth-sub" }, "A little setup so this feels like yours."),
+      h("p", { class: "auth-sub" }, "A gentle little home for your business and your life. Let's set it up."),
       renderWelcomeForm(onDone),
     ]),
   ]);
