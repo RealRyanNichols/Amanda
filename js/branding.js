@@ -3,7 +3,7 @@ import { state, save } from "./store.js";
 const BRANDS = {
   default: {
     title: "Amanda's Toolkit",
-    sub: "Built for moms who run it all.",
+    sub: "For Christian women who run it all.",
     mark: "◆",
     logo: null,
     business: null,

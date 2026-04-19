@@ -729,6 +729,37 @@ building a local vector DB of the full KJV indexed so we don't burn
 tokens looking up references Claude already knows but paraphrases.
 ```
 
+## 21a. Target audience & positioning (founder-locked)
+
+**This app is for Christian women, mothers, and expectant mothers.**
+Specifically women whose faith is central to how they live, parent, and
+work. Ryan's explicit positioning decision — not a general-market SaaS.
+
+Marketing and copy principles:
+- **Faith is the third pillar** next to family and business. Lead with it,
+  don't bury it. Tagline: "A home for your faith, your family, and what
+  you're building."
+- **Scripture is never paywalled.** Every translation, every verse, forever
+  free. This is a permanent covenant encoded in `js/plan.js`
+  (FREE_BIBLE_TRANSLATIONS = "*") with a comment block that explicitly
+  warns future contributors not to revert.
+- **Business tabs stay secular.** Income, Booking, Academy, Leads, Social —
+  no Jesus in your invoice. Faith is present in Life, Bible, Brain's
+  Spiritual Friend tone, Safety Net comfort verses, and the prayer
+  journal's optional Scripture suggestions. Outside those, we don't push.
+- **Language choices:**
+  - "Your partner" not "your husband" (we don't assume marriage)
+  - "Your person" for the Safety Net trusted contact
+  - KJV verses are the default comfort source (public domain + Amanda's)
+  - Spiritual Friend Brain tone Christian-grounded, not "spirituality" generic
+- **Ads + channels (when we market):** target Christian mom communities
+  on Instagram/Facebook/TikTok. Partnerships with Christian podcasts,
+  moms-group Facebook pages, worship leader communities.
+
+Don't water this down to broaden the market. Ryan's thesis is that a
+product built unapologetically for a specific faith community will
+out-perform a general-market-for-all product in that niche by 10x.
+
 ## 22. Free tier — "Talk to the Brain" (conversion funnel)
 
 Ryan's insight: **push-to-talk unlocks what typing never will.** A mom
