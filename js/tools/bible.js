@@ -6,6 +6,12 @@
 import { state, save, uid } from "../store.js";
 import { h, toast, confirmAction, todayISO } from "../util.js";
 
+// NOTE: Every Bible translation is free for every user, every tier,
+// every plan, every time. Scripture is never paywalled in this app —
+// see js/plan.js FREE_BIBLE_TRANSLATIONS for the founder's covenant.
+// Do not import plan gates here. Do not add lock logic. God's word is
+// never held hostage.
+
 const BOOKS = [
   { name: "Genesis",       chapters: 50, ot: true },
   { name: "Exodus",        chapters: 40, ot: true },

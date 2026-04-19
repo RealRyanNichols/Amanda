@@ -3,6 +3,8 @@ import { h, toast, confirmAction, todayISO, friendlyDate, daysFromNow } from "..
 import { currentBrand } from "../branding.js";
 import { VERSES, verseOfTheDay, HOSPITAL_BAG_SEED, LOVE_NOTES_SEED, babySizeForWeek } from "./life-seeds.js";
 import { micButton, speechSupported } from "../voice.js";
+import { isPaid, isInTrial, FREE_LETTERS_LIFETIME, FREE_PRAYERS_LIFETIME } from "../plan.js";
+import { getPaymentLink } from "../stripe-config.js";
 
 function ensureSeeds() {
   if (!state.life.loveNotes.seeded) {
@@ -535,6 +537,13 @@ function renderLetters(rerender, name) {
     const body = textarea.value.trim();
     const author = (f.get("author") || "").toString().trim();
     if (!body) return;
+
+    // Free-tier limit: 3 letters lifetime
+    if (!isPaid() && !isInTrial() && p.letters.length >= FREE_LETTERS_LIFETIME) {
+      showLetterLimitPaywall(target);
+      return;
+    }
+
     p.letters.unshift({
       id: uid(),
       body,
@@ -598,6 +607,25 @@ function renderLetters(rerender, name) {
   card.append(list);
 
   return card;
+}
+
+function showLetterLimitPaywall(target) {
+  const coreLink = getPaymentLink("core-monthly");
+  const overlay = h("div", { class: "note-overlay", onclick: (e) => { if (e.target.classList.contains("note-overlay")) overlay.remove(); } }, [
+    h("div", { class: "card", style: "max-width:440px; width:100%; cursor:auto; text-align:center" }, [
+      h("div", { style: "font-size:3rem; margin-bottom:8px" }, "💌"),
+      h("h2", {}, `You've saved ${FREE_LETTERS_LIFETIME} letters to ${target}`),
+      h("div", { class: "sub", style: "margin-bottom:14px" },
+        `Keep writing. For $19/mo you get unlimited letters, AI "tidy it up" to polish your voice recordings, letter templates, all the pregnancy tools, and everything else.`),
+      h("div", { class: "btn-row", style: "justify-content:center" }, [
+        coreLink
+          ? h("a", { class: "btn", href: coreLink }, "Unlock · $19/mo")
+          : h("button", { class: "btn", onclick: () => { overlay.remove(); toast("Stripe link not configured yet"); } }, "Unlock · $19/mo"),
+        h("button", { class: "btn secondary", onclick: () => overlay.remove() }, "Not now"),
+      ]),
+    ]),
+  ]);
+  document.body.append(overlay);
 }
 
 async function tidyWithBrain(textarea, rerender) {

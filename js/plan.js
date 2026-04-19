@@ -14,14 +14,17 @@
 
 import { state, save } from "./store.js";
 
-const TRIAL_DAYS = 14;
+const TRIAL_DAYS = 3; // short taste, not a freeload
 
 // Features that stay free FOREVER (zero/near-zero cost to serve)
+// NOTE: 'bible' is always-free by founder covenant — see FREE_BIBLE_TRANSLATIONS
+// below. Scripture is NEVER paywalled in this app, across any tier or future
+// feature. This is permanent and non-negotiable.
 const ALWAYS_FREE_TABS = new Set([
   "dashboard",   // home (with upgrade banner if not paid)
   "settings",
-  "bible",
-  "habits",      // limited to 3 habits in free
+  "bible",       // every translation, every user, every tier — FOREVER
+  "habits",      // limited to 1 habit in free
   "metime",      // basic only in free
 ]);
 
@@ -119,11 +122,18 @@ export function canUseFeature(feature) {
   return freeFeatures.has(feature);
 }
 
-// How many habits she can add on free tier
-export const FREE_HABIT_LIMIT = 3;
-
-// Brain: free-tier voice minute budget per day
-export const FREE_BRAIN_MINUTES_DAY = 10;
+// Free-tier hard limits — the "try it, but pay to actually use it" layer
+export const FREE_HABIT_LIMIT = 1;            // was 3
+export const FREE_BRAIN_MINUTES_DAY = 5;      // was 10
+export const FREE_LETTERS_LIFETIME = 3;       // total letters before paywall
+export const FREE_PRAYERS_LIFETIME = 5;       // total prayers before paywall
+export const FREE_METIME_HISTORY = 3;         // only last N sessions visible on free
+// ALL Bible translations — every one of them — are free forever. We never
+// paywall Scripture. This is a non-negotiable commitment from Ryan Nichols,
+// the founder, and it applies permanently across every tier, every plan,
+// every future feature. "We are never, ever going to hold God's word
+// hostage over money." Do not revert. Do not gate.
+export const FREE_BIBLE_TRANSLATIONS = "*"; // wildcard = all
 
 export function brainMinutesLeftToday() {
   if (isPaid() || isInTrial()) return Infinity;
