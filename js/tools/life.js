@@ -86,13 +86,19 @@ function renderFaith(rerender) {
   function onAdd(e) {
     e.preventDefault();
     const f = new FormData(e.target);
+    const text = (f.get("text") || "").toString().trim();
     state.life.faith.prayers.push({
       id: uid(),
-      text: (f.get("text") || "").toString().trim(),
+      text,
       createdAt: todayISO(),
       answered: false, answeredAt: "", answerNote: "",
     });
     save(); toast("Added"); e.target.reset(); rerender();
+
+    // Offer relevant Scripture based on what she wrote
+    if (state.brain?.apiKey && text.length > 10) {
+      offerRelatedScripture(text);
+    }
   }
 
   const list = h("div", { class: "list", style: "margin-top:10px" });
@@ -129,6 +135,62 @@ function renderFaith(rerender) {
   card.append(list);
   wrap.append(card);
   return wrap;
+}
+
+async function offerRelatedScripture(prayerText) {
+  // Ask Claude for 2-3 relevant Scripture references with KJV text.
+  // Never paraphrases — always direct Scripture.
+  try {
+    const body = {
+      model: state.brain.model || "claude-opus-4-7",
+      max_tokens: 1000,
+      system: [{ type: "text", text:
+        "You are a gentle Christian friend. The user wrote a prayer. Your job: " +
+        "pick 2-3 Bible verses from the KJV (public domain) that genuinely speak to " +
+        "what she's praying about. Return ONLY valid JSON: " +
+        `{"verses":[{"ref":"Book Chapter:Verse","text":"<KJV text, verbatim>"}]}. ` +
+        "Do not paraphrase. Do not modernize. KJV exactly. If you don't know a verse " +
+        "exactly, don't fabricate — pick one you do know. No commentary.",
+      cache_control: { type: "ephemeral" } }],
+      messages: [{ role: "user", content: prayerText }],
+    };
+    if (/opus-4-7|opus-4-6|sonnet-4-6/.test(body.model)) body.thinking = { type: "adaptive" };
+
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": state.brain.apiKey,
+        "anthropic-version": "2023-06-01",
+        "anthropic-dangerous-direct-browser-access": "true",
+      },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) return;
+    const data = await res.json();
+    const textBlock = (data.content || []).find((x) => x.type === "text");
+    const raw = textBlock?.text || "{}";
+    const s = raw.indexOf("{"); const e = raw.lastIndexOf("}");
+    const parsed = JSON.parse(s >= 0 && e > s ? raw.slice(s, e + 1) : raw);
+    const verses = parsed.verses || [];
+    if (!verses.length) return;
+
+    const overlay = h("div", { class: "note-overlay", onclick: (e) => { if (e.target.classList.contains("note-overlay")) overlay.remove(); } }, [
+      h("div", { class: "card", style: "max-width:520px; width:100%; cursor:auto" }, [
+        h("h2", {}, "From the Word, for your prayer"),
+        ...verses.map((v) => h("div", { class: "safety-scripture", style: "margin-top:10px" }, [
+          h("div", { class: "verse-ref" }, v.ref),
+          h("div", { class: "verse-text" }, `"${v.text}"`),
+        ])),
+        h("div", { class: "btn-row", style: "margin-top:12px; justify-content:center" }, [
+          h("button", { class: "btn", onclick: () => overlay.remove() }, "Thank you"),
+        ]),
+      ]),
+    ]);
+    document.body.append(overlay);
+  } catch {
+    // silent fail — Scripture offer is a nice-to-have, not critical
+  }
 }
 
 function markAnswered(p, rerender) {

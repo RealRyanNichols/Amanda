@@ -642,7 +642,94 @@ Track progress:
 - "I let it go" → status = released (no shame)
 ```
 
-## 20. Acquisition positioning (long game)
+## 20. Partner alerts + safety integration (ethical specs)
+
+Ryan's directive (critical to preserve): **Never frivolously involve law
+enforcement, CPS, or 911. Only in an actual emergency. Respect parental
+rights. Family first. But when it's a real emergency, we don't block.**
+
+The client already has:
+- `state.safetyNet` with `trustedName`, `trustedPhone`, `consentPartnerAlerts`
+- Floating 🤍 SOS button on every page
+- 988 + Crisis Text Line + Trusted Person + comfort Scripture in overlay
+- Concerning-phrase scanner (js/safety-net.js, CONCERNING_PATTERNS + GENTLE_BUT_WATCHFUL) hooked into Brain chat, Vent Mode transcripts,
+  Overload brain-dump organize
+- When detected: gentle dismissable banner, NEVER auto-dial, NEVER auto-alert
+
+When the backend comes online, wire partner notifications like this:
+
+```
+TABLES:
+- partner_links: id, primary_user_id, partner_user_id, confirmed_at,
+  relationship ('husband' | 'wife' | 'boyfriend' | 'girlfriend' |
+  'father' | 'mother' | 'sister' | 'brother' | 'friend' | 'pastor' | 'other'),
+  can_see_metime: bool, can_see_calendar: bool, can_see_baby_year: bool,
+  alert_on_concerning: bool  // each flag user-controlled
+- partner_alerts: id, primary_user_id, partner_user_id, reason,
+  detected_at, sent_at, user_dismissed_at
+
+CONFIRMATION FLOW:
+- Primary adds partner by email → email sent to partner with
+  accept/decline link → both users must confirm.
+- Each data-sharing flag ('can_see_metime', etc.) requires explicit
+  opt-in from primary. Default: everything OFF. She turns on what
+  she wants to share.
+
+CONCERNING-PHRASE AUTOMATED ALERTS (only if she opted in
+alert_on_concerning = true):
+- Server-side re-scan of her Brain / Vent / Overload messages with the
+  same CONCERNING_PATTERNS. On acute-level match:
+    * First surface gentle check-in to HER (same as client-side)
+    * Only after SHE taps dismiss 3+ times in 48h on acute matches,
+      send partner a push notification with copy like:
+      "Your person has been having a rough couple of days.
+       She might just need you to text her. Not trying to alarm you."
+    * Partner notification DOES NOT include message content. Only:
+      "she's having a rough time, maybe reach out." Keeps her privacy.
+- Primary can disable partner alerts at ANY time with no argument.
+
+AUTO-ESCALATION TO EMERGENCY SERVICES:
+- Only on one specific pattern: user explicitly types they have a
+  plan + means + timing for self-harm AND partner notification has
+  been tried AND no response in 2 hours AND user has not dismissed
+  help. Even then, suggest 911 to HER first via push, give her 15
+  minutes to respond, then only escalate if her device location
+  has not moved and she hasn't interacted. This is an edge case
+  we build carefully, with legal review, and with the user's written
+  opt-in consent during signup. Most users will opt out. That's fine.
+- DEFAULT: no auto-escalation. Ever. Just 988 access + trusted person.
+
+LEGAL:
+- Consult a healthcare attorney before deploying any auto-escalation.
+- The ethical floor: 988 is always one tap away. The trusted person
+  is always one tap away. Everything else is her call.
+```
+
+## 21. Scripture-guided support (live now for prayer journal,
+## extendable)
+
+```
+Expand the Scripture lookup that's already wired on prayer journal
+(offerRelatedScripture in js/tools/life.js) to:
+
+1. Run when she writes a Letter to baby that mentions struggle
+2. Run on Vent Mode reflection output
+3. Run on gratitude entries (positive verses too)
+4. Run when she asks the Brain for help in Spiritual Friend tone
+
+System prompt constraint (already in the code, preserve):
+- KJV verbatim, no paraphrase, no modernization
+- If Claude doesn't know a verse exactly, pick a different one —
+  never fabricate
+- Never mislead away from what Scripture says. Never soften.
+- No commentary attached.
+
+Claude Opus 4.7 has the largest verse knowledge. At scale, consider
+building a local vector DB of the full KJV indexed so we don't burn
+tokens looking up references Claude already knows but paraphrases.
+```
+
+## 22. Acquisition positioning (long game)
 
 Ryan's thesis: build a SaaS with 1k-5k paid subscribers (in the
 mom-small-biz-faith demo), get acquired by a larger SaaS or

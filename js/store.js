@@ -62,6 +62,13 @@ const defaults = () => ({
     currentSessionStart: null,   // timestamp if a session is live
   },
   wishes: [],                    // { id, text, kind: 'wish'|'desire'|'fear'|'goal', notes, createdAt }
+  safetyNet: {
+    trustedName: "",
+    trustedRelation: "",
+    trustedPhone: "",
+    countryCode: "US",           // determines which crisis line defaults
+    consentPartnerAlerts: false, // user must opt in; only used when backend live
+  },
   timeSaved: {
     totalMinutes: 0,             // lifetime cumulative
     weekMinutes: 0,              // this week

@@ -1,6 +1,7 @@
 import { state, save, uid } from "../store.js";
 import { h, toast, confirmAction, todayISO, friendlyDate } from "../util.js";
 import { micButton } from "../voice.js";
+import { scanForConcerns, showGentleCheckIn } from "../safety-net.js";
 
 const CATEGORIES = [
   { value: "now", label: "Do now", pill: "urgent" },
@@ -35,11 +36,17 @@ function renderDump(rerender) {
   card.append(row);
 
   function organize() {
-    const lines = (state.overload.brainDump || "")
+    const rawDump = state.overload.brainDump || "";
+    const lines = rawDump
       .split("\n")
       .map((l) => l.trim())
       .filter(Boolean);
     if (!lines.length) { toast("Nothing to organize"); return; }
+
+    // Safety Net: scan the full dump for concerning phrases before we dispose of it
+    const concern = scanForConcerns(rawDump);
+    if (concern.level !== "none") showGentleCheckIn(concern.level);
+
     lines.forEach((text) => {
       state.overload.tasks.push({
         id: uid(),

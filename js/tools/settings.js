@@ -2,6 +2,7 @@ import { state, save, resetAll } from "../store.js";
 import { h, toast, confirmAction } from "../util.js";
 import { ROLES, INTERESTS, setPin, hasPin } from "../auth.js";
 import { MODEL_OPTIONS } from "./brain.js";
+import { showSafetyNet } from "../safety-net.js";
 
 // Capture the beforeinstallprompt event for a friendly in-app install button (Chrome/Edge/Android).
 let deferredInstallPrompt = null;
@@ -247,9 +248,62 @@ function renderInstallCard() {
   return card;
 }
 
+function renderSafetyNetCard(rerender) {
+  if (!state.safetyNet) state.safetyNet = { trustedName: "", trustedRelation: "", trustedPhone: "", countryCode: "US", consentPartnerAlerts: false };
+  const net = state.safetyNet;
+  const card = h("section", { class: "card" }, [
+    h("h2", {}, "🤍 Safety Net"),
+    h("div", { class: "sub" },
+      "Set up the person you'd reach out to on a hard day. We NEVER auto-dial, auto-text, or notify anyone without you tapping the button yourself. No law enforcement, no CPS, no anyone — unless you call them. The 988 Lifeline is always one tap away as the professional option."),
+  ]);
+
+  card.append(h("div", { class: "form-row two" }, [
+    h("label", { class: "field" }, [
+      "Trusted person's name",
+      h("input", {
+        type: "text",
+        value: net.trustedName || "",
+        placeholder: "e.g. Mom, Sarah, Pastor Mike",
+        oninput: (e) => { net.trustedName = e.target.value; save(); },
+      }),
+    ]),
+    h("label", { class: "field" }, [
+      "Relation",
+      h("input", {
+        type: "text",
+        value: net.trustedRelation || "",
+        placeholder: "e.g. best friend, mom, husband",
+        oninput: (e) => { net.trustedRelation = e.target.value; save(); },
+      }),
+    ]),
+    h("label", { class: "field", style: "grid-column: 1 / -1" }, [
+      "Their phone",
+      h("input", {
+        type: "tel",
+        value: net.trustedPhone || "",
+        placeholder: "555-555-5555",
+        oninput: (e) => { net.trustedPhone = e.target.value; save(); },
+      }),
+    ]),
+  ]));
+
+  card.append(h("div", { class: "btn-row", style: "margin-top:10px" }, [
+    h("button", {
+      class: "btn",
+      onclick: () => showSafetyNet({ reason: "user" }),
+    }, "Preview the help screen"),
+  ]));
+
+  card.append(h("div", { class: "pda-contact" },
+    "If you ever write something that sounds heavy, we may gently show you a 'want to check in?' banner you can dismiss. Nothing automatic beyond that. You're in control. Always."));
+
+  return card;
+}
+
 export function renderSettings(mount, { rerender }) {
   mount.append(renderProfileCard(rerender));
   mount.append(renderBrainCard(rerender));
+  mount.append(renderSafetyNetCard(rerender));
   mount.append(renderSecurityCard(rerender));
   mount.append(renderInstallCard());
   mount.append(renderDataCard(rerender));

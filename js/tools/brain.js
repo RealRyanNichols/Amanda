@@ -1,6 +1,7 @@
 import { state, save, uid } from "../store.js";
 import { h, toast, confirmAction } from "../util.js";
 import { currentBrand } from "../branding.js";
+import { scanForConcerns, showGentleCheckIn } from "../safety-net.js";
 
 // Claude API defaults — per claude-api skill guidance: default to Opus 4.7.
 const MODEL_OPTIONS = [
@@ -344,6 +345,10 @@ function renderChat(rerender) {
       input.value = "";
       rerender();
 
+      // Safety Net: scan for concerning phrases and gently offer help
+      const concern = scanForConcerns(text);
+      if (concern.level !== "none") showGentleCheckIn(concern.level);
+
       if (state.brain.apiKey) {
         state.brain.history.push({ id: uid(), role: "assistant", text: "…thinking…", pending: true, at: Date.now() });
         save(); rerender();
@@ -677,6 +682,11 @@ function openVentMode() {
             if (timer) { clearInterval(timer); timer = null; }
             transcript = (committed || ta.value || "").trim();
             if (!transcript) { statusEl.textContent = "I didn't catch any words yet — keep going."; return; }
+            // Safety Net: scan the transcript and gently surface help if needed
+            const concern = scanForConcerns(transcript);
+            if (concern.level !== "none") {
+              setTimeout(() => showGentleCheckIn(concern.level), 600);
+            }
             stage = "summary";
             render();
           },
