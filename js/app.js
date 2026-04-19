@@ -1,6 +1,7 @@
 import { state, save, exportJson, importJson } from "./store.js";
 import { toast } from "./util.js";
 import { applyBrand, initBrandToggle } from "./branding.js";
+import { renderDashboard } from "./tools/dashboard.js";
 import { renderIncome } from "./tools/income.js";
 import { renderBooking } from "./tools/booking.js";
 import { renderCareer } from "./tools/career.js";
@@ -8,6 +9,7 @@ import { renderOverload } from "./tools/overload.js";
 import { renderFollowup } from "./tools/followup.js";
 
 const TOOLS = {
+  dashboard: renderDashboard,
   income: renderIncome,
   booking: renderBooking,
   career: renderCareer,
@@ -15,12 +17,12 @@ const TOOLS = {
   followup: renderFollowup,
 };
 
-let currentTab = "income";
+let currentTab = "dashboard";
 
 function render() {
   const mount = document.getElementById("app");
   mount.innerHTML = "";
-  const tool = TOOLS[currentTab] || TOOLS.income;
+  const tool = TOOLS[currentTab] || TOOLS.dashboard;
   tool(mount, { rerender: render });
 }
 
