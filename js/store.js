@@ -46,6 +46,14 @@ const defaults = () => ({
     items: [],           // { id, title, category, dataUrl, mime, note, createdAt }
   },
   purchases: {},         // { [itemId]: { unlockedAt } }
+  dashboard: {
+    // order: ordered list of card keys. If null, we use the default order.
+    order: null,
+    // hidden: set of card keys she's hidden.
+    hidden: [],
+    // layout: "list" | "rolling"
+    layout: "list",
+  },
   babyYear: {
     milestones: [],      // { id, title, due: "ageMonths:N", completedAt, photoUrl, note }
     seeded: false,

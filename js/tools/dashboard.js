@@ -1,5 +1,5 @@
-import { state } from "../store.js";
-import { money, friendlyDate, daysFromNow, h } from "../util.js";
+import { state, save } from "../store.js";
+import { money, friendlyDate, daysFromNow, h, toast } from "../util.js";
 import { currentBrand } from "../branding.js";
 import { TX_RDA_REQUIREMENTS } from "./rda-seed.js";
 import { verseOfTheDay, babySizeForWeek } from "./life-seeds.js";
@@ -351,29 +351,197 @@ function renderAcademyCard() {
   ]);
 }
 
-export function renderDashboard(mount) {
-  const isPda = state.brand === "pda";
-  mount.append(renderHero());
-  const reminders = renderSmartReminders();
-  if (reminders) mount.append(reminders);
-  mount.append(renderFocus());
+// Card registry — each card has a key, label, visibility predicate, and renderer.
+// User can reorder, hide, or toggle layout in Customize mode.
+const CARDS = [
+  { key: "hero",       label: "Greeting",        render: renderHero,          always: true },
+  { key: "reminders",  label: "Smart reminders", render: renderSmartReminders                 },
+  { key: "focus",      label: "Focus",           render: renderFocus                          },
+  { key: "love-peek",  label: "Love note peek",  render: renderLoveNotePeek,  show: lifeVisible },
+  { key: "verse",      label: "Today's verse",   render: renderVerseCard,     show: () => hasFaithRole() || (state.profile?.roles || []).length === 0 },
+  { key: "pregnancy",  label: "Baby countdown",  render: renderPregnancyCard, show: hasPregnantRole },
+  { key: "money",      label: "Money at a glance", render: renderMoneyCard                    },
+  { key: "nextup",     label: "Next up",         render: renderNextUpCard                     },
+  { key: "pipeline",   label: "Pipeline & tasks", render: renderPipelineCard                  },
+  { key: "academy",    label: "Academy",         render: renderAcademyCard,   show: () => state.brand === "pda" },
+  { key: "career",     label: "Career pathway",  render: renderCareerCard,    show: () => state.brand !== "pda" },
+];
 
-  // Life-ish cards surface near the top so the day starts warm, not transactional
-  if (lifeVisible()) {
-    const love = renderLoveNotePeek();
-    if (love) mount.append(love);
-  }
-  if (hasFaithRole() || (state.profile?.roles || []).length === 0) {
-    mount.append(renderVerseCard());
-  }
-  if (hasPregnantRole()) {
-    const pg = renderPregnancyCard();
-    if (pg) mount.append(pg);
+function getOrderedKeys() {
+  const defaultOrder = CARDS.map((c) => c.key);
+  const saved = state.dashboard?.order;
+  if (!saved || !Array.isArray(saved)) return defaultOrder;
+  const valid = saved.filter((k) => defaultOrder.includes(k));
+  // Append any new cards that weren't in the saved order
+  defaultOrder.forEach((k) => { if (!valid.includes(k)) valid.push(k); });
+  return valid;
+}
+
+function isHidden(key) {
+  return (state.dashboard?.hidden || []).includes(key);
+}
+
+let customizing = false;
+let rollingIndex = 0;
+
+export function renderDashboard(mount, { rerender }) {
+  mount.append(renderToolbar(rerender));
+
+  if (customizing) {
+    mount.append(renderCustomizer(rerender));
+    return;
   }
 
-  mount.append(renderMoneyCard());
-  mount.append(renderNextUpCard());
-  mount.append(renderPipelineCard());
-  if (isPda) mount.append(renderAcademyCard());
-  else mount.append(renderCareerCard());
+  const layout = state.dashboard?.layout || "list";
+  const order = getOrderedKeys();
+
+  // Collect visible cards
+  const visible = [];
+  for (const key of order) {
+    const meta = CARDS.find((c) => c.key === key);
+    if (!meta) continue;
+    if (meta.always) { visible.push(meta); continue; }
+    if (isHidden(key)) continue;
+    if (meta.show && !meta.show()) continue;
+    visible.push(meta);
+  }
+
+  if (layout === "rolling") {
+    renderRolling(mount, visible, rerender);
+  } else {
+    visible.forEach((meta) => {
+      const node = meta.render();
+      if (node) mount.append(node);
+    });
+  }
+}
+
+function renderToolbar(rerender) {
+  const layout = state.dashboard?.layout || "list";
+  return h("div", { class: "dash-toolbar" }, [
+    h("div", { class: "dash-toolbar-btns" }, [
+      h("button", {
+        class: "chip" + (layout === "list" ? " active" : ""),
+        onclick: () => { state.dashboard.layout = "list"; save(); rerender(); },
+      }, "List"),
+      h("button", {
+        class: "chip" + (layout === "rolling" ? " active" : ""),
+        onclick: () => { state.dashboard.layout = "rolling"; rollingIndex = 0; save(); rerender(); },
+      }, "Rolling"),
+    ]),
+    h("button", {
+      class: "chip",
+      onclick: () => { customizing = !customizing; rerender(); },
+    }, customizing ? "Done" : "Customize"),
+  ]);
+}
+
+function renderCustomizer(rerender) {
+  const wrap = h("section", { class: "card" }, [
+    h("h2", {}, "Customize your dashboard"),
+    h("div", { class: "sub" }, "Drag to reorder. Toggle visibility. Changes save automatically."),
+  ]);
+
+  const order = getOrderedKeys();
+  const list = h("div", { class: "customize-list" });
+
+  order.forEach((key, idx) => {
+    const meta = CARDS.find((c) => c.key === key);
+    if (!meta) return;
+    const hidden = isHidden(key);
+    const applicable = meta.always || !meta.show || meta.show();
+    if (!applicable) return;
+
+    list.append(h("div", { class: "customize-row" + (hidden ? " hidden" : "") }, [
+      h("div", { class: "customize-handle" }, "⋮⋮"),
+      h("div", { class: "customize-label" }, meta.label),
+      h("div", { class: "btn-row" }, [
+        idx > 0 && h("button", {
+          class: "btn small secondary",
+          onclick: () => moveCard(key, -1, rerender),
+        }, "↑"),
+        idx < order.length - 1 && h("button", {
+          class: "btn small secondary",
+          onclick: () => moveCard(key, 1, rerender),
+        }, "↓"),
+        !meta.always && h("button", {
+          class: "btn small " + (hidden ? "" : "secondary"),
+          onclick: () => toggleHidden(key, rerender),
+        }, hidden ? "Show" : "Hide"),
+      ]),
+    ]));
+  });
+
+  wrap.append(list);
+  wrap.append(h("div", { class: "btn-row", style: "margin-top:12px" }, [
+    h("button", {
+      class: "btn secondary",
+      onclick: () => {
+        if (!confirm("Reset dashboard to the default order + visibility?")) return;
+        state.dashboard.order = null;
+        state.dashboard.hidden = [];
+        save();
+        toast("Reset");
+        rerender();
+      },
+    }, "Reset to default"),
+  ]));
+  return wrap;
+}
+
+function moveCard(key, delta, rerender) {
+  const order = getOrderedKeys().slice();
+  const i = order.indexOf(key);
+  const j = i + delta;
+  if (j < 0 || j >= order.length) return;
+  [order[i], order[j]] = [order[j], order[i]];
+  state.dashboard.order = order;
+  save();
+  rerender();
+}
+
+function toggleHidden(key, rerender) {
+  const hidden = new Set(state.dashboard?.hidden || []);
+  if (hidden.has(key)) hidden.delete(key);
+  else hidden.add(key);
+  state.dashboard.hidden = [...hidden];
+  save();
+  rerender();
+}
+
+function renderRolling(mount, visible, rerender) {
+  if (!visible.length) return;
+  const idx = Math.min(rollingIndex, visible.length - 1);
+  const current = visible[idx];
+  const wrap = h("div", { class: "rolling-wrap" });
+
+  // Spotlight card (only one at a time)
+  const node = current.render();
+  if (node) wrap.append(node);
+
+  // Dots + nav
+  const nav = h("div", { class: "rolling-nav" });
+  visible.forEach((_, i) => {
+    nav.append(h("button", {
+      class: "rolling-dot" + (i === idx ? " active" : ""),
+      onclick: () => { rollingIndex = i; rerender(); },
+    }));
+  });
+  wrap.append(nav);
+
+  wrap.append(h("div", { class: "btn-row rolling-arrows" }, [
+    h("button", {
+      class: "btn secondary",
+      disabled: idx === 0,
+      onclick: () => { if (idx > 0) { rollingIndex = idx - 1; rerender(); } },
+    }, "←"),
+    h("div", { class: "meta" }, `${idx + 1} of ${visible.length}`),
+    h("button", {
+      class: "btn secondary",
+      disabled: idx === visible.length - 1,
+      onclick: () => { if (idx < visible.length - 1) { rollingIndex = idx + 1; rerender(); } },
+    }, "→"),
+  ]));
+
+  mount.append(wrap);
 }

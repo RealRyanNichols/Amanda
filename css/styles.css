@@ -833,6 +833,56 @@ body[data-brand="pda"] .bible-content {
 }
 .vault-viewer-meta { margin-top: 10px; }
 
+/* Customizable dashboard */
+.dash-toolbar {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 8px; margin-bottom: 12px;
+}
+.dash-toolbar-btns { display: flex; gap: 6px; }
+
+.customize-list {
+  display: flex; flex-direction: column; gap: 8px;
+  margin-top: 10px;
+}
+.customize-row {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--bg-elev-2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 10px 12px;
+}
+.customize-row.hidden { opacity: .5; }
+.customize-handle {
+  color: var(--text-dim); font-size: 1.125rem;
+  letter-spacing: -2px; font-weight: 700;
+  cursor: grab;
+}
+.customize-label { flex: 1; font-weight: 600; font-size: .9375rem; }
+
+.rolling-wrap {
+  min-height: 240px;
+  animation: rollIn .25s ease;
+}
+@keyframes rollIn {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.rolling-nav {
+  display: flex; justify-content: center; gap: 6px;
+  margin: 16px 0 10px;
+}
+.rolling-dot {
+  appearance: none; border: 0; cursor: pointer;
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--border);
+  transition: background .15s, transform .15s;
+}
+.rolling-dot.active {
+  background: var(--accent);
+  transform: scale(1.3);
+}
+.rolling-arrows {
+  justify-content: space-between; align-items: center;
+}
+
 /* Floating Brain bubble (persistent on every page) */
 .fab-brain {
   position: fixed;
