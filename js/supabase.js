@@ -59,6 +59,9 @@ export async function signInWithEmail(email, password) {
   return sb.auth.signInWithPassword({ email, password });
 }
 
+// Basic Google sign-in — email + profile only. Fast, low-friction.
+// For Drive/Sheets/YouTube access use signInWithGoogleScoped() instead,
+// which adds the scopes she'd actually consent to.
 export async function signInWithGoogle() {
   const sb = await getSupabase();
   if (!sb) throw new Error("Supabase not configured");
@@ -66,6 +69,43 @@ export async function signInWithGoogle() {
     provider: "google",
     options: { redirectTo: window.location.origin },
   });
+}
+
+// Request extra OAuth scopes so we can call Drive / Sheets / YouTube APIs
+// on her behalf. She'll see a Google consent screen listing exactly what
+// we're asking for. We store the access_token in the Supabase session
+// (session.provider_token) — short-lived, ~1 hour.
+//
+// The "access_type=offline" query param asks Google for a refresh token,
+// but Supabase only retains it server-side; the browser session still
+// only sees a 1-hour access token. Phase 2 will run a server-side refresh.
+export async function signInWithGoogleScoped(extraScopes = []) {
+  const sb = await getSupabase();
+  if (!sb) throw new Error("Supabase not configured");
+  const base = ["openid", "email", "profile"];
+  const scopes = [...new Set([...base, ...extraScopes])].join(" ");
+  return sb.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: window.location.origin,
+      scopes,
+      queryParams: {
+        access_type: "offline",
+        prompt: "consent",
+      },
+    },
+  });
+}
+
+// Pull the currently-valid Google access token out of the Supabase session.
+// Returns null if she hasn't signed in with Google, or if it's expired.
+export async function getGoogleAccessToken() {
+  const sb = await getSupabase();
+  if (!sb) return null;
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) return null;
+  // provider_token is present when the user signed in via OAuth in this session.
+  return session.provider_token || null;
 }
 
 export async function sendMagicLink(email) {

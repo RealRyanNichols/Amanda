@@ -5,6 +5,10 @@ import { MODEL_OPTIONS } from "./brain.js";
 import { showSafetyNet } from "../safety-net.js";
 import { currentUser, isSupabaseConfigured } from "../supabase.js";
 import { ensureHousehold, getHousehold, inviteMember, updateMemberVisibility, removeMember } from "../household.js";
+import {
+  googleConnectedState, connectDrive, connectSheets, connectYouTube, connectAllGoogle,
+  backupStateToDrive, syncIncomeToSheet,
+} from "../google-connect.js";
 
 // Capture the beforeinstallprompt event for a friendly in-app install button (Chrome/Edge/Android).
 let deferredInstallPrompt = null;
@@ -442,8 +446,14 @@ function renderHouseholdCard(rerender) {
           can_see_me_time: !!f.get("can_metime"),
           alert_on_concerning: !!f.get("alert_concerning"),
         };
+        const faithContext = role === "partner" ? {
+          faithStatus: (f.get("faith_status") || "unknown").toString(),
+          churchFreq:  (f.get("church_freq")  || "unknown").toString(),
+          nudgesOk:    !!f.get("faith_nudges"),
+          prayerOk:    !!f.get("prayer_ok"),
+        } : null;
         try {
-          await inviteMember({ email, relation, role, visibility });
+          await inviteMember({ email, relation, role, visibility, faithContext });
           toast(`Invite saved. When ${email} signs up, they'll join automatically.`);
           e.target.reset();
           rerender();
@@ -470,6 +480,39 @@ function renderHouseholdCard(rerender) {
           h("label", { class: "radio" }, [h("input", { type: "checkbox", name: "can_metime" }), h("span", {}, "My Me-Time streak (summary only — no session text)")]),
           h("label", { class: "radio" }, [h("input", { type: "checkbox", name: "alert_concerning" }), h("span", {}, "Alert them if I'm in crisis (§20 — they only get a content-free 'reach out' ping)")]),
         ]),
+        h("fieldset", { class: "field", style: "grid-column: 1 / -1" }, [
+          h("legend", {}, "Faith context (partner only — optional)"),
+          h("div", { class: "sub", style: "margin-bottom:8px" },
+            "Totally optional. If you're inviting your partner, sharing where he is on his faith journey lets the app be a gentler companion for him (never preachy — men's prompts are about strength, fatherhood, and carrying real weight). He can change all of this himself once he signs in."),
+          h("label", { class: "field" }, [
+            "Is he a Christian?",
+            h("select", { name: "faith_status" }, [
+              h("option", { value: "unknown" }, "Prefer not to say"),
+              h("option", { value: "believer" }, "Yes, practicing"),
+              h("option", { value: "lapsed" }, "Used to be / fell away"),
+              h("option", { value: "exploring" }, "Open / exploring"),
+              h("option", { value: "not" }, "No"),
+            ]),
+          ]),
+          h("label", { class: "field" }, [
+            "How often does he go to church?",
+            h("select", { name: "church_freq" }, [
+              h("option", { value: "unknown" }, "Prefer not to say"),
+              h("option", { value: "weekly" }, "Weekly"),
+              h("option", { value: "occasional" }, "Sometimes"),
+              h("option", { value: "used_to" }, "Used to"),
+              h("option", { value: "never" }, "Never"),
+            ]),
+          ]),
+          h("label", { class: "radio" }, [
+            h("input", { type: "checkbox", name: "faith_nudges" }),
+            h("span", {}, "It's okay to show him occasional scripture (strength, fatherhood, never pushy)"),
+          ]),
+          h("label", { class: "radio" }, [
+            h("input", { type: "checkbox", name: "prayer_ok" }),
+            h("span", {}, "It's okay to offer him prayer prompts (he can always skip them)"),
+          ]),
+        ]),
         h("div", { class: "btn-row", style: "grid-column: 1 / -1" }, [h("button", { class: "btn", type: "submit" }, "Send invite")]),
       ]);
       body.append(form);
@@ -485,10 +528,127 @@ function renderHouseholdCard(rerender) {
   return card;
 }
 
+function renderGoogleCard(rerender) {
+  const g = googleConnectedState();
+  const hasAny = g.connected.drive || g.connected.sheets || g.connected.youtube;
+
+  const card = h("section", { class: "card" }, [
+    h("h2", {}, "Google connectors"),
+    h("div", { class: "sub" },
+      "Connect your Google account once. Then back up your data to Drive, import/export income in Sheets, and upload videos to YouTube — all from inside the app."),
+  ]);
+
+  if (!isSupabaseConfigured()) {
+    card.append(h("div", { class: "alert" },
+      "Connect your account in Settings → Account first. Google sign-in runs through your account."));
+    return card;
+  }
+
+  // Connection status
+  const statusRow = h("div", { class: "form-row two", style: "margin-top:10px" }, [
+    h("div", { class: "meta" }, `📂 Drive: ${g.connected.drive ? "✓ connected" : "not connected"}`),
+    h("div", { class: "meta" }, `📊 Sheets: ${g.connected.sheets ? "✓ connected" : "not connected"}`),
+    h("div", { class: "meta" }, `▶️ YouTube: ${g.connected.youtube ? "✓ connected" : "not connected"}`),
+  ]);
+  card.append(statusRow);
+
+  // One-tap: connect all three (common path for new users)
+  card.append(h("div", { class: "btn-row", style: "margin-top:12px; flex-wrap:wrap; gap:8px" }, [
+    h("button", {
+      class: "btn",
+      onclick: async () => {
+        try {
+          await connectAllGoogle();
+          toast("Redirecting to Google…");
+        } catch (err) {
+          toast(err.message || "Couldn't connect");
+        }
+      },
+    }, hasAny ? "🔄 Reconnect Google" : "🔵 Connect Google (all)"),
+    h("button", {
+      class: "btn small secondary",
+      onclick: async () => {
+        try { await connectDrive(); toast("Redirecting…"); }
+        catch (err) { toast(err.message); }
+      },
+    }, "Drive only"),
+    h("button", {
+      class: "btn small secondary",
+      onclick: async () => {
+        try { await connectSheets(); toast("Redirecting…"); }
+        catch (err) { toast(err.message); }
+      },
+    }, "Drive + Sheets"),
+    h("button", {
+      class: "btn small secondary",
+      onclick: async () => {
+        try { await connectYouTube(); toast("Redirecting…"); }
+        catch (err) { toast(err.message); }
+      },
+    }, "YouTube only"),
+  ]));
+
+  // Actions — only useful after she's connected the relevant scope.
+  if (g.connected.drive) {
+    card.append(h("div", { style: "margin-top:16px; border-top:1px dashed rgba(0,0,0,0.12); padding-top:12px" }, [
+      h("h3", { style: "margin:0 0 6px; font-size:14px" }, "Backup"),
+      h("div", { class: "btn-row" }, [
+        h("button", {
+          class: "btn small",
+          onclick: async () => {
+            try {
+              const file = await backupStateToDrive();
+              toast(`Saved to Drive: ${file.name || "backup"}`);
+            } catch (err) {
+              toast(err.message || "Backup failed — try reconnecting");
+            }
+          },
+        }, "⬆️ Back up to Drive"),
+      ]),
+    ]));
+  }
+
+  if (g.connected.sheets) {
+    const sheetUrlInput = h("input", {
+      type: "url", placeholder: "Paste Google Sheet URL",
+      value: state.google?.sheetUrl || "",
+      oninput: (e) => {
+        if (!state.google) state.google = {};
+        state.google.sheetUrl = e.target.value;
+        save();
+      },
+    });
+    card.append(h("div", { style: "margin-top:16px; border-top:1px dashed rgba(0,0,0,0.12); padding-top:12px" }, [
+      h("h3", { style: "margin:0 0 6px; font-size:14px" }, "Sheets sync"),
+      h("div", { class: "sub" }, "Paste a sheet URL. We'll push deposits + bills to tabs named 'Deposits' and 'Bills'."),
+      h("label", { class: "field" }, [sheetUrlInput]),
+      h("button", {
+        class: "btn small",
+        onclick: async () => {
+          const u = state.google?.sheetUrl;
+          if (!u) { toast("Paste a sheet URL first"); return; }
+          try {
+            await syncIncomeToSheet(u);
+            toast("Synced to Sheets ✓");
+          } catch (err) {
+            toast(err.message || "Sheet sync failed");
+          }
+        },
+      }, "⬆️ Push income to sheet"),
+    ]));
+  }
+
+  card.append(h("div", { class: "meta", style: "margin-top:12px" },
+    "Heads up: Google access tokens last about an hour. If something fails with \"session expired\", tap Reconnect Google."));
+
+  return card;
+}
+
 export function renderSettings(mount, { rerender }) {
   mount.append(renderProfileCard(rerender));
   mount.append(renderBrainCard(rerender));
   mount.append(renderHouseholdCard(rerender));
+  mount.append(renderGoogleCard(rerender));
   mount.append(renderSafetyNetCard(rerender));
   mount.append(renderSecurityCard(rerender));
   mount.append(renderInstallCard());

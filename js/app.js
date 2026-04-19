@@ -4,6 +4,7 @@ import { initSync, queueSync } from "./sync.js";
 import { applyBrand, initBrandToggle } from "./branding.js";
 import { renderWelcome, renderLock, needsOnboarding, hasPin, enabledTabsForProfile } from "./auth.js";
 import { renderDashboard } from "./tools/dashboard.js";
+import { renderMommy } from "./tools/mommy.js";
 import { renderIncome } from "./tools/income.js";
 import { renderBooking } from "./tools/booking.js";
 import { renderCareer } from "./tools/career.js";
@@ -31,6 +32,7 @@ import { renderUpgradeWall } from "./tools/upgrade.js";
 
 const TOOLS = {
   dashboard: renderDashboard,
+  mommy: renderMommy,
   brain: renderBrain,
   capture: renderCapture,
   calendar: renderCalendar,

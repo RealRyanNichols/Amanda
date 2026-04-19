@@ -10,6 +10,7 @@ import { isSupabaseConfigured, currentUser } from "../supabase.js";
 import { isInTrial, isPaid, trialDaysLeft, tier } from "../plan.js";
 import { getPaymentLink } from "../stripe-config.js";
 import { shareSheet } from "../share.js";
+import { verseForPartner, promptForPartner } from "../partner-faith.js";
 
 function incomeSummary() {
   const { deposits, bills } = state.income;
@@ -86,6 +87,61 @@ function jumpTo(tabName) {
 
 function hasFaithRole() { return (state.profile?.roles || []).includes("faith"); }
 function hasPregnantRole() { return (state.profile?.roles || []).includes("pregnant"); }
+
+// True when the signed-in user is an invited partner (came in via a
+// household invite rather than as the primary account). `state.household.role`
+// is set by the sync layer when it pulls down the household_members row.
+function isInvitedPartner() {
+  return state.household?.role === "partner";
+}
+
+function partnerFaithOk() {
+  // She opted him in to scripture when she invited him. If she didn't,
+  // we stay quiet — never push a verse on someone whose partner didn't
+  // green-light it, and never on someone who muted nudges on their side.
+  if (state.household?.faithNudgesMuted) return false;
+  return !!(state.household?.faithNudgesOk);
+}
+
+function renderPartnerFaithCard() {
+  const v = verseForPartner({
+    faithStatus: state.household?.faithStatus || "unknown",
+    pregnancyWeek: state.household?.sharedPregnancyWeek || null,
+  });
+  return h("section", { class: "card verse-card" }, [
+    h("h2", {}, "Something worth a minute"),
+    h("div", { class: "sub" }, "Not a sermon. Just a line from an old book that meets real men in real things."),
+    h("div", { class: "verse-ref", style: "margin-top:6px" }, v.ref),
+    h("div", { class: "verse-text" }, `"${v.text}"`),
+    h("div", { class: "btn-row", style: "margin-top:10px; gap:8px; flex-wrap:wrap" }, [
+      h("button", {
+        class: "btn small ghost",
+        onclick: () => shareSheet({ title: v.ref, text: `"${v.text}" — ${v.ref}` }),
+      }, "📤 Share"),
+      h("button", {
+        class: "btn small ghost",
+        onclick: () => {
+          if (!state.household) state.household = {};
+          state.household.faithNudgesMuted = true;
+          save();
+          toast("Muted. You can turn these back on in Settings.");
+          jumpTo("dashboard");
+        },
+      }, "Mute these"),
+    ]),
+  ]);
+}
+
+function renderPartnerPromptCard() {
+  const p = promptForPartner({
+    faithStatus: state.household?.faithStatus || "unknown",
+  });
+  return h("section", { class: "card" }, [
+    h("h2", {}, "Something to sit with"),
+    h("div", { class: "sub" }, "A question — no right answer. Nobody sees what you think."),
+    h("div", { style: "font-family:Georgia,serif; font-size:1.1rem; line-height:1.6; margin-top:10px" }, p.text),
+  ]);
+}
 function lifeVisible() {
   const roles = state.profile?.roles || [];
   return roles.includes("mom") || roles.includes("pregnant") || roles.includes("faith") || roles.length === 0;
@@ -613,6 +669,8 @@ const CARDS = [
   { key: "timesaved",  label: "Time given back", render: renderTimeSavedCard                  },
   { key: "love-peek",  label: "Love note peek",  render: renderLoveNotePeek,  show: lifeVisible },
   { key: "verse",      label: "Today's verse",   render: renderVerseCard,     show: () => hasFaithRole() || (state.profile?.roles || []).length === 0 },
+  { key: "partner-faith", label: "For him",      render: renderPartnerFaithCard, show: () => isInvitedPartner() && partnerFaithOk() },
+  { key: "partner-prompt", label: "Something to sit with", render: renderPartnerPromptCard, show: () => isInvitedPartner() },
   { key: "pregnancy",  label: "Baby countdown",  render: renderPregnancyCard, show: hasPregnantRole },
   { key: "money",      label: "Money at a glance", render: renderMoneyCard                    },
   { key: "nextup",     label: "Next up",         render: renderNextUpCard                     },

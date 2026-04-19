@@ -73,6 +73,8 @@ export function enabledTabsForProfile(profile) {
   if (roles.includes("faith")) tabs.add("bible");
   // Baby Year tab: once Thomas is born (pregnant role — they'll keep using it forever)
   if (roles.includes("pregnant") || roles.includes("mom")) tabs.add("babyyear");
+  // Mommy Analytics: whole-journey mirror, for pregnant + mom users
+  if (roles.includes("pregnant") || roles.includes("mom")) tabs.add("mommy");
   // Meals tab: moms mostly, plus default
   if (roles.includes("mom") || roles.includes("pregnant")) {
     tabs.add("meals");

@@ -58,7 +58,7 @@ export async function getHousehold() {
   return data;
 }
 
-export async function inviteMember({ email, relation = "", role = "partner", visibility = {} }) {
+export async function inviteMember({ email, relation = "", role = "partner", visibility = {}, faithContext = null }) {
   const household = await ensureHousehold();
   const sb = await getSupabase();
   const user = await currentUser();
@@ -77,6 +77,15 @@ export async function inviteMember({ email, relation = "", role = "partner", vis
     can_see_kids: !!visibility.can_see_kids,
     can_see_me_time: !!visibility.can_see_me_time,
     alert_on_concerning: !!visibility.alert_on_concerning,
+    // Faith context — entirely optional. If she tells us where he is on
+    // his faith journey, we gently tailor what he sees when he logs in.
+    // Never visible to him as "she said this about you" — it just informs
+    // what scripture / prompts the app surfaces on his side, and it's
+    // always user-overridable in his own Settings once he signs in.
+    faith_status: faithContext?.faithStatus || null,   // 'believer'|'lapsed'|'exploring'|'not'|'unknown'
+    church_frequency: faithContext?.churchFreq || null,// 'weekly'|'occasional'|'used_to'|'never'|'unknown'
+    faith_nudges_ok: !!faithContext?.nudgesOk,         // she thinks gentle scripture is okay for him
+    prayer_ok: !!faithContext?.prayerOk,               // she thinks prayer prompts are okay
   };
   // Insert with placeholder user_id; our trigger on the invitee's signup
   // will rewrite user_id and flip status.
