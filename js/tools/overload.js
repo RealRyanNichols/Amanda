@@ -1,5 +1,6 @@
 import { state, save, uid } from "../store.js";
 import { h, toast, confirmAction, todayISO, friendlyDate } from "../util.js";
+import { micButton } from "../voice.js";
 
 const CATEGORIES = [
   { value: "now", label: "Do now", pill: "urgent" },
@@ -15,7 +16,8 @@ function renderDump(rerender) {
     h("div", { class: "sub" }, "Freeform. One thought per line. Hit 'Organize' when you're done."),
   ]);
   const ta = h("textarea", {
-    placeholder: "rent due friday\nneed to text mom back\nstudent schedule\nfeeling anxious about the week\n...",
+    placeholder: "rent due friday\nneed to text mom back\nstudent schedule\nfeeling anxious about the week\n...\n(or hold the mic and dump it all out loud)",
+    style: "min-height:140px",
   });
   ta.value = state.overload.brainDump || "";
   ta.addEventListener("input", () => {
@@ -24,7 +26,9 @@ function renderDump(rerender) {
   });
   card.append(ta);
 
+  const mic = micButton(ta);
   const row = h("div", { class: "btn-row", style: "margin-top:8px" }, [
+    mic,
     h("button", { class: "btn", onclick: organize }, "Organize into priorities"),
     h("button", { class: "btn secondary", onclick: clear }, "Clear"),
   ]);

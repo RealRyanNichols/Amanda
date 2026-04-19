@@ -3,6 +3,7 @@ import { money, friendlyDate, daysFromNow, h } from "../util.js";
 import { currentBrand } from "../branding.js";
 import { TX_RDA_REQUIREMENTS } from "./rda-seed.js";
 import { verseOfTheDay, babySizeForWeek } from "./life-seeds.js";
+import { scanForReminders } from "./reminders.js";
 
 function incomeSummary() {
   const { deposits, bills } = state.income;
@@ -142,6 +143,26 @@ function renderHero() {
   return h("section", { class: "card" }, [
     h("h2", {}, `${greeting()}, ${who.split(" ")[0]}`),
     h("div", { class: "sub" }, b.business ? b.business.name : "Here's where everything stands right now."),
+  ]);
+}
+
+function renderSmartReminders() {
+  const items = scanForReminders();
+  if (!items.length) return null;
+
+  return h("section", { class: "card reminders-card" }, [
+    h("h2", {}, "I noticed a few things"),
+    h("div", { class: "sub" }, "From across your app — things that probably need you today."),
+    h("div", { class: "list" }, items.map((r) =>
+      h("div", { class: `alert ${r.level || ""}`, style: "display:flex; gap:10px; align-items:center" }, [
+        h("div", { class: "cal-icon", style: "flex-shrink:0" }, r.icon),
+        h("div", { style: "flex:1" }, r.text),
+        r.go && h("button", {
+          class: "btn small secondary",
+          onclick: () => jumpTo(r.go),
+        }, "Open"),
+      ])
+    )),
   ]);
 }
 
@@ -333,6 +354,8 @@ function renderAcademyCard() {
 export function renderDashboard(mount) {
   const isPda = state.brand === "pda";
   mount.append(renderHero());
+  const reminders = renderSmartReminders();
+  if (reminders) mount.append(reminders);
   mount.append(renderFocus());
 
   // Life-ish cards surface near the top so the day starts warm, not transactional

@@ -218,15 +218,46 @@ function systemPrompt(toneKeyOverride) {
   ].filter(Boolean).join("\n\n");
 }
 
+function buildDataContext() {
+  if (!state.brain?.shareData) return "";
+  const lines = [];
+  const inc = state.income;
+  if (inc) {
+    const unpaid = (inc.bills || []).filter((b) => !b.paid);
+    lines.push(`Income: ${inc.deposits?.length || 0} deposits logged, ${unpaid.length} unpaid bills totaling $${unpaid.reduce((s, b) => s + Number(b.amount || 0), 0).toFixed(0)}.`);
+  }
+  const leads = (state.followup?.leads || []).filter((l) => !l.closed);
+  if (leads.length) {
+    lines.push(`Leads: ${leads.length} open (${leads.filter((l) => l.temperature === "hot").length} hot).`);
+  }
+  if (state.booking?.appointments?.length) {
+    const active = state.booking.appointments.filter((a) => !a.cancelled);
+    lines.push(`Booking: ${active.length} appointments.`);
+  }
+  if (state.academy?.students?.length) {
+    lines.push(`Academy: ${state.academy.students.length} students across ${state.academy.programs?.length || 0} cohorts.`);
+  }
+  const openTasks = (state.overload?.tasks || []).filter((t) => !t.done);
+  if (openTasks.length) lines.push(`Organize: ${openTasks.length} open tasks.`);
+  if (state.life?.pregnancy?.dueDate) {
+    const weeks = Math.max(0, Math.floor((Date.now() - (new Date(state.life.pregnancy.dueDate + "T00:00:00").getTime() - 280 * 86400000)) / (7 * 86400000)));
+    lines.push(`Pregnancy: ~${weeks} weeks along, due ${state.life.pregnancy.dueDate}${state.life.pregnancy.babyName ? ", baby's name " + state.life.pregnancy.babyName : ""}.`);
+  }
+  return lines.length ? "\n\nHER CURRENT STATS (she opted in to share): " + lines.join(" ") : "";
+}
+
 export async function callClaude(userText, opts = {}) {
   const cfg = state.brain;
   if (!cfg.apiKey) throw new Error("No API key configured");
+
+  const base = opts.systemOverride || systemPrompt(opts.tone);
+  const dataCtx = buildDataContext();
 
   const body = {
     model: cfg.model || "claude-opus-4-7",
     max_tokens: opts.maxTokens || 1500,
     system: [
-      { type: "text", text: opts.systemOverride || systemPrompt(opts.tone), cache_control: { type: "ephemeral" } },
+      { type: "text", text: base + dataCtx, cache_control: { type: "ephemeral" } },
     ],
     messages: opts.messages || [
       ...cfg.history.slice(-10).map((m) => ({ role: m.role, content: m.text })),

@@ -19,6 +19,7 @@ const defaults = () => ({
     history: [],
     systemExtras: "",
     tone: "friend",       // one of TONES in tools/brain.js
+    shareData: false,     // opt-in: include a compact summary of her data in Claude requests
   },
   income: { deposits: [], bills: [] },
   booking: { clients: [], appointments: [] },

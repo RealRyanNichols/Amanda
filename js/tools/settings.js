@@ -122,6 +122,23 @@ function renderBrainCard(rerender) {
   card.append(h("div", { class: "pda-contact" },
     "Privacy: when a key is set, messages you send to the Brain go directly from this device to Anthropic over HTTPS. Nothing passes through any server we control. Your chat history is stored in this browser only."));
 
+  // Data-awareness toggle
+  card.append(h("label", {
+    class: "radio",
+    style: "margin-top:10px; align-items:flex-start; gap:12px",
+  }, [
+    h("input", {
+      type: "checkbox",
+      checked: !!brain.shareData,
+      onchange: (e) => { brain.shareData = e.target.checked; save(); rerender(); },
+    }),
+    h("div", {}, [
+      h("div", { class: "title" }, "Let the Brain see my stats"),
+      h("div", { class: "meta" },
+        "When on, a short summary of your data (e.g. 3 unpaid bills, 12 open leads) is included with each Brain message. Makes answers way smarter. Raw details (names, amounts) NEVER leave your device unless you paste them yourself."),
+    ]),
+  ]));
+
   return card;
 }
 

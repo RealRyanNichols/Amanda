@@ -994,21 +994,25 @@ function renderGratitude(rerender) {
 
   const items = [0, 1, 2];
   items.forEach((i) => {
+    const input = h("input", {
+      type: "text",
+      value: todayEntry?.things?.[i] || "",
+      placeholder: i === 0 ? "Something small that was good" : "",
+      oninput: (e) => {
+        if (!entries.find((x) => x.date === today)) {
+          entries.unshift({ id: uid(), date: today, things: ["", "", ""] });
+        }
+        const current = entries.find((x) => x.date === today);
+        current.things[i] = e.target.value;
+        save();
+      },
+    });
     todayCard.append(h("label", { class: "field" }, [
       `${i + 1}.`,
-      h("input", {
-        type: "text",
-        value: todayEntry?.things?.[i] || "",
-        placeholder: i === 0 ? "Something small that was good" : "",
-        oninput: (e) => {
-          if (!todayEntry) {
-            entries.unshift({ id: uid(), date: today, things: ["", "", ""] });
-          }
-          const current = entries.find((x) => x.date === today);
-          current.things[i] = e.target.value;
-          save();
-        },
-      }),
+      h("div", { style: "display:flex; gap:6px" }, [
+        input,
+        micButton(input),
+      ]),
     ]));
   });
   wrap.append(todayCard);
