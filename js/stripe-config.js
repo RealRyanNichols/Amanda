@@ -55,11 +55,17 @@ export const STRIPE_LINKS = {
   //
   // Pricing model (Ryan's call): roughly $1/day of unlimited voice.
   // One-time charges. No recurring.
-  // Pricing updated after margin analysis: $1 was eaten by Stripe's $0.30
-  // flat fee (33% of the charge). $2.99 brings margin to 85% vs 62% at $1.
-  "voice-1day":     { paymentLink: "", hours: 24,  label: "24 hours unlimited voice",    price: "$2.99" },
-  "voice-3day":     { paymentLink: "", hours: 72,  label: "3 days unlimited voice",      price: "$4.99" },
-  "voice-week":     { paymentLink: "", hours: 168, label: "7 days unlimited voice",      price: "$9.99" },
+  // Pricing ladder designed to feel progressively better per-day value:
+  //   $1.99 / 1 day  = $1.99/day (impulse)
+  //   $3    / 3 days = $1.00/day (real upgrade feeling)
+  //   $5    / 7 days = $0.71/day (power week)
+  //   $20   / 30 days = $0.67/day (intentional anti-sell vs Core $19/mo —
+  //                     makes the full subscription feel like a steal,
+  //                     "$20 for voice only vs $19 for everything")
+  "voice-1day":     { paymentLink: "", hours: 24,  label: "24 hours unlimited voice",   price: "$1.99" },
+  "voice-3day":     { paymentLink: "", hours: 72,  label: "3 days unlimited voice",     price: "$3"    },
+  "voice-week":     { paymentLink: "", hours: 168, label: "7 days unlimited voice",     price: "$5"    },
+  "voice-month":    { paymentLink: "", hours: 720, label: "30 days unlimited voice",    price: "$20"   },
 };
 
 // Helper: given an item id, return the hours of voice unlimited access it unlocks

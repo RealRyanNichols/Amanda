@@ -1128,6 +1128,27 @@ body[data-brand="pda"] .bible-content {
   padding: 24px 22px;
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
 }
+.voice-topup-benefits {
+  margin: 0 0 14px;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-size: .875rem;
+  color: var(--text-dim);
+}
+.voice-topup-benefits li::before {
+  content: "✓ ";
+  color: var(--accent);
+  font-weight: 700;
+  margin-right: 6px;
+}
+
 .voice-topup-options {
   display: flex; flex-direction: column; gap: 10px;
 }
@@ -1140,7 +1161,17 @@ body[data-brand="pda"] .bible-content {
   grid-template-columns: auto 1fr;
   gap: 12px;
   text-align: left;
+  align-items: center;
   transition: border-color .15s, background .15s;
+}
+.voice-topup-opt-anchor {
+  opacity: 0.8;
+  border-style: dashed;
+}
+.voice-topup-opt-anchor .voice-topup-opt-sub::after {
+  content: " · vs $19/mo for everything";
+  color: var(--warn);
+  font-weight: 600;
 }
 .voice-topup-opt:hover, .voice-topup-opt:active {
   border-color: var(--accent);

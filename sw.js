@@ -1,6 +1,6 @@
 // Service worker — offline shell caching for Amanda's Toolkit.
 // Bump CACHE_VERSION to force users onto new assets after a deploy.
-const CACHE_VERSION = "v18-2026-04-19";
+const CACHE_VERSION = "v20-2026-04-19";
 const CACHE_NAME = `amanda-toolkit-${CACHE_VERSION}`;
 
 const PRECACHE = [
@@ -42,6 +42,7 @@ const PRECACHE = [
   "./js/stripe-config.js",
   "./js/plan.js",
   "./js/voice-topup.js",
+  "./js/price-anchor.js",
   "./js/tools/upgrade.js",
   "./js/tools/body-journal.js",
   "./js/voice.js",

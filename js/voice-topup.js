@@ -5,6 +5,7 @@
 import { h, toast } from "./util.js";
 import { getPaymentLink, STRIPE_LINKS } from "./stripe-config.js";
 import { hasActiveVoiceTopup, voiceTopupExpiresAt } from "./plan.js";
+import { contextualAnchor, pickBenefits, paywallHeadline } from "./price-anchor.js";
 
 export function showVoiceTopupPaywall({ onClose } = {}) {
   const existing = document.querySelector(".voice-topup-overlay");
@@ -13,16 +14,21 @@ export function showVoiceTopupPaywall({ onClose } = {}) {
   const overlay = document.createElement("div");
   overlay.className = "voice-topup-overlay";
 
+  const anchor = contextualAnchor();
+  const headline = paywallHeadline();
+  const benefits = pickBenefits(3);
+
   const options = [
-    { id: "voice-1day", label: "24 hours", price: "$2.99", sub: "For a long car ride or a venting evening" },
-    { id: "voice-3day", label: "3 days",   price: "$4.99", sub: "Our most popular" },
-    { id: "voice-week", label: "7 days",   price: "$9.99", sub: "Best value · save 33%" },
+    { id: "voice-1day",  label: "24 hours", price: "$1.99", perDay: "$1.99/day", sub: `${anchor}` },
+    { id: "voice-3day",  label: "3 days",   price: "$3",    perDay: "$1.00/day", sub: "Popular pick" },
+    { id: "voice-week",  label: "7 days",   price: "$5",    perDay: "$0.71/day", sub: "Best value" },
+    { id: "voice-month", label: "30 days",  price: "$20",   perDay: "$0.67/day", sub: "Power user" },
   ];
 
   const cards = options.map((opt) => {
     const link = getPaymentLink(opt.id);
     return h("button", {
-      class: "voice-topup-opt",
+      class: "voice-topup-opt" + (opt.id === "voice-month" ? " voice-topup-opt-anchor" : ""),
       onclick: () => {
         if (!link) {
           toast("Stripe Payment Link not configured for " + opt.id);
@@ -33,22 +39,27 @@ export function showVoiceTopupPaywall({ onClose } = {}) {
       },
     }, [
       h("div", { class: "voice-topup-opt-price" }, opt.price),
-      h("div", { class: "voice-topup-opt-label" }, opt.label + " unlimited"),
-      h("div", { class: "voice-topup-opt-sub" }, opt.sub),
+      h("div", { style: "flex: 1; min-width: 0" }, [
+        h("div", { class: "voice-topup-opt-label" }, opt.label + " unlimited voice"),
+        h("div", { class: "voice-topup-opt-sub" }, `${opt.perDay} · ${opt.sub}`),
+      ]),
     ]);
   });
 
   const card = h("div", { class: "voice-topup-card" }, [
     h("div", { style: "font-size:2.5rem; text-align:center; margin-bottom:6px" }, "🎙️"),
-    h("h2", { style: "text-align:center; margin:0" }, "Keep talking"),
-    h("p", { style: "text-align:center; color:var(--text-dim); margin:8px 0 16px" },
-      "You hit your free 5 minutes. Tap once — pay with Face ID / Apple Pay — and keep going."),
+    h("h2", { style: "text-align:center; margin:0" }, headline),
+    h("p", { style: "text-align:center; color:var(--text-dim); margin:8px 0 10px" },
+      `$2.99 — ${anchor}. One tap · Face ID · you're back talking.`),
+    // Benefit bullets — what the extra time actually lets her DO
+    h("ul", { class: "voice-topup-benefits" },
+      benefits.map((b) => h("li", {}, b))),
     h("div", { class: "voice-topup-options" }, cards),
     h("div", { style: "margin:16px 0 0; text-align:center" }, [
       h("button", { class: "btn secondary", onclick: () => { overlay.remove(); onClose?.(); } }, "Maybe tomorrow"),
     ]),
     h("div", { class: "voice-topup-footer" },
-      "Want it unlimited every day? Upgrade to $19/mo in the Store tab — includes everything."),
+      "Psst: $19/mo in the Store gets you unlimited voice AND the whole app — actually cheaper than the 30-day voice-only option above."),
   ]);
   overlay.append(card);
   overlay.addEventListener("click", (e) => {

@@ -4,6 +4,7 @@ import { currentBrand } from "../branding.js";
 import { scanForConcerns, logConcern } from "../safety-net.js";
 import { isPaid, isInTrial, brainMinutesLeftToday, creditBrainMinutes, hasActiveVoiceTopup } from "../plan.js";
 import { showVoiceTopupPaywall, voiceStatusLine } from "../voice-topup.js";
+import { contextualAnchor } from "../price-anchor.js";
 
 // Claude API defaults — per claude-api skill guidance: default to Opus 4.7.
 const MODEL_OPTIONS = [
@@ -318,9 +319,10 @@ function renderHeader(rerender) {
     card.append(h("div", { class: "alert ok", style: "margin-top:10px" }, topupStatus));
   } else if (!isPaid() && !isInTrial()) {
     const mins = brainMinutesLeftToday();
+    const anchor = contextualAnchor();
     const msg = mins > 0
       ? `🎙️ ${mins} free voice minute${mins === 1 ? "" : "s"} left today`
-      : `🎙️ Free voice minutes are up for today`;
+      : `🎙️ Out of free voice for today · another 24hr for $1.99 — ${anchor}`;
     card.append(h("div", { class: "alert" + (mins === 0 ? " warn" : ""), style: "margin-top:10px; display:flex; justify-content:space-between; align-items:center; gap:8px" }, [
       h("span", {}, msg),
       mins === 0 && h("button", {
