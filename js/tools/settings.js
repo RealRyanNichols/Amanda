@@ -249,12 +249,12 @@ function renderInstallCard() {
 }
 
 function renderSafetyNetCard(rerender) {
-  if (!state.safetyNet) state.safetyNet = { trustedName: "", trustedRelation: "", trustedPhone: "", countryCode: "US", consentPartnerAlerts: false };
+  if (!state.safetyNet) state.safetyNet = { trustedName: "", trustedRelation: "", trustedPhone: "", countryCode: "US", consentPartnerAlerts: false, silentMonitoring: true, flagged: [] };
   const net = state.safetyNet;
   const card = h("section", { class: "card" }, [
-    h("h2", {}, "🤍 Safety Net"),
+    h("h2", {}, "Safety Net"),
     h("div", { class: "sub" },
-      "Set up the person you'd reach out to on a hard day. We NEVER auto-dial, auto-text, or notify anyone without you tapping the button yourself. No law enforcement, no CPS, no anyone — unless you call them. The 988 Lifeline is always one tap away as the professional option."),
+      "Set up the person you'd reach out to on a hard day. We NEVER auto-call or auto-text anyone on your behalf. The 988 Lifeline is always available if you open this screen yourself."),
   ]);
 
   card.append(h("div", { class: "form-row two" }, [
@@ -294,10 +294,70 @@ function renderSafetyNetCard(rerender) {
     }, "Preview the help screen"),
   ]));
 
-  card.append(h("div", { class: "pda-contact" },
-    "If you ever write something that sounds heavy, we may gently show you a 'want to check in?' banner you can dismiss. Nothing automatic beyond that. You're in control. Always."));
+  // Transparency about silent monitoring
+  card.append(h("h3", { style: "margin:16px 0 6px; font-size:13px; color:var(--text-dim); text-transform:uppercase; letter-spacing:.8px" }, "How we watch (honestly)"));
+  card.append(h("div", { class: "sub", style: "line-height:1.6" },
+    "If you write something that sounds like it might be more than venting, we quietly log it — no pop-ups, no banners, no interrupting you. We use AI to tell the difference between an exhausted mom using strong language (fine, stays private) and a real emergency (specific plan, means, timing). Only real emergencies trigger an alert, and those alerts go to people who can actually help — not to police unless it's immediate physical danger. You can turn this off below."));
+
+  card.append(h("label", {
+    class: "radio",
+    style: "margin-top:10px; align-items:flex-start; gap:12px",
+  }, [
+    h("input", {
+      type: "checkbox",
+      checked: net.silentMonitoring !== false,
+      onchange: (e) => { net.silentMonitoring = e.target.checked; save(); rerender(); },
+    }),
+    h("div", {}, [
+      h("div", { class: "title" }, "Silent safety monitoring"),
+      h("div", { class: "meta" },
+        net.silentMonitoring !== false
+          ? "On. We quietly watch for concerning language. No accusations, no interruptions."
+          : "Off. Your words are never scanned for crisis language. You're on your own — and that's your right."),
+    ]),
+  ]));
+
+  // If there's anything flagged, show a subtle review option (helps her review what WE flagged)
+  const flaggedCount = (net.flagged || []).length;
+  if (flaggedCount > 0 && net.silentMonitoring !== false) {
+    card.append(h("div", { class: "btn-row", style: "margin-top:10px" }, [
+      h("button", {
+        class: "btn small secondary",
+        onclick: () => reviewFlagged(rerender),
+      }, `Review what we flagged (${flaggedCount})`),
+    ]));
+  }
 
   return card;
+}
+
+function reviewFlagged(rerender) {
+  const flagged = state.safetyNet?.flagged || [];
+  const overlay = h("div", { class: "note-overlay", onclick: (e) => { if (e.target.classList.contains("note-overlay")) overlay.remove(); } }, [
+    h("div", { class: "card", style: "max-width:560px; width:100%; cursor:auto; max-height:80vh; overflow:auto" }, [
+      h("h2", {}, "What we flagged"),
+      h("div", { class: "sub" }, "Everything here is stored locally on your device. Clear any of it any time."),
+      ...(flagged.length === 0 ? [h("div", { class: "empty" }, "Nothing flagged.")] : flagged.slice().reverse().map((f) => h("div", { class: "item", style: "flex-direction:column; align-items:stretch; gap:6px" }, [
+        h("div", { class: "meta" }, `${new Date(f.at).toLocaleString()} · ${f.source} · ${f.level}${f.intent ? " · AI verdict: " + f.intent + " (" + Math.round((f.confidence || 0) * 100) + "%)" : " · AI pending"}`),
+        h("div", { style: "font-size:.9375rem" }, f.text),
+        f.reasoning && h("div", { class: "meta", style: "font-style:italic" }, "AI: " + f.reasoning),
+      ]))),
+      h("div", { class: "btn-row", style: "margin-top:12px; justify-content:space-between" }, [
+        h("button", {
+          class: "btn danger",
+          onclick: () => {
+            if (!confirm("Clear all flagged entries?")) return;
+            state.safetyNet.flagged = [];
+            save();
+            overlay.remove();
+            rerender();
+          },
+        }, "Clear all"),
+        h("button", { class: "btn", onclick: () => overlay.remove() }, "Close"),
+      ]),
+    ]),
+  ]);
+  document.body.append(overlay);
 }
 
 export function renderSettings(mount, { rerender }) {

@@ -1,17 +1,28 @@
-// Safety Net — the "I'm not okay right now" button + concerning-phrase
-// detection + crisis resources.
+// Safety Net — re-designed per Ryan's directive:
 //
-// Design principles:
-// - 988 (US Suicide & Crisis Lifeline) is ALWAYS surfaced first for US users.
-//   Trained responders, 24/7, free. No app can replace this.
-// - The trusted person (partner, parent, friend, pastor) is surfaced SECOND,
-//   as an additional option, not a replacement.
-// - No auto-dial. No hidden alerts. She chooses what to do.
-// - Concerning phrases trigger gentle surfacing — never alarm, never lock
-//   her out of the app. Respect her autonomy while offering help.
+// (1) SILENT monitoring. We scan her writing for concerning phrases but
+//     DON'T pop up a "want to check in?" banner. Mom venting deserves to
+//     vent freely. Accusing her for hyperbole would shut her down.
+//
+// (2) Log flagged items locally (state.safetyNet.flagged[]).
+//
+// (3) If Claude is connected, silently classify intent: VENTING (hyperbole,
+//     exhaustion, rhetorical) vs DISTRESS (emotional pain, needs support)
+//     vs CRISIS (specific plan, means, timing — real danger).
+//
+// (4) Only on CRISIS verdict do we back-channel alert (founder + security
+//     ops + significant other with screenshot). That's backend-only —
+//     spec'd in DESKTOP_HANDOFF §20. Client-side we log and wait.
+//
+// (5) The 988 + trusted person + Scripture overlay is STILL available —
+//     via Settings "Preview the help screen" OR when she intentionally
+//     chooses to open it. It's just not forced on her.
+//
+// This preserves her autonomy, doesn't stigmatize, doesn't accuse, but
+// keeps the hooks ready for the backend to act on genuine emergencies.
 
-import { state, save } from "./store.js";
-import { h, toast } from "./util.js";
+import { state, save, uid } from "./store.js";
+import { h } from "./util.js";
 
 // Keywords flagged as concerning. Conservative — better to surface resources
 // once too often than once too few. Matching is case-insensitive + word-boundary.
@@ -38,6 +49,91 @@ export function scanForConcerns(text) {
   return { level: "none" };
 }
 
+/**
+ * Silently note that a concerning phrase was detected. Stores locally; if
+ * Claude key is set, runs an intent classifier in the background that
+ * labels it venting/distress/crisis. Real back-channel alerting happens
+ * server-side when that's built — see DESKTOP_HANDOFF §20.
+ */
+export function logConcern({ source, text, level }) {
+  if (!state.safetyNet) state.safetyNet = { flagged: [] };
+  if (state.safetyNet.silentMonitoring === false) return; // user opted out
+
+  const record = {
+    id: uid(),
+    source,              // 'brain' | 'vent' | 'overload' | other
+    text: text.slice(0, 500), // cap so we don't inflate storage
+    level,               // 'watch' | 'acute' — the raw regex result
+    intent: null,        // filled by classifier
+    confidence: null,
+    reasoning: "",
+    at: Date.now(),
+  };
+  state.safetyNet.flagged = state.safetyNet.flagged || [];
+  state.safetyNet.flagged.push(record);
+  // Cap at 200 flagged events
+  if (state.safetyNet.flagged.length > 200) {
+    state.safetyNet.flagged = state.safetyNet.flagged.slice(-200);
+  }
+  save();
+
+  // Fire-and-forget classifier (silent, non-blocking)
+  if (state.brain?.apiKey) {
+    classifyIntent(record).catch(() => {});
+  }
+}
+
+async function classifyIntent(record) {
+  const body = {
+    // Use Sonnet 4.6 or whatever she's on; classifier is fine on any tier
+    model: state.brain?.model || "claude-opus-4-7",
+    max_tokens: 400,
+    system: [{ type: "text", text:
+      "You are a careful, compassionate intent classifier. A mom wrote something " +
+      "that triggered a keyword scan. Your job: tell the difference between " +
+      "VENTING (hyperbole, exhaustion, rhetorical frustration — 'I could kill " +
+      "those kids', 'I can't do this anymore', 'I want to die' said about a " +
+      "bad day) vs DISTRESS (real emotional pain, needs support, but no " +
+      "specific plan or means) vs CRISIS (specific plan OR specific means OR " +
+      "specific timing OR clear stated intent to act).\n\n" +
+      "Err on the side of VENTING unless there's clear evidence otherwise. " +
+      "An exhausted mother deserves to vent without being accused.\n\n" +
+      "Return ONLY valid JSON: " +
+      `{"intent":"venting"|"distress"|"crisis","confidence":0-1,"reasoning":"<one short sentence>"}`,
+    cache_control: { type: "ephemeral" } }],
+    messages: [{ role: "user", content: record.text }],
+  };
+  if (/opus-4-7|opus-4-6|sonnet-4-6/.test(body.model)) body.thinking = { type: "adaptive" };
+
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": state.brain.apiKey,
+      "anthropic-version": "2023-06-01",
+      "anthropic-dangerous-direct-browser-access": "true",
+    },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) return;
+  const data = await res.json();
+  const textBlock = (data.content || []).find((b) => b.type === "text");
+  const raw = textBlock?.text || "{}";
+  const s = raw.indexOf("{"); const e = raw.lastIndexOf("}");
+  try {
+    const parsed = JSON.parse(s >= 0 && e > s ? raw.slice(s, e + 1) : raw);
+    record.intent = parsed.intent;
+    record.confidence = parsed.confidence;
+    record.reasoning = parsed.reasoning || "";
+    save();
+    // NOTE: back-channel alerting on 'crisis' requires backend. Desktop phase.
+    // When backend exists: if intent === 'crisis' AND confidence >= 0.7 →
+    // POST to /api/crisis-alert with the record + user_id. Backend handles
+    // notifying founder + security ops + significant other per the
+    // DESKTOP_HANDOFF §20 spec.
+  } catch {}
+}
+
 const COMFORT_VERSES = [
   { ref: "Psalm 34:18",  text: "The LORD is nigh unto them that are of a broken heart; and saveth such as be of a contrite spirit." },
   { ref: "Psalm 46:1",   text: "God is our refuge and strength, a very present help in trouble." },
@@ -53,9 +149,9 @@ function pickComfortVerse() {
 }
 
 /**
- * Show the full safety-net overlay. The user's explicit choice — NEVER
- * auto-triggered without her opening the "I need help" button, or a
- * concerning phrase being detected AND her not dismissing the gentle prompt.
+ * She intentionally opens the help screen (from Settings "Preview" or
+ * any future in-context entry point). This is always available — just
+ * not pushed on her.
  */
 export function showSafetyNet({ reason = "open" } = {}) {
   const existing = document.querySelector(".safety-overlay");
@@ -79,18 +175,10 @@ export function showSafetyNet({ reason = "open" } = {}) {
     ])
   );
 
-  if (reason === "auto-watch") {
-    card.append(h("p", { class: "safety-intro" },
-      "Some of what you wrote sounds heavy. I'm not going anywhere. Here's help, right now — on your terms."));
-  } else if (reason === "auto-acute") {
-    card.append(h("p", { class: "safety-intro" },
-      "What you just wrote is making me pause. You matter. Please reach for help — you don't have to do this alone."));
-  } else {
-    card.append(h("p", { class: "safety-intro" },
-      "Whatever brought you here, you made a good choice. Start with whichever option feels right."));
-  }
+  card.append(h("p", { class: "safety-intro" },
+    "Whatever brought you here, you made a good choice. Start with whichever option feels right."));
 
-  // 988 Crisis Lifeline — US first, 24/7, trained. ALWAYS visible.
+  // 988 Crisis Lifeline
   card.append(h("div", { class: "safety-primary" }, [
     h("div", { class: "safety-label" }, "Trained humans, 24/7, free"),
     h("h3", {}, "988 — Suicide & Crisis Lifeline"),
@@ -135,7 +223,6 @@ export function showSafetyNet({ reason = "open" } = {}) {
     h("div", { class: "verse-text" }, `"${verse.text}"`),
   ]));
 
-  // Gentle close
   card.append(h("p", { class: "safety-footer" },
     "You don't have to be okay to be loved. You are loved right now, exactly as you are."));
 
@@ -143,34 +230,10 @@ export function showSafetyNet({ reason = "open" } = {}) {
   document.body.append(overlay);
 }
 
-// Gentle, subtle banner that surfaces if a concerning phrase is detected
-// WITHOUT being a full overlay. She can tap it to open the overlay, or
-// dismiss it. Never blocks her from what she's doing.
-export function showGentleCheckIn(level = "watch") {
-  if (document.querySelector(".safety-checkin")) return;
-  const banner = document.createElement("div");
-  banner.className = "safety-checkin " + (level === "acute" ? "acute" : "");
-  banner.innerHTML = `
-    <div class="safety-checkin-text">
-      ${level === "acute"
-        ? "What you wrote sounded heavy. You're not alone — help is one tap away."
-        : "Want me to check in with you? No pressure."}
-    </div>
-  `;
-  const openBtn = h("button", { class: "btn small", onclick: () => { banner.remove(); showSafetyNet({ reason: "auto-" + level }); } }, "Yes");
-  const dismissBtn = h("button", { class: "btn small secondary", onclick: () => banner.remove() }, "Not now");
-  banner.append(openBtn, dismissBtn);
-  document.body.append(banner);
-  if (level !== "acute") setTimeout(() => banner.remove(), 30000);
-}
-
 // NOTE: a floating always-visible SOS button was removed deliberately.
 // A persistent "help" button signals fragility; it's not the vibe. Crisis
 // resources are surfaced two ways instead:
-//   1. Auto: scanForConcerns() detects concerning phrases in her writing
-//      and shows a dismissable gentle check-in banner (never intrusive,
-//      never blocks her).
-//   2. Intentional: she taps "Preview the help screen" from
-//      Settings → Safety Net, OR any future in-context entry point.
-// The crisis resources are THERE when she needs them — just not worn
-// on the outside of the app.
+//   1. The user intentionally opens Settings → Safety Net → Preview.
+//   2. Backend-triggered back-channel alerting (see DESKTOP_HANDOFF §20)
+//      when the intent classifier determines real CRISIS — notifies
+//      founder + security ops + significant other, NOT her.

@@ -1,7 +1,7 @@
 import { state, save, uid } from "../store.js";
 import { h, toast, confirmAction } from "../util.js";
 import { currentBrand } from "../branding.js";
-import { scanForConcerns, showGentleCheckIn } from "../safety-net.js";
+import { scanForConcerns, logConcern } from "../safety-net.js";
 
 // Claude API defaults — per claude-api skill guidance: default to Opus 4.7.
 const MODEL_OPTIONS = [
@@ -345,9 +345,11 @@ function renderChat(rerender) {
       input.value = "";
       rerender();
 
-      // Safety Net: scan for concerning phrases and gently offer help
+      // Safety Net: silent scan + log. No banner, no accusation. Claude's
+      // reply will naturally include caring language if the content is
+      // heavy. Back-channel alerting is server-side only (desktop phase).
       const concern = scanForConcerns(text);
-      if (concern.level !== "none") showGentleCheckIn(concern.level);
+      if (concern.level !== "none") logConcern({ source: "brain", text, level: concern.level });
 
       if (state.brain.apiKey) {
         state.brain.history.push({ id: uid(), role: "assistant", text: "…thinking…", pending: true, at: Date.now() });
@@ -682,11 +684,9 @@ function openVentMode() {
             if (timer) { clearInterval(timer); timer = null; }
             transcript = (committed || ta.value || "").trim();
             if (!transcript) { statusEl.textContent = "I didn't catch any words yet — keep going."; return; }
-            // Safety Net: scan the transcript and gently surface help if needed
+            // Safety Net: silent log only. No banner. She vented — respect that.
             const concern = scanForConcerns(transcript);
-            if (concern.level !== "none") {
-              setTimeout(() => showGentleCheckIn(concern.level), 600);
-            }
+            if (concern.level !== "none") logConcern({ source: "vent", text: transcript, level: concern.level });
             stage = "summary";
             render();
           },

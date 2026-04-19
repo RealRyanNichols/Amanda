@@ -68,6 +68,8 @@ const defaults = () => ({
     trustedPhone: "",
     countryCode: "US",           // determines which crisis line defaults
     consentPartnerAlerts: false, // user must opt in; only used when backend live
+    silentMonitoring: true,      // user can disable; default on
+    flagged: [],                 // { id, source, text, intent, confidence, reasoning, at }
   },
   timeSaved: {
     totalMinutes: 0,             // lifetime cumulative

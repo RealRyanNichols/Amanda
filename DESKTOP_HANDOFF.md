@@ -729,7 +729,70 @@ building a local vector DB of the full KJV indexed so we don't burn
 tokens looking up references Claude already knows but paraphrases.
 ```
 
-## 22. Acquisition positioning (long game)
+## 22. Free tier — "Talk to the Brain" (conversion funnel)
+
+Ryan's insight: **push-to-talk unlocks what typing never will.** A mom
+won't type out a paragraph about her life, but she'll talk for 5 minutes
+while folding laundry. The free tier is the voice-Brain, capped, as the
+honeypot — once she's had the Brain listen to her and give back useful
+insight, she upgrades.
+
+FREE TIER:
+- Name suggestion: "Just Talk" (or a product-named variant like "TendHQ Listen")
+- Access: Brain tab only (with push-to-talk prominently shown, text fallback
+  available). All other tabs show a "locked — upgrade to unlock" card
+  with a preview screenshot.
+- Model: **Haiku 4.5** on the free tier — cheapest, fast, plenty smart for
+  the listening-and-reflecting use case.
+- Daily limit: **10 minutes of voice transcription time** (the Web Speech
+  API is free for us; the cost is in the Claude reply tokens). That's
+  ~5-8 chat exchanges per day.
+- Response style: **short and concise** (max_tokens: 300). Claude's
+  system prompt: "Respond in 2-4 sentences. No preambles. No bullet
+  lists. Just warm, human reflection — like a text from a wise friend."
+- Rate-limiting enforced server-side (user has 10 min / day counted by
+  transcription duration; reset at midnight local time).
+- Once limit is hit: "You've talked to me for 10 minutes today. Come
+  back tomorrow — or upgrade to keep going + unlock everything."
+
+IMPLEMENTATION:
+```
+Schema:
+- users.plan: 'free' | 'core' | 'core_annual' | 'ultra' | 'ultra_annual'
+- users.daily_voice_seconds_used (resets midnight local)
+- users.voice_minutes_total (lifetime, telemetry)
+
+Client:
+- If plan === 'free':
+  * Hide all tabs except Brain, Settings
+  * In Brain tab, surface push-to-talk as the primary affordance
+  * Track transcription duration (from voice.js start/stop) and send
+    up to server on each pause
+  * Show progress ring with minutes used today
+- Upgrade CTAs on every locked tab with 2-3 feature teasers
+
+Server (Supabase Edge Function /api/brain/message):
+- Reject if plan === 'free' && daily_voice_seconds_used >= 600
+- Reject if plan === 'free' && model != 'claude-haiku-4-5'
+- Force max_tokens: 300 and short system prompt for free tier
+- Log duration, tokens consumed, intent (via classifier from §20)
+
+Conversion:
+- After free user's 10-min session, post-session screen shows:
+  "You just said something important. Want me to help you work on it?"
+  with 3-feature teaser + Try 7 days free CTA.
+- After 3rd session in 7 days: offer a one-time 50% off their first
+  month to the trial conversion.
+
+Legal/Ethical:
+- Free users are told clearly: "Your voice and text are processed
+  by Claude (Anthropic)." Standard disclaimer.
+- Free users can delete all data anytime.
+- We do NOT use free-user conversations to train anything (Anthropic
+  API policy already prevents this; we restate it).
+```
+
+## 23. Acquisition positioning (long game)
 
 Ryan's thesis: build a SaaS with 1k-5k paid subscribers (in the
 mom-small-biz-faith demo), get acquired by a larger SaaS or

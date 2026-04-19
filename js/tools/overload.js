@@ -1,7 +1,7 @@
 import { state, save, uid } from "../store.js";
 import { h, toast, confirmAction, todayISO, friendlyDate } from "../util.js";
 import { micButton } from "../voice.js";
-import { scanForConcerns, showGentleCheckIn } from "../safety-net.js";
+import { scanForConcerns, logConcern } from "../safety-net.js";
 
 const CATEGORIES = [
   { value: "now", label: "Do now", pill: "urgent" },
@@ -43,9 +43,9 @@ function renderDump(rerender) {
       .filter(Boolean);
     if (!lines.length) { toast("Nothing to organize"); return; }
 
-    // Safety Net: scan the full dump for concerning phrases before we dispose of it
+    // Safety Net: silent log only. Brain dump is a vent space — no banners.
     const concern = scanForConcerns(rawDump);
-    if (concern.level !== "none") showGentleCheckIn(concern.level);
+    if (concern.level !== "none") logConcern({ source: "overload", text: rawDump, level: concern.level });
 
     lines.forEach((text) => {
       state.overload.tasks.push({
