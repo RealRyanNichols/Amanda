@@ -898,7 +898,7 @@ function renderHospitalBag(rerender) {
 function renderLove(rerender) {
   const wrap = h("div");
   const notes = state.life.loveNotes.notes;
-  const partner = state.profile.partnerName || (state.brand === "pda" ? "Ryan" : "");
+  const partner = state.profile.partnerName || "";
 
   wrap.append(h("section", { class: "card" }, [
     h("h2", {}, "Love notes" + (partner ? ` from ${partner}` : "")),
@@ -918,7 +918,7 @@ function renderLove(rerender) {
   });
   wrap.append(grid);
 
-  // Add new note (so Ryan can add his own from his own phone if he wants)
+  // Add new note (so her partner can add his own messages for her to open later)
   const add = h("section", { class: "card" }, [
     h("h2", {}, "Write a new one"),
     h("div", { class: "sub" }, "Leave a message for later."),

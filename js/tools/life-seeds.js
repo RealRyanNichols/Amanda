@@ -56,9 +56,9 @@ export const HOSPITAL_BAG_SEED = [
   { category: "For baby", item: "Swaddle blanket" },
   { category: "For baby", item: "Installed car seat" },
   { category: "For baby", item: "Mittens / socks / hat" },
-  { category: "For Ryan", item: "Change of clothes" },
-  { category: "For Ryan", item: "Snacks, phone charger, cash" },
-  { category: "For Ryan", item: "Camera" },
+  { category: "For your partner", item: "Change of clothes" },
+  { category: "For your partner", item: "Snacks, phone charger, cash" },
+  { category: "For your partner", item: "Camera" },
   { category: "Docs",     item: "Hospital pre-registration paperwork" },
   { category: "Docs",     item: "Pediatrician name & phone" },
 ];
@@ -117,60 +117,53 @@ export function babySizeForWeek(week) {
   return null;
 }
 
-// Love notes — envelopes with gentle placeholder text meant for Ryan to edit
-// on his desktop. They're written to feel warm but obviously awaiting his words.
+// Love notes — envelope placeholders with gentle scripted text. Users can
+// edit each note to make it their own. No assumed relationship status; "your
+// person" is intentionally neutral and inclusive of any supportive loved one.
 export const LOVE_NOTES_SEED = [
   {
     occasion: "Open when you feel overwhelmed",
     body:
-`Amanda — breathe. You don't have to carry it all right this second.
-One thing at a time. I've got you.
+`Breathe. You don't have to carry it all right this second.
+One thing at a time. You're held.
 
-— Ryan
-(Ryan, replace this with your own words when you're at your computer.)`,
+(Tap Edit to make this yours — or ask your person to write their words here.)`,
   },
   {
-    occasion: "Open when you miss me",
+    occasion: "Open when you miss someone",
     body:
-`I'm thinking about you. That thing you said last night? I keep smiling about it.
-You're not alone in this.
+`They're thinking about you too. That thing from last time? They're smiling about it.
+You're not alone.
 
-— Ryan
-(Ryan, replace this with your own words when you're at your computer.)`,
+(Tap Edit to make this yours.)`,
   },
   {
     occasion: "Open when you doubt yourself",
     body:
-`You are a great mom. You are a great woman. You are exactly who this baby needs.
-I see you clearly, and I'm proud of you.
+`You are a great mom. You are a great woman. You are exactly who your baby needs.
+You are seen clearly. You are loved.
 
-— Ryan
-(Ryan, replace this with your own words when you're at your computer.)`,
+(Tap Edit to make this yours.)`,
   },
   {
     occasion: "Open on a hard day",
     body:
-`Today can be tough. You can still be gentle with yourself.
-Eat something. Drink water. Text me when you can.
+`Today can be tough. Be gentle with yourself anyway.
+Eat something. Drink water. Reach out when you can.
 
-— Ryan
-(Ryan, replace this with your own words when you're at your computer.)`,
+(Tap Edit to make this yours.)`,
   },
   {
     occasion: "Open when you need a laugh",
     body:
-`(Ryan, put something only the two of you would find funny here.
-A line from that movie. That inside joke from dinner. Something small and real.)
-
-— Ryan`,
+`(Ask your person to write something only the two of you would find funny here — an inside joke, a line from a movie, a small real thing.)`,
   },
   {
     occasion: "Open when the baby kicks",
     body:
-`That's our child saying hi.
-I love you both.
+`That's your baby saying hi.
+You're both loved.
 
-— Ryan
-(Ryan, replace this with your own words when you're at your computer.)`,
+(Tap Edit to make this yours.)`,
   },
 ];

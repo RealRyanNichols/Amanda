@@ -75,29 +75,51 @@ const BOOKS = [
   { name: "Revelation",    chapters: 22, ot: false },
 ];
 
+// Free public-domain translations supported by bible-api.com.
+// Premium (NIV, ESV, NKJV, NASB, CSB, NLT, NRSV, AMP, MSG) require a
+// paid scripture.api.bible account + proper publisher licensing —
+// wired up in the desktop phase. See DESKTOP_HANDOFF.
+export const TRANSLATIONS = [
+  { key: "kjv",    label: "King James Version (KJV)",                 vibe: "Classic, majestic English" },
+  { key: "asv",    label: "American Standard Version (ASV, 1901)",    vibe: "Close cousin to KJV, lightly modernized" },
+  { key: "web",    label: "World English Bible (WEB)",                vibe: "Modern update of ASV, readable" },
+  { key: "bbe",    label: "Bible in Basic English (BBE)",             vibe: "Simple 1000-word English — great for ESL or kids" },
+  { key: "ylt",    label: "Young's Literal Translation (YLT)",        vibe: "Word-for-word, study-focused" },
+  { key: "darby",  label: "Darby Translation",                        vibe: "19th-century literal translation" },
+];
+
 function bibleState() {
   if (!state.bible) {
     state.bible = {
       currentBook: "John",
       currentChapter: 3,
+      translation: "kjv",
       bookmarks: [],
       highlights: {},        // key: "book:chapter:verse" → "yellow"|"pink"|"blue"
       readingHistory: {},    // key: "book:chapter" → ISO timestamp
-      cache: {},             // key: "book:chapter" → { verses: [{number, text}] }
+      cache: {},             // key: "translation:book:chapter" → { verses: [{number, text}] }
       view: "browse",        // browse | book | chapter
       activeBook: "John",
       fontScale: 1,
+      requestedTranslations: [], // user-requested translations we haven't wired yet
     };
     save();
   }
+  // Migration: cache keys used to omit translation. Clear old cache entries.
+  if (state.bible.cache && Object.keys(state.bible.cache).some((k) => k.split(":").length === 2)) {
+    state.bible.cache = {};
+  }
+  if (!state.bible.translation) state.bible.translation = "kjv";
+  if (!state.bible.requestedTranslations) state.bible.requestedTranslations = [];
   return state.bible;
 }
 
 async function loadChapter(book, chapter) {
   const b = bibleState();
-  const k = `${book}:${chapter}`;
+  const translation = b.translation || "kjv";
+  const k = `${translation}:${book}:${chapter}`;
   if (b.cache[k]) return b.cache[k];
-  const url = `https://bible-api.com/${encodeURIComponent(book + " " + chapter)}?translation=kjv`;
+  const url = `https://bible-api.com/${encodeURIComponent(book + " " + chapter)}?translation=${translation}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error("Couldn't load this chapter — check your connection.");
   const data = await res.json();
@@ -106,10 +128,10 @@ async function loadChapter(book, chapter) {
     verses: (data.verses || []).map((v) => ({ number: v.verse, text: v.text.trim() })),
   };
   b.cache[k] = out;
-  // keep cache size in check — last 30 chapters
+  // keep cache size in check — last 50 chapters across all translations
   const keys = Object.keys(b.cache);
-  if (keys.length > 30) {
-    const sorted = keys.slice(0, keys.length - 30);
+  if (keys.length > 50) {
+    const sorted = keys.slice(0, keys.length - 50);
     sorted.forEach((kk) => delete b.cache[kk]);
   }
   save();
@@ -122,12 +144,39 @@ function renderBrowse(rerender) {
   const b = bibleState();
   const wrap = h("div");
 
+  // Translation picker
+  const currentTr = TRANSLATIONS.find((t) => t.key === b.translation) || TRANSLATIONS[0];
+  wrap.append(h("section", { class: "card" }, [
+    h("h2", { style: "font-size:14px" }, "Translation"),
+    h("div", { class: "sub" }, currentTr.vibe),
+    h("label", { class: "field" }, [
+      h("select", {
+        onchange: (e) => {
+          b.translation = e.target.value;
+          save();
+          rerender();
+        },
+      }, TRANSLATIONS.map((t) =>
+        h("option", { value: t.key, selected: t.key === b.translation }, t.label)
+      )),
+    ]),
+    h("div", { class: "sub", style: "margin-top:8px" },
+      "Want NIV, ESV, NKJV, NASB, CSB, NLT, NRSV, AMP, or MSG? Request it below — we're working on licensing for popular modern translations."),
+    h("button", {
+      class: "btn small secondary",
+      style: "margin-top:8px",
+      onclick: () => requestTranslation(rerender),
+    }, "+ Request another translation"),
+    b.requestedTranslations.length > 0 && h("div", { class: "meta", style: "margin-top:8px" },
+      `Requested: ${b.requestedTranslations.join(", ")}`),
+  ]));
+
   // Continue reading card (if there's a recent location)
   const lastBook = b.currentBook;
   const lastCh = b.currentChapter;
   if (lastBook) {
     wrap.append(h("section", { class: "card bible-continue" }, [
-      h("div", { class: "sub" }, "Continue reading"),
+      h("div", { class: "sub" }, "Continue reading · " + currentTr.label),
       h("h2", { style: "margin:4px 0 10px" }, `${lastBook} ${lastCh}`),
       h("div", { class: "btn-row" }, [
         h("button", {
@@ -312,6 +361,21 @@ function renderChapterView(rerender) {
   ]));
 
   return wrap;
+}
+
+function requestTranslation(rerender) {
+  const name = prompt("Which translation would you like? (e.g. NIV, ESV, NKJV, NASB, CSB, NLT, NRSV, AMP, MSG)", "");
+  if (!name || !name.trim()) return;
+  const b = bibleState();
+  const normalized = name.trim().toUpperCase();
+  if (b.requestedTranslations.includes(normalized)) {
+    toast("Already on your request list");
+    return;
+  }
+  b.requestedTranslations.push(normalized);
+  save();
+  toast("Got it. We'll wire it up when licensing is in place.");
+  rerender();
 }
 
 function addBookmark(b, rerender) {

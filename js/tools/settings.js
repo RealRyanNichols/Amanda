@@ -180,6 +180,14 @@ function renderDataCard(rerender) {
         onclick: () => document.getElementById("importBtn")?.click(),
       }, "Import JSON"),
       h("button", {
+        class: "btn secondary",
+        onclick: () => {
+          if (!confirmAction("Start over from scratch? This wipes everything on this device and walks you through the welcome wizard again. Great for experiencing the app like a brand-new user.")) return;
+          resetAll();
+          location.reload();
+        },
+      }, "Experience fresh"),
+      h("button", {
         class: "btn danger",
         onclick: () => {
           if (!confirmAction("Erase ALL data on this device? This cannot be undone.")) return;
@@ -189,6 +197,8 @@ function renderDataCard(rerender) {
         },
       }, "Erase everything"),
     ]),
+    h("div", { class: "pda-contact", style: "margin-top:10px" },
+      "Tip for testing: 'Experience fresh' wipes your current data so you can feel what a new user feels — the welcome wizard, fresh profile, empty dashboards. Export first if you want to bring your data back."),
   ]);
   return card;
 }

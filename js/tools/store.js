@@ -10,16 +10,33 @@ const CATALOG = [
   {
     id: "brain-pro",
     type: "subscription",
-    title: "Brain Pro — Unlimited Claude Opus 4.7",
+    title: "Brain Pro — Unlimited Claude Sonnet 4.6",
     price: "$10/mo",
     emoji: "🧠",
     blurb:
-      "Switches the Brain from Sonnet 4.6 to Claude Opus 4.7 — Anthropic's most capable model — with no usage limits. Best for heavy users who lean on the Brain every day.",
+      "Upgrades every Brain chat from Haiku to Claude Sonnet 4.6 — Anthropic's balanced flagship — with NO usage limits. The sweet spot: smart enough for almost anything, fast, all day every day.",
     perks: [
-      "Upgrades every Brain chat to Opus 4.7",
+      "Unlimited Brain chat on Sonnet 4.6",
       "Unlimited caption writer generations",
       "Unlimited letter tidy-ups",
-      "Extended thinking on for every reply",
+      "Unlimited Vent Mode reflections",
+      "Faster than Opus, still very sharp",
+    ],
+  },
+  {
+    id: "brain-ultra",
+    type: "subscription",
+    title: "Brain Ultra — Unlimited Claude Opus 4.7",
+    price: "$20/mo",
+    emoji: "🧠✨",
+    blurb:
+      "The top shelf. Claude Opus 4.7 is Anthropic's most capable model — deeper reasoning, better judgment, extended thinking on every reply. For power users who lean hard on the Brain.",
+    perks: [
+      "Everything in Brain Pro, PLUS:",
+      "Unlimited Brain chat on Opus 4.7",
+      "Extended adaptive thinking on every reply",
+      "Best for revenue analysis, business strategy",
+      "Best for long letter/journal reflection",
     ],
   },
   {
@@ -28,7 +45,7 @@ const CATALOG = [
     price: "$5",
     emoji: "✍️",
     title: "Caption Pack — 50 generations",
-    blurb: "50 Claude-powered caption-writer runs. Good for a month of heavy posting.",
+    blurb: "50 Claude-powered caption-writer runs on the base tier. Good for a month of heavy posting without needing Brain Pro.",
     perks: ["50 three-variant caption generations", "Platform-tuned suggestions", "Hashtag auto-pack"],
   },
   {
@@ -37,7 +54,7 @@ const CATALOG = [
     price: "$3",
     emoji: "🪶",
     title: "Letter Tidy Pack — 20 cleanups",
-    blurb: "20 voice-dictated letter clean-ups. Keeps your voice, removes ums.",
+    blurb: "20 voice-dictated letter clean-ups on the base tier. Keeps your voice, removes ums.",
     perks: ["20 'Tidy it up' calls on letters", "Preserves your voice", "Works on all letter-style textareas"],
   },
   {
@@ -57,8 +74,8 @@ const CATALOG = [
     emoji: "👨‍👩‍👧",
     title: "Family Plan — 4 seats",
     blurb:
-      "Invite your partner, parents, or trusted family. Each person gets their own login, shared family space for Thomas + calendar + letters.",
-    perks: ["4 additional seats", "Shared calendar with your husband", "Shared love notes + letters to baby"],
+      "Invite your partner, parents, or trusted family. Each person gets their own login, shared family space for your baby + calendar + letters.",
+    perks: ["4 additional seats", "Shared calendar with your partner", "Shared love notes + letters to baby"],
   },
   {
     id: "theme-pack",

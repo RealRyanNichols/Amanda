@@ -1,6 +1,7 @@
 import { state, save, uid } from "../store.js";
 import { money, todayISO, friendlyDate, daysFromNow, h, toast, confirmAction } from "../util.js";
 import { currentBrand } from "../branding.js";
+import { offerNext } from "../next-offer.js";
 
 const PRIORITIES = [
   { value: 1, label: "Must pay (rent, utilities, car)" },
@@ -133,6 +134,86 @@ function renderTrendsCard(rerender) {
   }
 
   return card;
+}
+
+function offerNextForBill(bill, rerender) {
+  const options = [
+    {
+      emoji: "🔁",
+      label: "Is this monthly? Make it recurring",
+      onPick: () => {
+        bill.recurring = true;
+        save();
+        toast("Marked recurring — I'll auto-add next month");
+      },
+    },
+    {
+      emoji: "✅",
+      label: "Mark it paid now",
+      onPick: () => {
+        bill.paid = true;
+        save();
+        toast("Marked paid");
+        rerender();
+      },
+    },
+    {
+      emoji: "📅",
+      label: "Add to my calendar (.ics)",
+      onPick: () => {
+        const ics = buildBillIcs(bill);
+        const blob = new Blob([ics], { type: "text/calendar;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${bill.name.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}-due.ics`;
+        a.click();
+        URL.revokeObjectURL(url);
+        toast("Opened in Calendar");
+      },
+    },
+    bill.priority === 1 && {
+      emoji: "🧠",
+      label: "Ask the Brain how to cover this",
+      onPick: () => {
+        state.brain = state.brain || {};
+        state.brain.history = state.brain.history || [];
+        state.brain.history.push({
+          id: uid(), role: "user", at: Date.now(),
+          text: `I have a priority-1 bill for ${bill.name} ($${bill.amount}) due ${bill.due}. What's my best plan to cover it?`,
+        });
+        save();
+        const brainTab = document.querySelector('.tab[data-tab="brain"]');
+        if (brainTab) brainTab.click();
+      },
+    },
+  ].filter(Boolean);
+
+  offerNext({
+    title: `${bill.name} · $${bill.amount.toFixed(2)} saved. What now?`,
+    subtitle: `Due ${friendlyDate(bill.due)}`,
+    options,
+  });
+}
+
+function buildBillIcs(bill) {
+  const start = new Date(bill.due + "T09:00:00");
+  const end = new Date(start.getTime() + 60 * 60 * 1000);
+  const fmt = (d) => d.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+  const uidStr = Math.random().toString(36).slice(2) + "@amanda-toolkit";
+  const esc = (s) => (s || "").replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\n/g, "\\n");
+  return [
+    "BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Amanda's Toolkit//EN","CALSCALE:GREGORIAN",
+    "BEGIN:VEVENT",
+    `UID:${uidStr}`,
+    `DTSTAMP:${fmt(new Date())}`,
+    `DTSTART:${fmt(start)}`,
+    `DTEND:${fmt(end)}`,
+    `SUMMARY:${esc(`Bill due: ${bill.name} ($${bill.amount})`)}`,
+    `DESCRIPTION:${esc("Due date reminder from Amanda's Toolkit")}`,
+    "BEGIN:VALARM","ACTION:DISPLAY","TRIGGER:-P1D","DESCRIPTION:Bill due tomorrow","END:VALARM",
+    "END:VEVENT","END:VCALENDAR",
+  ].join("\r\n");
 }
 
 function renderBuiltInAssessment(last30, prev30, delta, upcomingBills) {
@@ -333,17 +414,22 @@ function renderBillsCard(rerender) {
   function onAdd(e) {
     e.preventDefault();
     const f = new FormData(e.target);
-    state.income.bills.push({
+    const bill = {
       id: uid(),
       name: (f.get("name") || "").toString().trim(),
       amount: Number(f.get("amount")) || 0,
       due: f.get("due"),
       priority: Number(f.get("priority")) || 2,
       paid: false,
-    });
+      recurring: false,
+    };
+    state.income.bills.push(bill);
     save();
     toast("Bill added");
     rerender();
+
+    // Depth: offer next actions after adding a bill
+    offerNextForBill(bill, rerender);
   }
 
   const sorted = [...bills].sort((a, b) => {

@@ -1,6 +1,7 @@
 import { state, save, uid } from "../store.js";
 import { h, toast, confirmAction, todayISO, friendlyDate, daysFromNow } from "../util.js";
 import { currentBrand } from "../branding.js";
+import { offerNext } from "../next-offer.js";
 
 const TEMPERATURES = [
   { value: "hot",  label: "Hot",  next: 1 },
@@ -117,9 +118,69 @@ function renderForm(rerender) {
     toast("Lead added");
     e.target.reset();
     rerender();
+
+    // Depth: offer next actions after adding a lead
+    const newLead = state.followup.leads[state.followup.leads.length - 1];
+    offerNextForLead(newLead, rerender);
   }
 
   return card;
+}
+
+function offerNextForLead(lead, rerender) {
+  const first = (lead.name || "").split(/\s+/)[0] || "them";
+  const options = [
+    lead.phone && {
+      emoji: "📲",
+      label: `Text ${first} now (with script)`,
+      onPick: () => showScript(lead),
+    },
+    {
+      emoji: "📅",
+      label: "Add follow-up to my Calendar",
+      onPick: () => {
+        const days = lead.temperature === "hot" ? 1 : lead.temperature === "warm" ? 3 : 14;
+        const d = new Date();
+        d.setDate(d.getDate() + days);
+        lead.nextContact = d.toISOString().slice(0, 10);
+        save();
+        toast(`Follow-up set for ${days} day${days > 1 ? "s" : ""}`);
+        rerender();
+      },
+    },
+    lead.temperature === "hot" && {
+      emoji: "🔥",
+      label: "Mark as top priority today",
+      onPick: () => {
+        const today = new Date().toISOString().slice(0, 10);
+        lead.nextContact = today;
+        save();
+        toast("Top priority today");
+        rerender();
+      },
+    },
+    {
+      emoji: "🧠",
+      label: "Ask the Brain: what's my pitch?",
+      onPick: () => {
+        state.brain = state.brain || {};
+        state.brain.history = state.brain.history || [];
+        state.brain.history.push({
+          id: uid(), role: "user", at: Date.now(),
+          text: `I just got a new ${lead.temperature} lead: ${lead.name}. Their interest is "${lead.interest || "unknown"}". What's my best pitch?`,
+        });
+        save();
+        const brainTab = document.querySelector('.tab[data-tab="brain"]');
+        if (brainTab) brainTab.click();
+      },
+    },
+  ].filter(Boolean);
+
+  offerNext({
+    title: `${lead.name} saved. What now?`,
+    subtitle: `${lead.temperature}${lead.interest ? " · " + lead.interest : ""}`,
+    options,
+  });
 }
 
 function renderLeads(rerender) {

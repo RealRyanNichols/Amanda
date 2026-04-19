@@ -127,7 +127,7 @@ function renderLoveNotePeek() {
   const unopened = notes.filter((n) => !n.opened);
   if (!unopened.length) return null;
   const n = unopened[0];
-  const partner = state.profile?.partnerName || (state.brand === "pda" ? "Ryan" : "");
+  const partner = state.profile?.partnerName || "";
   return h("section", { class: "card" }, [
     h("h2", {}, partner ? `A note from ${partner}` : "A note for you"),
     h("div", { class: "sub" }, n.occasion),
