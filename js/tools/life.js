@@ -2,6 +2,7 @@ import { state, save, uid } from "../store.js";
 import { h, toast, confirmAction, todayISO, friendlyDate, daysFromNow } from "../util.js";
 import { currentBrand } from "../branding.js";
 import { VERSES, verseOfTheDay, HOSPITAL_BAG_SEED, LOVE_NOTES_SEED, babySizeForWeek } from "./life-seeds.js";
+import { micButton, speechSupported } from "../voice.js";
 
 function ensureSeeds() {
   if (!state.life.loveNotes.seeded) {
@@ -358,37 +359,153 @@ function renderPregnancy(rerender) {
   return wrap;
 }
 
+const LETTER_TEMPLATES = [
+  {
+    key: "anything",
+    label: "Just talking to him",
+    prompt: "",
+  },
+  {
+    key: "weekly",
+    label: "This week in the belly",
+    prompt: (name, week) => `Dear ${name || "little one"}, this week I'm ${week ? week + " weeks along" : "carrying you"}. Here's what I want you to know today:\n\n`,
+  },
+  {
+    key: "prayer",
+    label: "A prayer for him",
+    prompt: (name) => `Lord, today I am praying for ${name || "this baby"}. I pray that he will grow up to\n\n`,
+  },
+  {
+    key: "fear",
+    label: "Something I'm scared about",
+    prompt: (name) => `${name || "Little one"}, I'm going to be honest with you about something that's scaring me right now.\n\n`,
+  },
+  {
+    key: "promise",
+    label: "A promise to you",
+    prompt: (name) => `${name || "My baby"}, before you're even here, I'm making you this promise:\n\n`,
+  },
+  {
+    key: "dad",
+    label: "Something Dad said",
+    prompt: (name) => `${name || "Baby"}, I want you to remember what your dad said today.\n\n`,
+  },
+  {
+    key: "milestone",
+    label: "First milestone",
+    prompt: (name) => `${name || "Sweet boy"}, today was the first time you ${/* fill in */""}\n\n`,
+  },
+  {
+    key: "birthday",
+    label: "Birthday letter",
+    prompt: (name) => `${name || "My child"}, happy birthday. This year I watched you\n\n`,
+  },
+  {
+    key: "gratitude",
+    label: "I'm grateful for",
+    prompt: (name) => `${name || "Baby"}, I want you to know three things I'm grateful for today:\n\n1. \n2. \n3. `,
+  },
+];
+
+function backupReminder(p) {
+  const letters = p.letters || [];
+  if (letters.length < 3) return null;
+  const lastExport = p._lastLettersExport || 0;
+  const daysSinceExport = (Date.now() - lastExport) / 86400000;
+  if (daysSinceExport < 14) return null;
+  return h("div", { class: "alert warn", style: "margin-bottom:10px" },
+    "Gentle nudge: you've written " + letters.length + " letters. Export them as a backup — if this phone ever breaks, they'd be gone. Tap 'Export all' below.");
+}
+
 function renderLetters(rerender, name) {
   const p = state.life.pregnancy;
   const target = name || "baby";
+  const weeks = weeksPregnant(p.dueDate);
   const card = h("section", { class: "card" }, [
     h("h2", {}, `Letters to ${target}`),
-    h("div", { class: "sub" }, `Little notes for ${target} to read one day. From mom, from dad, from anyone who loves him.`),
+    h("div", { class: "sub" }, `A private little diary for ${target}. Your words, your voice — for him to read one day.`),
   ]);
 
-  const form = h("form", { class: "form-row", onsubmit: (e) => {
+  const reminder = backupReminder(p);
+  if (reminder) card.append(reminder);
+
+  // Template picker
+  let selectedTemplate = "anything";
+  const templateRow = h("div", { class: "chip-row", style: "margin-bottom:10px" });
+  LETTER_TEMPLATES.forEach((t) => {
+    const btn = h("button", {
+      class: "chip" + (selectedTemplate === t.key ? " active" : ""),
+      type: "button",
+      onclick: () => {
+        selectedTemplate = t.key;
+        templateRow.querySelectorAll(".chip").forEach((c) => c.classList.remove("active"));
+        btn.classList.add("active");
+        const ta = card.querySelector("textarea[name=body]");
+        if (!ta) return;
+        const prompt = typeof t.prompt === "function" ? t.prompt(name, weeks) : t.prompt;
+        if (ta.value.trim() === "" || confirm("Replace your draft with this template?")) {
+          ta.value = prompt;
+          ta.focus();
+          const pos = ta.value.length;
+          try { ta.setSelectionRange(pos, pos); } catch {}
+        }
+      },
+    }, t.label);
+    templateRow.append(btn);
+  });
+  card.append(h("div", { class: "sub", style: "margin-bottom:6px" }, "Pick a template — or just start talking."));
+  card.append(templateRow);
+
+  const textarea = h("textarea", {
+    name: "body",
+    placeholder: speechSupported()
+      ? "Type, or hold the mic below and talk — we'll transcribe."
+      : "Type here. Or tap the mic on your phone's keyboard to dictate.",
+    rows: "6",
+    style: "min-height:140px",
+  });
+
+  const mic = micButton(textarea, { language: "en-US" });
+
+  const form = h("form", { class: "form-row", onsubmit: async (e) => {
     e.preventDefault();
     const f = new FormData(e.target);
-    const body = (f.get("body") || "").toString().trim();
+    const body = textarea.value.trim();
     const author = (f.get("author") || "").toString().trim();
     if (!body) return;
     p.letters.unshift({
       id: uid(),
       body,
       author: author || "",
+      template: selectedTemplate !== "anything" ? selectedTemplate : "",
       createdAt: Date.now(),
     });
-    save(); toast("Saved"); e.target.reset(); rerender();
+    save(); toast("Saved"); textarea.value = ""; e.target.reset(); rerender();
   } }, [
     h("label", { class: "field" }, [
-      "A note for him",
-      h("textarea", { name: "body", required: true, placeholder: "What do you want him to know?" }),
+      `A note for ${target}`,
+      textarea,
+    ]),
+    h("div", { class: "btn-row" }, [
+      mic,
+      h("button", {
+        class: "btn small secondary",
+        type: "button",
+        onclick: () => tidyWithBrain(textarea, rerender),
+      }, "Tidy it up"),
     ]),
     h("label", { class: "field" }, [
       "Signed",
-      h("input", { type: "text", name: "author", placeholder: "Mom / Dad / etc." }),
+      h("input", { type: "text", name: "author", placeholder: "Mom / Dad / etc.", value: state.profile.firstName || "" }),
     ]),
-    h("div", { class: "btn-row" }, [h("button", { class: "btn", type: "submit" }, "Save letter")]),
+    h("div", { class: "btn-row" }, [
+      h("button", { class: "btn", type: "submit" }, "Save letter"),
+      (p.letters.length > 0) && h("button", {
+        class: "btn secondary",
+        type: "button",
+        onclick: () => exportAllLetters(name, rerender),
+      }, "Export all"),
+    ]),
   ]);
   card.append(form);
 
@@ -400,20 +517,118 @@ function renderLetters(rerender, name) {
       h("div", { class: "letter-date" }, d.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })),
       h("div", { class: "letter-body" }, l.body),
       l.author && h("div", { class: "letter-sig" }, "— " + l.author),
-      h("button", {
-        class: "btn small danger",
-        style: "align-self:flex-end",
-        onclick: () => {
-          if (!confirmAction("Remove this letter?")) return;
-          p.letters = p.letters.filter((x) => x.id !== l.id);
-          save(); rerender();
-        },
-      }, "×"),
+      h("div", { class: "btn-row", style: "align-self:flex-end" }, [
+        h("button", {
+          class: "btn small secondary",
+          onclick: () => exportOneLetter(l, name),
+        }, "Export"),
+        h("button", {
+          class: "btn small danger",
+          onclick: () => {
+            if (!confirmAction("Remove this letter?")) return;
+            p.letters = p.letters.filter((x) => x.id !== l.id);
+            save(); rerender();
+          },
+        }, "×"),
+      ]),
     ]));
   });
   card.append(list);
 
   return card;
+}
+
+async function tidyWithBrain(textarea, rerender) {
+  const text = textarea.value.trim();
+  if (!text) { toast("Nothing to tidy"); return; }
+  if (!state.brain?.apiKey) {
+    toast("Connect Claude in Settings → Brain to use this.");
+    return;
+  }
+
+  const originalLabel = "Tidy it up";
+  const btn = textarea.closest("form")?.querySelector("button:nth-child(2)");
+  if (btn) btn.textContent = "Tidying…";
+
+  try {
+    const body = {
+      model: state.brain.model || "claude-opus-4-7",
+      max_tokens: 1500,
+      system:
+        "You are a gentle editor for a mother writing a letter to her unborn baby. " +
+        "She dictated the following by voice, so it has ums, uhs, false starts, repetition, and little grammar stumbles. " +
+        "Your job: keep her voice completely intact — don't make it fancier or add words she didn't say. " +
+        "Remove filler words (um, uh, like, you know, I mean), tighten repeated phrases, fix obvious transcription errors, " +
+        "and add natural line breaks so it reads well. That's it. Do not add content. Do not moralize. " +
+        "Return ONLY the cleaned letter, no preamble.",
+      messages: [{ role: "user", content: text }],
+    };
+    if (/opus-4-7|opus-4-6|sonnet-4-6/.test(body.model)) body.thinking = { type: "adaptive" };
+
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": state.brain.apiKey,
+        "anthropic-version": "2023-06-01",
+        "anthropic-dangerous-direct-browser-access": "true",
+      },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) throw new Error(`Claude error ${res.status}`);
+    const data = await res.json();
+    const textBlock = (data.content || []).find((b) => b.type === "text");
+    if (textBlock?.text) {
+      textarea.value = textBlock.text.trim();
+      textarea.dispatchEvent(new Event("input", { bubbles: true }));
+      toast("Tidied");
+    }
+  } catch (err) {
+    toast(err.message || "Couldn't tidy");
+  } finally {
+    if (btn) btn.textContent = originalLabel;
+  }
+}
+
+function letterFilename(l, name, ext = "txt") {
+  const d = new Date(l.createdAt);
+  const dateStr = d.toISOString().slice(0, 10);
+  const who = (name || "baby").toLowerCase().replace(/\s+/g, "-");
+  return `letter-to-${who}-${dateStr}.${ext}`;
+}
+
+function letterAsText(l, name) {
+  const d = new Date(l.createdAt);
+  const header = `To ${name || "my baby"}\n${d.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })}\n${"-".repeat(36)}\n\n`;
+  const footer = l.author ? `\n\n— ${l.author}` : "";
+  return header + l.body + footer + "\n";
+}
+
+function exportOneLetter(l, name) {
+  const text = letterAsText(l, name);
+  downloadText(text, letterFilename(l, name));
+  toast("Letter exported");
+}
+
+function exportAllLetters(name, rerender) {
+  const p = state.life.pregnancy;
+  if (!p.letters.length) return;
+  const all = [...p.letters].reverse().map((l) => letterAsText(l, name)).join("\n" + "=".repeat(40) + "\n\n");
+  const today = new Date().toISOString().slice(0, 10);
+  const who = (name || "baby").toLowerCase().replace(/\s+/g, "-");
+  downloadText(all, `letters-to-${who}-${today}.txt`);
+  p._lastLettersExport = Date.now();
+  save();
+  toast(`Exported ${p.letters.length} letters`);
+  rerender();
+}
+
+function downloadText(text, filename) {
+  const blob = new Blob([text], { type: "text/plain" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
 }
 
 function renderBabyGallery(name) {
