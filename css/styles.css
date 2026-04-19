@@ -69,6 +69,7 @@ body {
   background: linear-gradient(to bottom, var(--bg), rgba(11,16,32,.85));
   backdrop-filter: blur(6px);
 }
+.tab[hidden] { display: none; }
 @media (max-width: 380px) {
   .tabs { grid-template-columns: repeat(3, 1fr); }
 }
@@ -281,4 +282,5 @@ details.pathway ol li strong { color: var(--text); }
 .auth-error {
   color: var(--bad); font-size: 13px; min-height: 1em; text-align: center;
 }
+.auth-mark { width: 72px; height: 72px; border-radius: 20px; font-size: 32px; }
 .footer-actions { display: flex; gap: 10px; }

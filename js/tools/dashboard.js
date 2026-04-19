@@ -1,6 +1,7 @@
 import { state } from "../store.js";
 import { money, friendlyDate, daysFromNow, h } from "../util.js";
 import { currentBrand } from "../branding.js";
+import { TX_RDA_REQUIREMENTS } from "./rda-seed.js";
 
 function incomeSummary() {
   const { deposits, bills } = state.income;
@@ -228,11 +229,54 @@ function renderCareerCard() {
   ]);
 }
 
+function academySummary() {
+  const { programs, students } = state.academy;
+  const active = students.filter((s) => s.status !== "withdrawn");
+  const reqKeys = TX_RDA_REQUIREMENTS.filter((r) => !r.optional).map((r) => r.key);
+  const gradReady = active.filter((s) => {
+    const req = s.requirements || {};
+    return reqKeys.every((k) => req[k]?.done);
+  }).length;
+  const tuitionOutstanding = active.reduce((sum, s) => {
+    const prog = programs.find((p) => p.id === s.programId);
+    const owed = Math.max(0, (prog?.tuition || 0) - (s.tuitionPaid || 0));
+    return sum + owed;
+  }, 0);
+  return { totalStudents: active.length, gradReady, tuitionOutstanding, programCount: programs.length };
+}
+
+function renderAcademyCard() {
+  const a = academySummary();
+  return h("section", { class: "card" }, [
+    h("h2", {}, "Academy"),
+    h("div", { class: "sub" }, "Students, cohorts, and your online course."),
+    h("div", { class: "stat-grid" }, [
+      h("div", { class: "stat" }, [
+        h("div", { class: "label" }, "Students"),
+        h("div", { class: "value" }, a.totalStudents),
+      ]),
+      h("div", { class: "stat ok" }, [
+        h("div", { class: "label" }, "Grad-ready"),
+        h("div", { class: "value" }, a.gradReady),
+      ]),
+      h("div", { class: "stat warn" }, [
+        h("div", { class: "label" }, "Tuition owed"),
+        h("div", { class: "value" }, money(a.tuitionOutstanding)),
+      ]),
+    ]),
+    h("div", { class: "btn-row", style: "margin-top:10px" }, [
+      h("button", { class: "btn small secondary", onclick: () => jumpTo("academy") }, "Open academy →"),
+    ]),
+  ]);
+}
+
 export function renderDashboard(mount) {
+  const isPda = state.brand === "pda";
   mount.append(renderHero());
   mount.append(renderFocus());
   mount.append(renderMoneyCard());
   mount.append(renderNextUpCard());
   mount.append(renderPipelineCard());
-  mount.append(renderCareerCard());
+  if (isPda) mount.append(renderAcademyCard());
+  else mount.append(renderCareerCard());
 }

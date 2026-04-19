@@ -1,5 +1,6 @@
 import { state, save } from "./store.js";
 import { h, toast } from "./util.js";
+import { currentBrand } from "./branding.js";
 
 async function sha256(text) {
   const enc = new TextEncoder().encode(text);
@@ -48,13 +49,26 @@ export function renderWelcome(onDone) {
   document.body.innerHTML = "";
   const wrap = h("div", { class: "auth-wrap" }, [
     h("div", { class: "auth-card" }, [
-      h("div", { class: "brand-mark", style: "margin:0 auto 12px" }, "◆"),
+      brandMark(),
       h("h1", { class: "auth-title" }, "Welcome"),
       h("p", { class: "auth-sub" }, "A little setup so this feels like yours."),
       renderWelcomeForm(onDone),
     ]),
   ]);
   document.body.append(wrap);
+}
+
+function brandMark() {
+  const b = currentBrand();
+  const mark = h("div", { class: "brand-mark auth-mark", style: "margin:0 auto 12px" });
+  if (b.logo) {
+    mark.style.backgroundImage = `url('${b.logo}')`;
+    mark.style.backgroundSize = "cover";
+    mark.style.backgroundPosition = "center";
+  } else {
+    mark.textContent = b.mark;
+  }
+  return mark;
 }
 
 function renderWelcomeForm(onDone) {
@@ -122,7 +136,7 @@ export function renderLock(onUnlock) {
   document.body.innerHTML = "";
   const wrap = h("div", { class: "auth-wrap" }, [
     h("div", { class: "auth-card" }, [
-      h("div", { class: "brand-mark", style: "margin:0 auto 12px" }, "◆"),
+      brandMark(),
       h("h1", { class: "auth-title" }, `Hi${state.profile?.firstName ? ", " + state.profile.firstName : ""}`),
       h("p", { class: "auth-sub" }, "Enter your PIN to unlock."),
       renderLockForm(onUnlock),

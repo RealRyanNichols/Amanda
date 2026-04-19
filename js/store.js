@@ -9,6 +9,12 @@ const defaults = () => ({
   career: { selected: "dental-assisting", completedSteps: {} },
   overload: { brainDump: "", tasks: [] },
   followup: { leads: [] },
+  academy: {
+    activeView: "students",
+    programs: [],
+    students: [],
+    course: { seeded: false, modules: [] },
+  },
 });
 
 function load() {

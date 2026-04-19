@@ -6,6 +6,7 @@ import { renderDashboard } from "./tools/dashboard.js";
 import { renderIncome } from "./tools/income.js";
 import { renderBooking } from "./tools/booking.js";
 import { renderCareer } from "./tools/career.js";
+import { renderAcademy } from "./tools/academy.js";
 import { renderOverload } from "./tools/overload.js";
 import { renderFollowup } from "./tools/followup.js";
 
@@ -14,6 +15,7 @@ const TOOLS = {
   income: renderIncome,
   booking: renderBooking,
   career: renderCareer,
+  academy: renderAcademy,
   overload: renderOverload,
   followup: renderFollowup,
 };
@@ -25,11 +27,22 @@ const shellHTML = document.body.innerHTML;
 function bootApp() {
   document.body.innerHTML = shellHTML;
   applyBrand();
-  initBrandToggle(render);
+  initBrandToggle(() => { syncTabVisibility(); render(); });
   wireTabs();
   wireExportImport();
   wireSettings();
+  syncTabVisibility();
   render();
+}
+
+function syncTabVisibility() {
+  const isPda = state.brand === "pda";
+  const career = document.querySelector('.tab[data-tab="career"]');
+  const academy = document.querySelector('.tab[data-tab="academy"]');
+  if (career) career.hidden = isPda;
+  if (academy) academy.hidden = !isPda;
+  if (isPda && currentTab === "career") currentTab = "academy";
+  if (!isPda && currentTab === "academy") currentTab = "career";
 }
 
 function render() {
