@@ -69,8 +69,12 @@ export function enabledTabsForProfile(profile) {
   if (roles.includes("mom") || roles.includes("pregnant") || roles.includes("faith")) {
     tabs.add("life");
   }
+  // Meals tab: moms mostly, plus default
+  if (roles.includes("mom") || roles.includes("pregnant")) {
+    tabs.add("meals");
+  }
   // If they didn't pick anything, show a reasonable minimum
-  if (roles.length === 0) { tabs.add("life"); tabs.add("income"); }
+  if (roles.length === 0) { tabs.add("life"); tabs.add("income"); tabs.add("meals"); }
   return [...tabs];
 }
 

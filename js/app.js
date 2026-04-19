@@ -12,6 +12,7 @@ import { renderFollowup } from "./tools/followup.js";
 import { renderBrain } from "./tools/brain.js";
 import { renderSettings } from "./tools/settings.js";
 import { renderLife } from "./tools/life.js";
+import { renderMeals } from "./tools/meals.js";
 
 const TOOLS = {
   dashboard: renderDashboard,
@@ -20,6 +21,7 @@ const TOOLS = {
   booking: renderBooking,
   career: renderCareer,
   academy: renderAcademy,
+  meals: renderMeals,
   overload: renderOverload,
   followup: renderFollowup,
   life: renderLife,

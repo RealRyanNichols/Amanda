@@ -642,6 +642,24 @@ details.pathway ol li strong { color: var(--text); }
   border-color: rgba(138,60,60,.3) !important;
 }
 
+/* Grocery / meals */
+.grocery-row { align-items: center; }
+.grocery-label {
+  display: flex; align-items: center; gap: 10px; cursor: pointer; flex: 1;
+  min-width: 0;
+}
+.grocery-label input[type="checkbox"] { width: 20px; height: 20px; flex-shrink: 0; }
+.recipe-list {
+  margin: 10px 0 0 20px; padding: 0; color: var(--text-dim); font-size: .9375rem;
+}
+.recipe-list li { margin: 3px 0; }
+.recipe-steps {
+  margin-top: 10px; padding: 10px;
+  background: var(--bg); border: 1px dashed var(--border);
+  border-radius: var(--radius-sm); font-size: .9375rem; line-height: 1.5;
+  white-space: pre-wrap; word-break: break-word;
+}
+
 /* Respect users who prefer reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

@@ -30,6 +30,11 @@ const defaults = () => ({
     students: [],
     course: { seeded: false, modules: [] },
   },
+  meals: {
+    plan: {},
+    grocery: [],
+    recipes: [],
+  },
   life: {
     activeView: "faith",
     partnerName: "",
