@@ -23,6 +23,7 @@ import { renderVault } from "./tools/vault.js";
 import { renderStore } from "./tools/store.js";
 import { renderCapture } from "./tools/capture.js";
 import { renderMeTime } from "./tools/metime.js";
+import { renderAccount } from "./tools/account.js";
 import { mountFloatingBrain } from "./floating-brain.js";
 import { initPlan, canAccessTab, isPaid, isInTrial, upgradeMessage, tier } from "./plan.js";
 import { renderUpgradeWall } from "./tools/upgrade.js";
@@ -39,6 +40,7 @@ const TOOLS = {
   vault: renderVault,
   babyyear: renderBabyYear,
   store: renderStore,
+  account: renderAccount,
   income: renderIncome,
   booking: renderBooking,
   career: renderCareer,

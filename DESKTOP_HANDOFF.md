@@ -1,5 +1,53 @@
 # Desktop Handoff — Picking Up Tonight
 
+## 🟢 SUPABASE STATUS (live)
+
+- Project URL: `https://mccjgijnbstduhyuvwwo.supabase.co` ✓ committed
+- Anon key: ✓ committed (decoded JWT confirms `role: anon`, project ref matches)
+- Tables: **NOT YET CREATED** — apply `supabase/migrations/0001_initial.sql`
+- Account tab: **live in app** at `/account` (sign-in form ready)
+
+### Apply the initial migration (1 minute)
+
+**Option A — Supabase Dashboard SQL editor (easiest, do this first):**
+1. Open https://supabase.com/dashboard → your project → **SQL Editor**
+2. Click **New query**
+3. Open `supabase/migrations/0001_initial.sql` from this repo, copy all of it
+4. Paste into the SQL editor → click **Run**
+5. You should see "Success. No rows returned" — every CREATE statement uses
+   `IF NOT EXISTS` so re-running is safe.
+6. Verify: **Table Editor** in the left sidebar shows: profiles,
+   income_deposits, income_bills, followup_leads, booking_appointments,
+   life_pregnancy, life_pregnancy_letters, life_pregnancy_visits,
+   life_pregnancy_body_log, life_faith_prayers, life_gratitude,
+   metime_sessions, habits_items, habits_log, brain_messages, wishes,
+   safety_flagged, purchases.
+
+**Option B — Supabase CLI (for the desktop session):**
+```
+npm install -g supabase
+supabase login
+supabase link --project-ref mccjgijnbstduhyuvwwo
+supabase db push
+```
+
+### Enable email auth in the dashboard (30 seconds)
+1. **Authentication** → **Providers** → confirm **Email** is enabled
+2. **Authentication** → **URL Configuration** → add the Vercel URL to
+   "Site URL" and "Redirect URLs" — needed for email confirmation links
+   and OAuth callbacks
+3. (Later) **Authentication** → **Providers** → **Google** → toggle on,
+   add Google OAuth client ID + secret. Apple auth needs an Apple
+   Developer account.
+
+### After migrations applied
+- Account tab in the app becomes a working sign-in form
+- Profile auto-creates on signup (trigger: `handle_new_user`)
+- Trial auto-starts (trial_started_at = now())
+- Sync layer (next migration set) will read/write to these tables
+
+---
+
 ## 🚀 ON ARRIVAL — auto-run this (for Claude desktop)
 
 > **Claude running on Ryan's desktop: the moment he opens this repo, run the prompt below before anything else. This is the hand-off sequence.**
