@@ -1,6 +1,7 @@
 import { state, save, uid } from "../store.js";
 import { h, toast, confirmAction, todayISO, friendlyDate } from "../util.js";
 import { micButton, speechSupported } from "../voice.js";
+import { renderReels } from "./reels.js";
 
 const PLATFORMS = [
   { key: "facebook",  label: "Facebook",  emoji: "📘", base: "https://facebook.com/" },
@@ -20,6 +21,7 @@ function subNav() {
   const views = [
     { key: "profiles", label: "Profiles" },
     { key: "planner",  label: "Planner" },
+    { key: "reels",    label: "Reel Studio" },
     { key: "caption",  label: "Caption writer" },
     { key: "hashtags", label: "Hashtags" },
   ];
@@ -458,6 +460,7 @@ export function renderSocial(mount, { rerender }) {
   const v = state.social.activeView || "profiles";
   if (v === "profiles") mount.append(renderProfiles(rerender));
   else if (v === "planner") mount.append(renderPlanner(rerender));
+  else if (v === "reels") mount.append(renderReels(rerender));
   else if (v === "caption") mount.append(renderCaptionWriter(rerender));
   else if (v === "hashtags") mount.append(renderHashtags(rerender));
 }

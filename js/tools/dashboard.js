@@ -2,7 +2,7 @@ import { state, save } from "../store.js";
 import { money, friendlyDate, daysFromNow, h, toast } from "../util.js";
 import { currentBrand } from "../branding.js";
 import { TX_RDA_REQUIREMENTS } from "./rda-seed.js";
-import { verseOfTheDay, babySizeForWeek } from "./life-seeds.js";
+import { VERSES, verseOfTheDay, nextVerseAfter, parseVerseRef, babySizeForWeek } from "./life-seeds.js";
 import { scanForReminders } from "./reminders.js";
 import { getSaved, savedHoursThisWeek } from "../time-saved.js";
 import { getSyncStatus } from "../sync.js";
@@ -90,16 +90,175 @@ function lifeVisible() {
   return roles.includes("mom") || roles.includes("pregnant") || roles.includes("faith") || roles.length === 0;
 }
 
+function scriptureState() {
+  if (!state.bible) state.bible = {};
+  if (!state.bible.readVerses) state.bible.readVerses = {};       // ref → ISO date
+  if (!state.bible.studiedVerses) state.bible.studiedVerses = {}; // ref → ISO date
+  if (!state.bible.dashboardVerseRef) state.bible.dashboardVerseRef = verseOfTheDay().ref;
+  return state.bible;
+}
+
+function countThisWeek(obj) {
+  const weekAgo = Date.now() - 7 * 86400000;
+  return Object.values(obj || {}).filter((iso) => new Date(iso).getTime() >= weekAgo).length;
+}
+
+function currentDashboardVerse() {
+  const s = scriptureState();
+  return VERSES.find((v) => v.ref === s.dashboardVerseRef) || verseOfTheDay();
+}
+
 function renderVerseCard() {
-  const v = verseOfTheDay();
-  return h("section", { class: "card" }, [
-    h("h2", {}, "Today's verse"),
-    h("div", { class: "verse-ref" }, v.ref),
-    h("div", { class: "verse-text" }, `"${v.text}"`),
-    h("div", { class: "btn-row", style: "margin-top:10px" }, [
-      h("button", { class: "btn small secondary", onclick: () => jumpTo("life") }, "Open Faith →"),
+  const s = scriptureState();
+  const v = currentDashboardVerse();
+  const readKey = v.ref;
+  const alreadyRead = !!s.readVerses[readKey];
+  const alreadyStudied = !!s.studiedVerses[readKey];
+  const readCount = countThisWeek(s.readVerses);
+  const studiedCount = countThisWeek(s.studiedVerses);
+
+  const card = h("section", { class: "card verse-card" }, [
+    h("div", { class: "btn-row", style: "justify-content:space-between; align-items:center" }, [
+      h("h2", { style: "margin:0" }, "Today's verse"),
+      h("div", { class: "meta" }, `${readCount} read · ${studiedCount} studied this week`),
     ]),
+    h("div", { class: "verse-ref", style: "margin-top:6px" }, v.ref),
+    h("div", { class: "verse-text" }, `"${v.text}"`),
   ]);
+
+  const status = h("div", { class: "meta", style: "margin-top:6px" },
+    alreadyStudied ? "📖 You studied this." :
+    alreadyRead    ? "✓ You've read this one." : "");
+  card.append(status);
+
+  const contextZone = h("div", { class: "verse-context", style: "display:none; margin-top:12px" });
+  card.append(contextZone);
+
+  const actions = h("div", { class: "btn-row", style: "margin-top:12px; flex-wrap:wrap; gap:8px" });
+  const readBtn = h("button", {
+    class: "btn small" + (alreadyRead ? " secondary" : ""),
+    onclick: () => markRead(v.ref),
+  }, alreadyRead ? "✓ Read" : "✓ I read it");
+  const studyBtn = h("button", {
+    class: "btn small secondary",
+    onclick: () => toggleStudy(v, contextZone, studyBtn),
+  }, alreadyStudied ? "📖 Studied ✓" : "📖 Study this");
+  const nextBtn = h("button", {
+    class: "btn small ghost",
+    onclick: () => showNextVerse(),
+  }, "Another verse →");
+  const openBible = h("button", {
+    class: "btn small ghost",
+    onclick: () => jumpToBibleVerse(v.ref),
+  }, "Open in Bible");
+
+  actions.append(readBtn, studyBtn, nextBtn, openBible);
+  card.append(actions);
+  return card;
+}
+
+function markRead(ref) {
+  const s = scriptureState();
+  s.readVerses[ref] = new Date().toISOString();
+  save();
+  toast("Marked as read ✓");
+  showNextVerse();
+}
+
+function markStudied(ref) {
+  const s = scriptureState();
+  s.studiedVerses[ref] = new Date().toISOString();
+  // Studying implies reading — credit both.
+  if (!s.readVerses[ref]) s.readVerses[ref] = s.studiedVerses[ref];
+  save();
+  toast("Marked as studied 📖");
+  showNextVerse();
+}
+
+function showNextVerse() {
+  const s = scriptureState();
+  s.dashboardVerseRef = nextVerseAfter(s.dashboardVerseRef).ref;
+  save();
+  // Re-render the whole dashboard so the verse card refreshes.
+  const mount = document.getElementById("app");
+  if (mount) {
+    // Delegate to the app's render loop via a tab click (refresh current).
+    const active = document.querySelector(".tab[aria-selected='true']");
+    if (active) active.click();
+  }
+}
+
+function jumpToBibleVerse(ref) {
+  const parsed = parseVerseRef(ref);
+  if (!parsed) { jumpTo("bible"); return; }
+  if (!state.bible) state.bible = {};
+  state.bible.currentBook = parsed.book;
+  state.bible.currentChapter = parsed.chapter;
+  state.bible.view = "chapter";
+  save();
+  jumpTo("bible");
+}
+
+// Expand the card to show before/after verses, then allow mark-studied.
+// Loads live from bible-api.com using the user's current translation.
+async function toggleStudy(v, zone, studyBtn) {
+  const s = scriptureState();
+  if (zone.style.display === "block") {
+    zone.style.display = "none";
+    zone.innerHTML = "";
+    studyBtn.textContent = s.studiedVerses[v.ref] ? "📖 Studied ✓" : "📖 Study this";
+    return;
+  }
+  zone.style.display = "block";
+  zone.innerHTML = "";
+  zone.append(h("div", { class: "sub" }, "Loading context…"));
+
+  const parsed = parseVerseRef(v.ref);
+  if (!parsed) {
+    zone.innerHTML = "";
+    zone.append(h("div", { class: "alert" }, "Couldn't parse this reference. Open it in Bible to study."));
+    return;
+  }
+  const translation = s.translation || "kjv";
+  const startV = Math.max(1, parsed.verse - 1);
+  const endV = parsed.endVerse + 1;
+  const range = `${parsed.book} ${parsed.chapter}:${startV}-${endV}`;
+  const url = `https://bible-api.com/${encodeURIComponent(range)}?translation=${translation}`;
+
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("load failed");
+    const data = await res.json();
+    zone.innerHTML = "";
+    zone.append(h("div", { class: "sub", style: "margin-bottom:6px" },
+      `Context · ${parsed.book} ${parsed.chapter}:${startV}–${endV} (${translation.toUpperCase()})`));
+    (data.verses || []).forEach((cv) => {
+      const isCore = cv.verse >= parsed.verse && cv.verse <= parsed.endVerse;
+      zone.append(h("p", {
+        class: "bible-verse" + (isCore ? " verse-core" : " verse-flank"),
+      }, [
+        h("sup", { class: "bible-vnum" }, cv.verse),
+        " ",
+        h("span", {}, cv.text.trim()),
+      ]));
+    });
+    zone.append(h("div", { class: "sub", style: "margin-top:8px" },
+      "Studying a verse means reading what comes before and after so you understand what's happening. Now you know the context."));
+    zone.append(h("div", { class: "btn-row", style: "margin-top:10px" }, [
+      h("button", {
+        class: "btn small",
+        onclick: () => markStudied(v.ref),
+      }, "✓ I studied it"),
+      h("button", {
+        class: "btn small secondary",
+        onclick: () => jumpToBibleVerse(v.ref),
+      }, "Read full chapter →"),
+    ]));
+  } catch {
+    zone.innerHTML = "";
+    zone.append(h("div", { class: "alert" },
+      "Couldn't load context (are you offline?). Tap 'Open in Bible' to read the chapter."));
+  }
 }
 
 function renderPregnancyCard() {

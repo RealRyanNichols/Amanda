@@ -109,9 +109,14 @@ function bibleState() {
       activeBook: "John",
       fontScale: 1,
       requestedTranslations: [], // user-requested translations we haven't wired yet
+      readVerses: {},        // ref → ISO — "I read this verse" (one tap)
+      studiedVerses: {},     // ref → ISO — "I looked at context" (deeper)
+      dashboardVerseRef: null, // currently displayed verse on dashboard
     };
     save();
   }
+  if (!state.bible.readVerses) state.bible.readVerses = {};
+  if (!state.bible.studiedVerses) state.bible.studiedVerses = {};
   // Migration: cache keys used to omit translation. Clear old cache entries.
   if (state.bible.cache && Object.keys(state.bible.cache).some((k) => k.split(":").length === 2)) {
     state.bible.cache = {};

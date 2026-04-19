@@ -41,6 +41,29 @@ export function verseOfTheDay(date = new Date()) {
   return VERSES[dayOfYear % VERSES.length];
 }
 
+// Next verse in the seed pool — used after she checks "I read it" to
+// surface fresh scripture without leaving the dashboard.
+export function nextVerseAfter(ref) {
+  const idx = VERSES.findIndex((v) => v.ref === ref);
+  if (idx < 0) return VERSES[0];
+  return VERSES[(idx + 1) % VERSES.length];
+}
+
+// Parse a reference like "Philippians 4:13" or "Psalm 121:1-2" into
+// { book, chapter, verse, endVerse }. Used by the "Study this" flow
+// so we can fetch surrounding verses for context.
+export function parseVerseRef(ref) {
+  if (!ref) return null;
+  const m = ref.match(/^(.+?)\s+(\d+):(\d+)(?:-(\d+))?$/);
+  if (!m) return null;
+  return {
+    book: m[1].trim(),
+    chapter: Number(m[2]),
+    verse: Number(m[3]),
+    endVerse: m[4] ? Number(m[4]) : Number(m[3]),
+  };
+}
+
 // Hospital bag checklist — based on commonly-recommended items. Amanda can edit.
 export const HOSPITAL_BAG_SEED = [
   { category: "For mom",  item: "Photo ID & insurance card" },
