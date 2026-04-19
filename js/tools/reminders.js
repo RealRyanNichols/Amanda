@@ -5,6 +5,7 @@
 
 import { state } from "../store.js";
 import { daysFromNow } from "../util.js";
+import { detectPatterns } from "./body-journal.js";
 
 export function scanForReminders() {
   const out = [];
@@ -182,6 +183,19 @@ export function scanForReminders() {
       go: "academy",
     });
   }
+
+  // Body-journal patterns: silent most of the time, surfaces once the threshold
+  // is hit and she hasn't dismissed recently. Never names a condition.
+  const patterns = detectPatterns();
+  patterns.slice(0, 2).forEach((pat) => {
+    out.push({
+      priority: 2,
+      icon: "👀",
+      level: "warn",
+      text: `You've mentioned ${pat.label.toLowerCase()} ${pat.count} times in the last ${pat.windowDays} days. Worth telling your OB.`,
+      go: "life",
+    });
+  });
 
   out.sort((a, b) => a.priority - b.priority);
   return out.slice(0, 5); // cap at 5 so Home doesn't get overwhelming

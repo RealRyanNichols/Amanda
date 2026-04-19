@@ -1092,6 +1092,27 @@ body[data-brand="pda"] .bible-content {
     var(--bg-elev));
 }
 
+/* Body journal — "How I'm feeling" inside Pregnancy */
+.body-journal {
+  background: linear-gradient(160deg,
+    color-mix(in oklab, #f0a8d0 12%, var(--bg-elev)),
+    var(--bg-elev));
+}
+.body-pattern {
+  display: flex; gap: 12px;
+  background: color-mix(in oklab, var(--warn) 18%, var(--bg-elev-2));
+  border: 1px solid color-mix(in oklab, var(--warn) 50%, var(--border));
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  margin-bottom: 10px;
+}
+.body-pattern-emoji { font-size: 1.75rem; line-height: 1; flex-shrink: 0; }
+.chip.severity.active {
+  background: color-mix(in oklab, var(--accent) 22%, var(--bg-elev-2));
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
 /* Voice top-up paywall (micro-purchase at friction point) */
 .voice-topup-overlay {
   position: fixed; inset: 0; z-index: 200;

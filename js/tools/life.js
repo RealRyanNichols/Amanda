@@ -5,6 +5,7 @@ import { VERSES, verseOfTheDay, HOSPITAL_BAG_SEED, LOVE_NOTES_SEED, babySizeForW
 import { micButton, speechSupported } from "../voice.js";
 import { isPaid, isInTrial, FREE_LETTERS_LIFETIME, FREE_PRAYERS_LIFETIME } from "../plan.js";
 import { getPaymentLink } from "../stripe-config.js";
+import { renderBodyJournal } from "./body-journal.js";
 
 function ensureSeeds() {
   if (!state.life.loveNotes.seeded) {
@@ -407,6 +408,9 @@ function renderPregnancy(rerender) {
 
   // Photo gallery summary
   wrap.append(renderBabyGallery(name));
+
+  // "How I'm feeling" — body journal with pattern detection
+  wrap.append(renderBodyJournal(rerender));
 
   // Doctor visits
   wrap.append(renderVisits(rerender, him));

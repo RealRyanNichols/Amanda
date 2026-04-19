@@ -111,6 +111,9 @@ const defaults = () => ({
       hospitalBag: { seeded: false, items: [] },
       symptoms: [],
       letters: [],
+      bodyLog: [],           // { id, date, text, tags[], severity, askedDoctor, createdAt }
+      lastPatternShownAt: 0, // timestamp — don't nag with same pattern daily
+      dismissedPatterns: {}, // { symptomKey: lastDismissedTimestamp }
     },
     loveNotes: { seeded: false, notes: [] },
     gratitude: { entries: [] },

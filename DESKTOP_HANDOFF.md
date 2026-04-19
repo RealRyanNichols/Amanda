@@ -731,34 +731,47 @@ tokens looking up references Claude already knows but paraphrases.
 
 ## 21a. Target audience & positioning (founder-locked)
 
-**This app is for Christian women, mothers, and expectant mothers.**
-Specifically women whose faith is central to how they live, parent, and
-work. Ryan's explicit positioning decision — not a general-market SaaS.
+**Primary audience: moms and families.** Expectant moms, moms of littles,
+moms of teens, mom business owners, families who want one shared home
+for calendar + kids + faith. Broad-mom market, not niche-Christian.
+
+**Christian values are baked in but never gated.** The Bible, prayer journal,
+and Spiritual Friend Brain tone are available to every user — she finds
+them if she wants them. In onboarding she picks roles (Mom, Pregnant,
+Business owner, Academy owner, Faith) and tabs enable/disable accordingly.
+Faith-uninterested users never see a verse they didn't ask for.
 
 Marketing and copy principles:
-- **Faith is the third pillar** next to family and business. Lead with it,
-  don't bury it. Tagline: "A home for your faith, your family, and what
-  you're building."
-- **Scripture is never paywalled.** Every translation, every verse, forever
-  free. This is a permanent covenant encoded in `js/plan.js`
-  (FREE_BIBLE_TRANSLATIONS = "*") with a comment block that explicitly
-  warns future contributors not to revert.
-- **Business tabs stay secular.** Income, Booking, Academy, Leads, Social —
-  no Jesus in your invoice. Faith is present in Life, Bible, Brain's
-  Spiritual Friend tone, Safety Net comfort verses, and the prayer
-  journal's optional Scripture suggestions. Outside those, we don't push.
+- **Lead with mom + family.** "A home for moms and families who run it
+  all." Keep the hero broad. Faith is called out as a supporting
+  differentiator ("Scripture is always free") but isn't the headline.
+- **Scripture is never paywalled.** Every translation, every verse,
+  forever free — paid and free tiers alike. Permanent covenant in
+  `js/plan.js` (FREE_BIBLE_TRANSLATIONS = "*") with a comment warning
+  future contributors not to revert.
+- **Business tabs stay secular.** Income, Booking, Academy, Leads,
+  Social — no Jesus in your invoice. Faith is present in Bible, prayer
+  journal, Brain's Spiritual Friend tone, Safety Net comfort verses,
+  and optional Scripture suggestions on prayers. Outside those, we
+  don't push.
+- **Pregnancy is a role-gated module,** not core. Users who aren't
+  expecting never see the Pregnancy sub-view or Baby Year tab.
 - **Language choices:**
-  - "Your partner" not "your husband" (we don't assume marriage)
+  - "Your partner" not "your husband" (no marriage assumption)
   - "Your person" for the Safety Net trusted contact
-  - KJV verses are the default comfort source (public domain + Amanda's)
-  - Spiritual Friend Brain tone Christian-grounded, not "spirituality" generic
-- **Ads + channels (when we market):** target Christian mom communities
-  on Instagram/Facebook/TikTok. Partnerships with Christian podcasts,
-  moms-group Facebook pages, worship leader communities.
+  - "Faith-friendly" not "Christian-only" in public copy
+  - KJV verses are the default comfort source (public domain)
+  - Spiritual Friend Brain tone Christian-grounded for users who pick it
+- **Marketing channels:**
+  - Broad mom communities on Instagram / TikTok / Facebook
+  - Parallel outreach to Christian mom communities as a high-conversion
+    segment (Bible free forever is a genuine differentiator there)
+  - Christian podcasts + worship-leader partnerships as one channel
+    among several, not the only one
 
-Don't water this down to broaden the market. Ryan's thesis is that a
-product built unapologetically for a specific faith community will
-out-perform a general-market-for-all product in that niche by 10x.
+Thesis: broad-mom market wins scale, faith-friendly-done-right wins
+loyalty and differentiation within it. Build for both. Don't water
+down the faith features; don't force them on users who don't want them.
 
 ## 22. Free tier — "Talk to the Brain" (conversion funnel)
 
