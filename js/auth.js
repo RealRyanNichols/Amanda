@@ -53,7 +53,7 @@ export function needsOnboarding() { return !state.profile?.setupDone; }
 // Compute enabled tabs based on the user's roles (if they haven't overridden).
 export function enabledTabsForProfile(profile) {
   if (profile.enabledTabs && Array.isArray(profile.enabledTabs)) return profile.enabledTabs;
-  const always = ["dashboard", "overload", "brain", "settings"];
+  const always = ["dashboard", "calendar", "overload", "brain", "settings"];
   const tabs = new Set(always);
   const roles = profile.roles || [];
 

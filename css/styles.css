@@ -642,6 +642,50 @@ details.pathway ol li strong { color: var(--text); }
   border-color: rgba(138,60,60,.3) !important;
 }
 
+/* Calendar */
+.cal-dow {
+  display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px;
+  margin: 10px 0 6px; font-size: .6875rem;
+  color: var(--text-dim); text-transform: uppercase; letter-spacing: .8px;
+  text-align: center;
+}
+.cal-grid {
+  display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px;
+}
+.cal-cell {
+  appearance: none; border: 1px solid var(--border);
+  background: var(--bg-elev-2); color: var(--text);
+  aspect-ratio: 1; padding: 4px;
+  border-radius: 8px; cursor: pointer; font-family: inherit;
+  display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+  min-height: 44px;
+}
+.cal-cell.muted { opacity: .35; }
+.cal-cell.today {
+  border-color: var(--accent);
+  background: color-mix(in oklab, var(--accent) 18%, var(--bg-elev-2));
+}
+.cal-cell-num { font-size: .8125rem; font-weight: 600; }
+.cal-cell-dots { display: flex; gap: 2px; flex-wrap: wrap; justify-content: center; margin-bottom: 2px; }
+.cal-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  display: inline-block; background: var(--accent);
+}
+.cal-dot-booking    { background: var(--accent); }
+.cal-dot-bill       { background: var(--warn); }
+.cal-dot-pregnancy  { background: #f0a8d0; }
+.cal-dot-social     { background: #a8dff0; }
+.cal-dot-lead       { background: var(--bad); }
+.cal-dot-family     { background: var(--ok); }
+
+.cal-item { align-items: center; }
+.cal-icon {
+  width: 36px; height: 36px; flex-shrink: 0;
+  display: grid; place-items: center;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 8px; font-size: 1.125rem;
+}
+
 /* Social planner post body */
 .post-body {
   white-space: pre-wrap;

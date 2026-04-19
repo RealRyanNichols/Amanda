@@ -14,10 +14,12 @@ import { renderSettings } from "./tools/settings.js";
 import { renderLife } from "./tools/life.js";
 import { renderMeals } from "./tools/meals.js";
 import { renderSocial } from "./tools/social.js";
+import { renderCalendar } from "./tools/calendar.js";
 
 const TOOLS = {
   dashboard: renderDashboard,
   brain: renderBrain,
+  calendar: renderCalendar,
   income: renderIncome,
   booking: renderBooking,
   career: renderCareer,
