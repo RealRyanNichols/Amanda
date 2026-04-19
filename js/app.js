@@ -22,6 +22,7 @@ import { renderSearch } from "./tools/search.js";
 import { renderVault } from "./tools/vault.js";
 import { renderStore } from "./tools/store.js";
 import { renderCapture } from "./tools/capture.js";
+import { renderMeTime } from "./tools/metime.js";
 import { mountFloatingBrain } from "./floating-brain.js";
 
 const TOOLS = {
@@ -32,6 +33,7 @@ const TOOLS = {
   bible: renderBible,
   search: renderSearch,
   habits: renderHabits,
+  metime: renderMeTime,
   vault: renderVault,
   babyyear: renderBabyYear,
   store: renderStore,

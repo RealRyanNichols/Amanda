@@ -425,8 +425,104 @@ function quickAsk(text, rerender) {
 export function renderBrain(mount, { rerender }) {
   mount.append(renderHeader(rerender));
   mount.append(renderVentModeCard(rerender));
+  mount.append(renderWishesCard(rerender));
   mount.append(renderChat(rerender));
   if (!(state.brain.history || []).length) mount.append(renderStarters(rerender));
+}
+
+function renderWishesCard(rerender) {
+  const wishes = state.wishes || [];
+  const card = h("section", { class: "card wishes-card" }, [
+    h("h2", {}, "✨ What do you actually want?"),
+    h("div", { class: "sub" }, "The things you don't say out loud. Dreams. Fears. Quiet hopes. Write them down; we'll help you move toward them."),
+  ]);
+
+  const form = h("form", { class: "form-row", onsubmit: (e) => {
+    e.preventDefault();
+    const f = new FormData(e.target);
+    const text = (f.get("text") || "").toString().trim();
+    const kind = (f.get("kind") || "wish").toString();
+    if (!text) return;
+    if (!state.wishes) state.wishes = [];
+    state.wishes.unshift({
+      id: uid(),
+      text,
+      kind,
+      notes: "",
+      createdAt: Date.now(),
+    });
+    save();
+    toast("Saved. We'll come back to it.");
+    e.target.reset();
+    rerender();
+  } }, [
+    h("label", { class: "field" }, [
+      "What's on your heart?",
+      h("textarea", { name: "text", rows: "3", placeholder: "It's okay to start with 'I don't even know, but…'" }),
+    ]),
+    h("label", { class: "field" }, [
+      "What kind of thing is it?",
+      h("select", { name: "kind" }, [
+        h("option", { value: "wish" }, "Wish — something I want"),
+        h("option", { value: "desire" }, "Desire — something I ache for"),
+        h("option", { value: "fear" }, "Fear — something I'm scared to say"),
+        h("option", { value: "goal" }, "Goal — something I'm going to do"),
+      ]),
+    ]),
+    h("div", { class: "btn-row" }, [h("button", { class: "btn", type: "submit" }, "Save it")]),
+  ]);
+  card.append(form);
+
+  if (wishes.length) {
+    const list = h("div", { class: "list", style: "margin-top:10px" });
+    wishes.slice(0, 8).forEach((w) => {
+      const kindLabel = { wish: "wish", desire: "desire", fear: "fear", goal: "goal" }[w.kind] || "wish";
+      list.append(h("div", { class: "item" }, [
+        h("div", {}, [
+          h("div", { class: "title" }, [
+            h("span", { class: "pill " + (w.kind === "fear" ? "urgent" : w.kind === "goal" ? "paid" : w.kind === "desire" ? "hot" : "") }, kindLabel),
+            " " + w.text,
+          ]),
+          h("div", { class: "meta" }, friendlyDate(new Date(w.createdAt).toISOString().slice(0, 10))),
+        ]),
+        h("div", { class: "actions" }, [
+          state.brain?.apiKey && h("button", {
+            class: "btn small",
+            onclick: () => askBrainAboutWish(w, rerender),
+          }, "Help me"),
+          h("button", {
+            class: "btn small danger",
+            onclick: () => {
+              if (!confirmAction("Remove this?")) return;
+              state.wishes = state.wishes.filter((x) => x.id !== w.id);
+              save(); rerender();
+            },
+          }, "×"),
+        ]),
+      ]));
+    });
+    card.append(list);
+  }
+
+  return card;
+}
+
+function askBrainAboutWish(wish, rerender) {
+  state.brain = state.brain || { history: [] };
+  state.brain.history = state.brain.history || [];
+  const prompt = wish.kind === "fear"
+    ? `I wrote down something I'm scared to say out loud: "${wish.text}". Help me look at it — not fix it, just look at it with me first.`
+    : wish.kind === "goal"
+    ? `I set a goal for myself: "${wish.text}". Help me break it into the smallest next step I could take this week.`
+    : `I wrote down something I want: "${wish.text}". Is there anything I could do — even tiny — to move toward it? What's one small true thing I can try?`;
+  state.brain.history.push({ id: uid(), role: "user", text: prompt, at: Date.now() });
+  save();
+  rerender();
+  // Scroll to chat
+  setTimeout(() => {
+    const log = document.querySelector(".chat-log");
+    if (log) log.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, 100);
 }
 
 function renderVentModeCard(rerender) {

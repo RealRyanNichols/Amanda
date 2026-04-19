@@ -9,6 +9,7 @@
 import { state, save, uid } from "../store.js";
 import { h, toast, confirmAction, friendlyDate, todayISO } from "../util.js";
 import { offerNext } from "../next-offer.js";
+import { creditTimeSaved } from "../time-saved.js";
 
 const EXPLAIN_TEMPLATES = [
   { key: "auto",       label: "Figure it out" },
@@ -237,6 +238,9 @@ async function fileCapture(result, dataUrl, intent, note, rerender) {
   // Cap the capture history at 50 items so storage stays sane
   if (state.captures.length > 50) state.captures.length = 50;
   save();
+
+  // Credit her for the time saved vs typing this into 3 different places manually
+  creditTimeSaved(5, "Auto-filed capture");
 
   // File based on suggested destination
   const dest = result.suggested_destination;

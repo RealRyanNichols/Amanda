@@ -543,7 +543,106 @@ Worth it because "Does it have NIV?" is the #1 question faith users
 ask, and having 10+ translations is a marketing bullet.
 ```
 
-## 16. Acquisition positioning (long game)
+## 17. Family accounts + multi-user
+
+```
+Build shared family mode. The app becomes a home for the whole family,
+not just one user.
+
+- New table: households (id, name, primary_user_id, created_at,
+  family_plan_active)
+- New table: household_members (id, household_id, user_id, role,
+  relation, invited_by, joined_at) — roles are one of:
+  primary | partner | child | grandparent | helper
+- New table: household_resources (id, household_id, kind, ref_id,
+  visibility) — what's shared vs private
+  * Shared by default: calendar, shared notes, kids roster, love notes
+    (partner-to-primary), pregnancy gallery, Baby Year milestones
+  * Always private: personal prayers, personal gratitude, Me Time
+    sessions, financial data, lead pipeline, document vault, the
+    Brain chat history
+- Invite flow: primary sends email to partner → link opens account
+  creation tied to household_id.
+- Access model: row-level security scoped by household_id OR user_id
+  depending on visibility.
+
+Partner experience:
+- When partner logs in, they see a "Family" tab with:
+  * Shared calendar
+  * Baby Year (co-edit, shared photos)
+  * Love notes (partner can write notes for primary to unlock)
+  * Letters to baby (partner can contribute)
+- Partner does NOT see primary's private data.
+
+Cross-generation (long game):
+- When Thomas is 13+, he gets his own account with a reference to
+  household_id. His Mom's Baby Year tracker for him is now readable
+  by him (photos, letters, milestones).
+- He can keep using the same app as a kid → teen → adult, with his
+  data following him. Mom can still co-edit early memories.
+- This is the retention anchor Ryan called out: "She keeps paying
+  because it has all her baby stuff."
+- At 18+, Thomas can fully take over his account.
+
+Pricing: Family Plan ($10/mo add-on — already in Store tab) adds
+4 seats. Each seat is a full household_member.
+```
+
+## 18. Community impact feed + "you helped N women"
+
+```
+Women want to know they've helped other women. Build it:
+
+- New table: community_posts (id, user_id, kind, body, anonymous,
+  thumbs_up, featured, created_at). Kind: 'tip' | 'question' |
+  'encouragement' | 'prayer_request'.
+- Shared anonymously by default (first name + city only; user can
+  go fully anonymous).
+- "Helpful" thumbs-up by any other user. When a post gets thumbed,
+  the original author's impact_counter increments.
+- A moderation queue (LLM + human spot-check) filters spam + hate
+  + medical advice before posts go live.
+- In the primary user's Home dashboard:
+  "You've helped 14 women this month."
+  "Your tip about bill reminders has 32 hearts."
+  "Your prayer got 8 amens."
+
+Discoverability:
+- "Suggested for you" in the Brain: "Here are 3 posts from moms
+  in your situation this week." — filtered by tags she's opted
+  into (pregnant, business owner, faith, etc.)
+
+Safety:
+- NO DMs between users at launch. Community-at-large only.
+- Report button on every post.
+- Automatic flag for medical/legal/financial advice from non-
+  professionals.
+```
+
+## 19. Wishes/desires — Brain as life-coach layer
+
+Section 4 (Supabase) covers wishes table:
+
+```
+Add wishes table (already in client state):
+- id, user_id, text, kind ('wish'|'desire'|'fear'|'goal'),
+  notes, status ('active'|'moving'|'achieved'|'released'),
+  nudge_frequency ('daily'|'weekly'|'monthly'|'none'),
+  last_nudged_at, created_at
+
+When on a schedule (nudge_frequency), the Brain proactively surfaces
+a wish during a regular conversation:
+"Hey — a month ago you said you wished you could take a painting class
+again. Any closer? What's one 10-minute thing you could do toward it
+this week?"
+
+Track progress:
+- "I'm working on this" → status = moving
+- "I did it!" → status = achieved
+- "I let it go" → status = released (no shame)
+```
+
+## 20. Acquisition positioning (long game)
 
 Ryan's thesis: build a SaaS with 1k-5k paid subscribers (in the
 mom-small-biz-faith demo), get acquired by a larger SaaS or

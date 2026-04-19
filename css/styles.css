@@ -833,6 +833,129 @@ body[data-brand="pda"] .bible-content {
 }
 .vault-viewer-meta { margin-top: 10px; }
 
+/* Me Time — the self-care tab */
+.metime-hero {
+  background: linear-gradient(160deg,
+    color-mix(in oklab, #f472b6 16%, var(--bg-elev)),
+    var(--bg-elev));
+}
+.ok-text { color: var(--ok); font-weight: 600; }
+
+.metime-activities {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 8px;
+  margin: 10px 0;
+}
+.metime-activity {
+  appearance: none;
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: var(--radius-sm);
+  padding: 14px 8px;
+  cursor: pointer;
+  font-family: inherit;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  min-height: 90px;
+  transition: border-color .15s, background .15s;
+}
+.metime-activity:hover, .metime-activity:active {
+  border-color: #f472b6;
+  background: color-mix(in oklab, #f472b6 14%, var(--bg-elev-2));
+}
+.metime-activity-emoji { font-size: 1.75rem; line-height: 1; }
+.metime-activity-label { font-size: .8125rem; text-align: center; }
+
+.metime-live-timer {
+  font-family: "SF Mono", ui-monospace, monospace;
+  font-size: 2.75rem; font-weight: 800;
+  text-align: center;
+  color: #f472b6;
+  margin: 12px 0;
+  letter-spacing: 2px;
+}
+
+.metime-affirmation {
+  background: linear-gradient(160deg,
+    color-mix(in oklab, #f472b6 20%, var(--bg-elev)),
+    color-mix(in oklab, var(--accent) 8%, var(--bg-elev)));
+  border-color: color-mix(in oklab, #f472b6 35%, var(--border));
+}
+.metime-aff-label {
+  font-size: .6875rem; letter-spacing: 1.4px; text-transform: uppercase;
+  color: #f472b6; font-weight: 700; margin-bottom: 8px;
+}
+.metime-aff-text {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.0625rem; line-height: 1.55;
+  color: var(--text);
+}
+
+.metime-miss {
+  border-color: color-mix(in oklab, var(--warn) 30%, var(--border));
+}
+
+/* Celebration overlay */
+.metime-celebration {
+  position: fixed; inset: 0; z-index: 300;
+  background: radial-gradient(ellipse at center, rgba(244,114,182,.92), rgba(0,0,0,.92));
+  display: grid; place-items: center;
+  padding: 20px;
+  cursor: pointer;
+  animation: mtCelebrate .4s ease;
+}
+@keyframes mtCelebrate {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.metime-celebration-card {
+  background: #fff;
+  color: #3b2f1c;
+  padding: 36px 28px;
+  border-radius: 20px;
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.5);
+  animation: mtCelebratePop .5s cubic-bezier(.2, 1.5, .7, 1);
+}
+@keyframes mtCelebratePop {
+  from { transform: scale(.7); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.metime-celebration-card h2 {
+  font-family: Georgia, serif;
+  font-size: 1.5rem; margin: 10px 0;
+  color: #d53f8c;
+}
+.metime-celebration-card p {
+  font-size: 1rem; line-height: 1.5; margin: 8px 0;
+}
+.metime-celebration-emoji {
+  font-size: 4rem;
+}
+.metime-celebration-card .btn {
+  margin-top: 18px;
+  background: #f472b6;
+  color: #fff;
+}
+
+/* Time saved card */
+.timesaved-card {
+  background: linear-gradient(160deg,
+    color-mix(in oklab, var(--ok) 12%, var(--bg-elev)),
+    var(--bg-elev));
+  border-color: color-mix(in oklab, var(--ok) 25%, var(--border));
+}
+
+/* Wishes card on Brain */
+.wishes-card {
+  background: linear-gradient(160deg,
+    color-mix(in oklab, var(--accent) 12%, var(--bg-elev)),
+    var(--bg-elev));
+}
+
 /* Capture */
 .capture-thumb {
   width: 56px; height: 56px; object-fit: cover;

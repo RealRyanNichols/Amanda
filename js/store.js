@@ -54,6 +54,19 @@ const defaults = () => ({
     // layout: "list" | "rolling"
     layout: "list",
   },
+  metime: {
+    weeklyGoalHours: 2,          // her weekly commitment
+    sessions: [],                // { id, startedAt, endedAt, minutes, activity, reflection }
+    missReasons: [],             // { id, date, reason } when she skips a week
+    rewards: [],                 // unlocked rewards she's earned via streaks
+    currentSessionStart: null,   // timestamp if a session is live
+  },
+  wishes: [],                    // { id, text, kind: 'wish'|'desire'|'fear'|'goal', notes, createdAt }
+  timeSaved: {
+    totalMinutes: 0,             // lifetime cumulative
+    weekMinutes: 0,              // this week
+    weekStart: "",               // ISO Monday
+  },
   babyYear: {
     milestones: [],      // { id, title, due: "ageMonths:N", completedAt, photoUrl, note }
     seeded: false,

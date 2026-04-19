@@ -4,6 +4,7 @@ import { currentBrand } from "../branding.js";
 import { TX_RDA_REQUIREMENTS } from "./rda-seed.js";
 import { verseOfTheDay, babySizeForWeek } from "./life-seeds.js";
 import { scanForReminders } from "./reminders.js";
+import { getSaved, savedHoursThisWeek } from "../time-saved.js";
 
 function incomeSummary() {
   const { deposits, bills } = state.income;
@@ -143,6 +144,34 @@ function renderHero() {
   return h("section", { class: "card" }, [
     h("h2", {}, `${greeting()}, ${who.split(" ")[0]}`),
     h("div", { class: "sub" }, b.business ? b.business.name : "Here's where everything stands right now."),
+  ]);
+}
+
+function renderTimeSavedCard() {
+  const saved = getSaved();
+  if (saved.total === 0) return null;
+  const hoursWeek = savedHoursThisWeek();
+  const totalHours = Math.round(saved.total / 60 * 10) / 10;
+
+  return h("section", { class: "card timesaved-card" }, [
+    h("h2", {}, "Time this app has given back"),
+    h("div", { class: "stat-grid" }, [
+      h("div", { class: "stat ok" }, [
+        h("div", { class: "label" }, "This week"),
+        h("div", { class: "value" }, hoursWeek + "h"),
+      ]),
+      h("div", { class: "stat" }, [
+        h("div", { class: "label" }, "Lifetime"),
+        h("div", { class: "value" }, totalHours + "h"),
+      ]),
+    ]),
+    h("div", { class: "sub", style: "margin-top:10px; font-style:italic" },
+      hoursWeek >= 1
+        ? `You could spend ${hoursWeek} hour${hoursWeek === 1 ? "" : "s"} on yourself this week and still break even. Go to Me Time.`
+        : "Every time you log, file, or capture something here, you save a few minutes. That adds up to time FOR you."),
+    h("div", { class: "btn-row", style: "margin-top:10px" }, [
+      h("button", { class: "btn small secondary", onclick: () => jumpTo("metime") }, "Open Me Time →"),
+    ]),
   ]);
 }
 
@@ -357,6 +386,7 @@ const CARDS = [
   { key: "hero",       label: "Greeting",        render: renderHero,          always: true },
   { key: "reminders",  label: "Smart reminders", render: renderSmartReminders                 },
   { key: "focus",      label: "Focus",           render: renderFocus                          },
+  { key: "timesaved",  label: "Time given back", render: renderTimeSavedCard                  },
   { key: "love-peek",  label: "Love note peek",  render: renderLoveNotePeek,  show: lifeVisible },
   { key: "verse",      label: "Today's verse",   render: renderVerseCard,     show: () => hasFaithRole() || (state.profile?.roles || []).length === 0 },
   { key: "pregnancy",  label: "Baby countdown",  render: renderPregnancyCard, show: hasPregnantRole },

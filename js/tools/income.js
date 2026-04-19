@@ -2,6 +2,7 @@ import { state, save, uid } from "../store.js";
 import { money, todayISO, friendlyDate, daysFromNow, h, toast, confirmAction } from "../util.js";
 import { currentBrand } from "../branding.js";
 import { offerNext } from "../next-offer.js";
+import { creditTimeSaved } from "../time-saved.js";
 
 const PRIORITIES = [
   { value: 1, label: "Must pay (rent, utilities, car)" },
@@ -427,6 +428,9 @@ function renderBillsCard(rerender) {
     save();
     toast("Bill added");
     rerender();
+
+    // Credit for fast entry vs digging through bank statements
+    creditTimeSaved(4, "Bill logged");
 
     // Depth: offer next actions after adding a bill
     offerNextForBill(bill, rerender);

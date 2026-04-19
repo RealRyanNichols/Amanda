@@ -2,6 +2,7 @@ import { state, save, uid } from "../store.js";
 import { h, toast, confirmAction, todayISO, friendlyDate, daysFromNow } from "../util.js";
 import { currentBrand } from "../branding.js";
 import { offerNext } from "../next-offer.js";
+import { creditTimeSaved } from "../time-saved.js";
 
 const TEMPERATURES = [
   { value: "hot",  label: "Hot",  next: 1 },
@@ -118,6 +119,9 @@ function renderForm(rerender) {
     toast("Lead added");
     e.target.reset();
     rerender();
+
+    // Credit for using structured CRM vs notebook
+    creditTimeSaved(3, "Lead logged");
 
     // Depth: offer next actions after adding a lead
     const newLead = state.followup.leads[state.followup.leads.length - 1];
