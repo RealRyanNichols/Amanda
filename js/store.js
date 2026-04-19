@@ -35,6 +35,16 @@ const defaults = () => ({
     grocery: [],
     recipes: [],
   },
+  social: {
+    activeView: "profiles",
+    profiles: {
+      facebook:  { handle: "", url: "" },
+      instagram: { handle: "", url: "" },
+      tiktok:    { handle: "", url: "" },
+    },
+    posts: [],
+    hashtagSets: [],
+  },
   life: {
     activeView: "faith",
     partnerName: "",

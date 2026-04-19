@@ -642,6 +642,19 @@ details.pathway ol li strong { color: var(--text); }
   border-color: rgba(138,60,60,.3) !important;
 }
 
+/* Social planner post body */
+.post-body {
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: var(--bg);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-size: .9375rem;
+  line-height: 1.5;
+  margin-top: 6px;
+}
+
 /* Mic button (push-to-talk) */
 .mic-btn {
   appearance: none; border: 1px solid var(--border);

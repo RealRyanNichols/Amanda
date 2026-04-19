@@ -63,7 +63,7 @@ export function enabledTabsForProfile(profile) {
   }
   // Business owner defaults
   if (roles.includes("business") || roles.includes("school")) {
-    tabs.add("income"); tabs.add("booking"); tabs.add("followup");
+    tabs.add("income"); tabs.add("booking"); tabs.add("followup"); tabs.add("social");
   }
   // Life tab: auto-show if mom / pregnant / faith — otherwise hide unless they want it
   if (roles.includes("mom") || roles.includes("pregnant") || roles.includes("faith")) {

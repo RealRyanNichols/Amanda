@@ -13,6 +13,7 @@ import { renderBrain } from "./tools/brain.js";
 import { renderSettings } from "./tools/settings.js";
 import { renderLife } from "./tools/life.js";
 import { renderMeals } from "./tools/meals.js";
+import { renderSocial } from "./tools/social.js";
 
 const TOOLS = {
   dashboard: renderDashboard,
@@ -24,6 +25,7 @@ const TOOLS = {
   meals: renderMeals,
   overload: renderOverload,
   followup: renderFollowup,
+  social: renderSocial,
   life: renderLife,
   settings: renderSettings,
 };
