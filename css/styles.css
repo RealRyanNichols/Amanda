@@ -833,6 +833,132 @@ body[data-brand="pda"] .bible-content {
 }
 .vault-viewer-meta { margin-top: 10px; }
 
+/* Floating Brain bubble (persistent on every page) */
+.fab-brain {
+  position: fixed;
+  bottom: calc(72px + var(--safe-bottom));
+  right: calc(16px + var(--safe-right));
+  z-index: 90;
+  width: 58px; height: 58px; border-radius: 50%;
+  border: 0; cursor: pointer;
+  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  color: #0b1020;
+  font-size: 1.75rem;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.4), 0 0 0 0 color-mix(in oklab, var(--accent) 50%, transparent);
+  transition: transform .15s, box-shadow .3s;
+  animation: fabPulse 4s ease-in-out infinite;
+}
+.fab-brain:hover, .fab-brain:active { transform: scale(1.08); }
+@keyframes fabPulse {
+  0%, 100% { box-shadow: 0 10px 30px rgba(0,0,0,0.4), 0 0 0 0 color-mix(in oklab, var(--accent) 50%, transparent); }
+  50%      { box-shadow: 0 10px 30px rgba(0,0,0,0.4), 0 0 0 12px color-mix(in oklab, var(--accent) 0%, transparent); }
+}
+
+.fab-drawer {
+  position: fixed;
+  right: calc(16px + var(--safe-right));
+  bottom: calc(140px + var(--safe-bottom));
+  z-index: 91;
+  width: min(92vw, 400px);
+  max-height: 70vh;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  animation: fabDrawerIn .2s ease;
+}
+@keyframes fabDrawerIn {
+  from { opacity: 0; transform: translateY(10px) scale(.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.fab-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-elev-2);
+}
+.fab-title { font-weight: 700; font-size: .9375rem; }
+.fab-sub { font-size: .75rem; color: var(--text-dim); margin-top: 2px; }
+.fab-close {
+  appearance: none; background: transparent; border: 0;
+  color: var(--text); font-size: 1.5rem; cursor: pointer;
+  width: 32px; height: 32px;
+}
+.fab-tones {
+  display: flex; gap: 4px; padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+}
+.fab-tone {
+  appearance: none; background: var(--bg-elev-2);
+  border: 1px solid var(--border); border-radius: 50%;
+  width: 36px; height: 36px; cursor: pointer;
+  font-size: 1.125rem; flex-shrink: 0;
+}
+.fab-tone.active {
+  background: color-mix(in oklab, var(--accent) 25%, var(--bg-elev-2));
+  border-color: var(--accent);
+}
+
+.fab-log {
+  flex: 1;
+  padding: 12px;
+  overflow-y: auto;
+  display: flex; flex-direction: column; gap: 8px;
+  min-height: 200px; max-height: 300px;
+}
+.fab-empty {
+  color: var(--text-dim); font-style: italic;
+  text-align: center; padding: 24px 12px;
+  font-size: .9375rem;
+}
+.fab-bubble {
+  max-width: 90%;
+  padding: 8px 12px;
+  border-radius: 14px;
+  font-size: .875rem;
+  line-height: 1.5;
+  word-break: break-word;
+  border: 1px solid var(--border);
+}
+.fab-bubble.user {
+  align-self: flex-end;
+  background: color-mix(in oklab, var(--accent) 25%, var(--bg-elev-2));
+  border-color: color-mix(in oklab, var(--accent) 45%, var(--border));
+}
+.fab-bubble.assistant {
+  align-self: flex-start;
+  background: var(--bg-elev-2);
+}
+.fab-bubble.pending { opacity: .6; font-style: italic; }
+
+.fab-input-row {
+  padding: 10px;
+  border-top: 1px solid var(--border);
+  display: flex; gap: 6px; align-items: flex-end;
+}
+.fab-input {
+  flex: 1;
+  min-height: 40px; max-height: 120px;
+  padding: 10px; resize: none;
+  font-size: 1rem; /* 16px, prevents iOS zoom */
+}
+.fab-input-btns {
+  display: flex; flex-direction: column; gap: 4px;
+}
+.fab-input-btns .mic-btn { padding: 6px 10px; min-height: 36px; }
+.fab-input-btns .fab-send { padding: 8px 12px; min-height: 40px; font-size: .8125rem; }
+
+.fab-quick {
+  display: flex; gap: 6px; padding: 8px 10px;
+  border-top: 1px solid var(--border);
+  overflow-x: auto;
+  flex-wrap: wrap;
+}
+.fab-quick .chip { font-size: .75rem; padding: 6px 10px; min-height: 30px; }
+
 /* Brain tone picker */
 .tone-label {
   margin: 14px 0 8px; font-size: .75rem;
