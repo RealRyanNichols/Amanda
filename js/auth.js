@@ -55,14 +55,22 @@ export function enabledTabsForProfile(profile) {
   if (profile.enabledTabs && Array.isArray(profile.enabledTabs)) return profile.enabledTabs;
   const always = ["dashboard", "overload", "brain", "settings"];
   const tabs = new Set(always);
-  for (const r of profile.roles || []) {
+  const roles = profile.roles || [];
+
+  for (const r of roles) {
     const def = ROLES.find((x) => x.key === r);
     if (def) for (const t of def.tabs) tabs.add(t);
   }
   // Business owner defaults
-  if (profile.roles?.includes("business") || profile.roles?.includes("school")) {
+  if (roles.includes("business") || roles.includes("school")) {
     tabs.add("income"); tabs.add("booking"); tabs.add("followup");
   }
+  // Life tab: auto-show if mom / pregnant / faith — otherwise hide unless they want it
+  if (roles.includes("mom") || roles.includes("pregnant") || roles.includes("faith")) {
+    tabs.add("life");
+  }
+  // If they didn't pick anything, show a reasonable minimum
+  if (roles.length === 0) { tabs.add("life"); tabs.add("income"); }
   return [...tabs];
 }
 

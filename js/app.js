@@ -11,6 +11,7 @@ import { renderOverload } from "./tools/overload.js";
 import { renderFollowup } from "./tools/followup.js";
 import { renderBrain } from "./tools/brain.js";
 import { renderSettings } from "./tools/settings.js";
+import { renderLife } from "./tools/life.js";
 
 const TOOLS = {
   dashboard: renderDashboard,
@@ -21,6 +22,7 @@ const TOOLS = {
   academy: renderAcademy,
   overload: renderOverload,
   followup: renderFollowup,
+  life: renderLife,
   settings: renderSettings,
 };
 

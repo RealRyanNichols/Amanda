@@ -2,6 +2,7 @@ import { state } from "../store.js";
 import { money, friendlyDate, daysFromNow, h } from "../util.js";
 import { currentBrand } from "../branding.js";
 import { TX_RDA_REQUIREMENTS } from "./rda-seed.js";
+import { verseOfTheDay } from "./life-seeds.js";
 
 function incomeSummary() {
   const { deposits, bills } = state.income;
@@ -74,6 +75,62 @@ function greeting() {
 function jumpTo(tabName) {
   const btn = document.querySelector(`.tab[data-tab="${tabName}"]`);
   if (btn) btn.click();
+}
+
+function hasFaithRole() { return (state.profile?.roles || []).includes("faith"); }
+function hasPregnantRole() { return (state.profile?.roles || []).includes("pregnant"); }
+function lifeVisible() {
+  const roles = state.profile?.roles || [];
+  return roles.includes("mom") || roles.includes("pregnant") || roles.includes("faith") || roles.length === 0;
+}
+
+function renderVerseCard() {
+  const v = verseOfTheDay();
+  return h("section", { class: "card" }, [
+    h("h2", {}, "Today's verse"),
+    h("div", { class: "verse-ref" }, v.ref),
+    h("div", { class: "verse-text" }, `"${v.text}"`),
+    h("div", { class: "btn-row", style: "margin-top:10px" }, [
+      h("button", { class: "btn small secondary", onclick: () => jumpTo("life") }, "Open Faith →"),
+    ]),
+  ]);
+}
+
+function renderPregnancyCard() {
+  const p = state.life?.pregnancy;
+  if (!p?.dueDate) return null;
+  const dueDate = new Date(p.dueDate + "T00:00:00");
+  const conception = new Date(dueDate.getTime() - 280 * 86400000);
+  const weeks = Math.max(0, Math.floor((Date.now() - conception) / (7 * 86400000)));
+  const daysLeft = daysFromNow(p.dueDate);
+
+  return h("section", { class: "card" }, [
+    h("h2", {}, "Baby countdown"),
+    h("div", { class: "stat-grid" }, [
+      h("div", { class: "stat" }, [h("div", { class: "label" }, "Weeks"), h("div", { class: "value" }, weeks)]),
+      h("div", { class: "stat" }, [h("div", { class: "label" }, "Due"), h("div", { class: "value" }, friendlyDate(p.dueDate))]),
+      h("div", { class: "stat ok" }, [h("div", { class: "label" }, "Days left"), h("div", { class: "value" }, daysLeft != null ? Math.max(0, daysLeft) : "—")]),
+    ]),
+    h("div", { class: "btn-row", style: "margin-top:10px" }, [
+      h("button", { class: "btn small secondary", onclick: () => { state.life.activeView = "pregnancy"; jumpTo("life"); } }, "Open pregnancy →"),
+    ]),
+  ]);
+}
+
+function renderLoveNotePeek() {
+  const notes = state.life?.loveNotes?.notes || [];
+  if (!notes.length) return null;
+  const unopened = notes.filter((n) => !n.opened);
+  if (!unopened.length) return null;
+  const n = unopened[0];
+  const partner = state.profile?.partnerName || (state.brand === "pda" ? "Ryan" : "");
+  return h("section", { class: "card" }, [
+    h("h2", {}, partner ? `A note from ${partner}` : "A note for you"),
+    h("div", { class: "sub" }, n.occasion),
+    h("div", { class: "btn-row" }, [
+      h("button", { class: "btn small", onclick: () => { state.life.activeView = "love"; jumpTo("life"); } }, "Open it →"),
+    ]),
+  ]);
 }
 
 function renderHero() {
@@ -274,6 +331,20 @@ export function renderDashboard(mount) {
   const isPda = state.brand === "pda";
   mount.append(renderHero());
   mount.append(renderFocus());
+
+  // Life-ish cards surface near the top so the day starts warm, not transactional
+  if (lifeVisible()) {
+    const love = renderLoveNotePeek();
+    if (love) mount.append(love);
+  }
+  if (hasFaithRole() || (state.profile?.roles || []).length === 0) {
+    mount.append(renderVerseCard());
+  }
+  if (hasPregnantRole()) {
+    const pg = renderPregnancyCard();
+    if (pg) mount.append(pg);
+  }
+
   mount.append(renderMoneyCard());
   mount.append(renderNextUpCard());
   mount.append(renderPipelineCard());
