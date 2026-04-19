@@ -9,6 +9,96 @@ const MODEL_OPTIONS = [
   { value: "claude-haiku-4-5",  label: "Claude Haiku 4.5 (fastest, cheapest)" },
 ];
 
+// Relational tones — the Brain can be whoever she needs in the moment.
+// Each tone modifies the system prompt; base context (her tools, brand,
+// business) is always included regardless of tone.
+export const TONES = [
+  {
+    key: "friend",
+    label: "Best friend",
+    emoji: "💛",
+    tagline: "Casual, real-talk, been-there",
+    prompt:
+      "Be her best friend. Casual, warm, real. Drop the formality. Use her first name. Match the emotional register she brings in. Say things like 'girl' or 'sis' if it fits — but don't fake it. Share opinions when asked. Admit when something's hard. Laugh with her.",
+  },
+  {
+    key: "mama-bear",
+    label: "Mama bear",
+    emoji: "🐻",
+    tagline: "Nurturing, protective, fiercely kind",
+    prompt:
+      "Be the loving mother she may or may not have had. Deeply nurturing. Protective. Call her 'sweetheart' or 'honey'. Remind her she is loved and seen. Be gentle but strong when she's trying to push herself too hard. Tell her to drink water, eat, and rest when she needs it — without scolding.",
+  },
+  {
+    key: "dad",
+    label: "Strong dad",
+    emoji: "👨",
+    tagline: "Firm, principled, grounded",
+    prompt:
+      "Be the father figure who keeps her grounded. Warm but firm. Direct. Principled. Speak the truth kindly. Compliments mean something because they're earned. Call her 'kiddo' or by name. Hold her to her word when she slips. Proud of her for trying hard. Practical advice, no fluff.",
+  },
+  {
+    key: "sister",
+    label: "Big sister",
+    emoji: "💕",
+    tagline: "Wiser, real, a little teasing",
+    prompt:
+      "Be the wise big sister who's been there. Affectionate but no-nonsense. A little teasing is fine. Share real-life analogies. Say what needs saying. Not preachy. Celebrate her wins loudly. Call out her BS lovingly.",
+  },
+  {
+    key: "tough-love",
+    label: "Tough love coach",
+    emoji: "💪",
+    tagline: "Direct, no glossing, action-first",
+    prompt:
+      "Be a tough-love coach. Direct. Specific. No corporate hedging. No 'consider exploring'. Say 'you need to X'. NEVER pretend things are fine if they aren't. If she's losing money, say she's losing money. But stay kind — she's a human, not a spreadsheet. Every response ends with one concrete next action.",
+  },
+  {
+    key: "teacher",
+    label: "Teacher / mentor",
+    emoji: "🧑‍🏫",
+    tagline: "Patient, step-by-step, explains",
+    prompt:
+      "Be her patient mentor. Explain concepts step by step. Assume zero knowledge when helpful, and be willing to go deep when she wants. Use examples. Show your reasoning. Never condescend. When she's learning something new, break it into stages.",
+  },
+  {
+    key: "cheerleader",
+    label: "Cheerleader",
+    emoji: "📣",
+    tagline: "Expectant, motivational, eyes on the future",
+    prompt:
+      "Be her cheerleader. Spoken with expectancy — you see who she's becoming even when she can't. Name the wins, no matter how small. Picture the future with her: 'Imagine 90 days from now when...'. Never saccharine or fake. Celebrate grit, not just outcomes. End replies with a forward-looking 'Here's what's next' line.",
+  },
+  {
+    key: "confidant",
+    label: "Safe confidant",
+    emoji: "🤍",
+    tagline: "Listens first, reflects, no advice unless asked",
+    prompt:
+      "Be a safe confidant. Listen first. Reflect back what you're hearing. Don't rush to fix. Don't offer advice unless she asks — just witness. Hold space. Name her feelings gently. 'It sounds like you're carrying a lot right now' kind of language. If she asks for advice, give it; otherwise, just be there.",
+  },
+  {
+    key: "spiritual",
+    label: "Spiritual friend",
+    emoji: "🙏",
+    tagline: "Prays with her, biblical wisdom",
+    prompt:
+      "Be her spiritual friend. Christian grounded. Reference Scripture naturally when it fits — don't force it. Offer to pray WITH her, not AT her. Never preachy. Speak with quiet confidence in God's goodness, especially in hard seasons. Reference grace, rest, and being seen by God.",
+  },
+  {
+    key: "child",
+    label: "Childlike wonder",
+    emoji: "🌱",
+    tagline: "Pure, curious, unconditional",
+    prompt:
+      "Be like a child — curious, joyful, unconditional. Marvel at small things. Ask 'why' and 'what if' with genuine curiosity. No judgment, ever. Remind her that being loved doesn't require earning it. If you learn something new together, be excited about it.",
+  },
+];
+
+export function toneByKey(key) {
+  return TONES.find((t) => t.key === key) || TONES[0];
+}
+
 const LOCAL_FAQ = [
   {
     match: /(safe.*spend|how much.*spend|spend this week)/i,
@@ -103,34 +193,42 @@ function searchData(q) {
   return hits;
 }
 
-function systemPrompt() {
+function systemPrompt(toneKeyOverride) {
   const b = currentBrand();
   const first = state.profile.firstName || "there";
   const business = b.business?.name || state.profile.businessName || "";
   const pda = b.business ? `${b.business.name} in ${b.business.city} at ${b.business.address}. Phone ${b.business.phone}. Program: ${b.business.program?.name} (${b.business.program?.weeks} weeks).` : "";
+  const toneKey = toneKeyOverride || state.brain?.tone || "friend";
+  const tone = toneByKey(toneKey);
+  const partner = state.profile?.partnerName || "";
+  const babyName = state.life?.pregnancy?.babyName || "";
 
   return [
-    `You are "The Brain" — a warm, practical assistant embedded inside ${first}'s personal toolkit app.`,
+    `You are "The Brain" — an AI embedded in ${first}'s personal toolkit app. You adapt your relational tone to how she needs support right now.`,
+    `CURRENT TONE: ${tone.label} — ${tone.tagline}.`,
+    `TONE INSTRUCTIONS: ${tone.prompt}`,
+    partner ? `Her partner's name is ${partner}.` : "",
+    babyName ? `Her baby is named ${babyName}.` : (state.life?.pregnancy?.dueDate ? "She's pregnant." : ""),
     business ? `${first} runs ${business}. ${pda}` : "",
-    "The app has these tools: Home (overview), Income (deposits + bills + safe-to-spend), Booking (appointments with deposits), Academy (students, cohorts, Texas RDA readiness, online course authoring), Career (trade pathways), Organize (brain-dump + triage), Leads (hot/warm/cold CRM), Life (faith, family, pregnancy, love notes, gratitude).",
-    "Style: tight, kind, concrete. Skip preamble. If she's overwhelmed, name one next step — don't list five.",
-    "If she asks about her data (leads, bills, students), remind her that you only know what she tells you in this chat unless she pastes it in — you do not have direct access to her app data for privacy reasons.",
-    "If she asks for Texas dental-assisting regulatory specifics, always add 'verify with the Texas State Board of Dental Examiners' — rules change.",
-    "No diagnoses. No medical, legal, or tax advice masquerading as certainty. Refer her to a professional for those.",
+    "The app has these tools: Home, Brain, Calendar, Bible reader, Income (deposits/bills/safe-to-spend), Booking, Academy (students + Texas RDA course), Meals/Grocery, Organize, Leads, Social (caption writer + planner), Life (Faith/Family/Pregnancy/Love Notes/Gratitude), Habits, Brain Wallet (document vault), Baby Year (Thomas's first-year tracker), Store, Settings.",
+    "Skip preamble. Don't explain that you're an AI. Don't moralize. If she's overwhelmed, name ONE next step — not five.",
+    "If she asks about her data, remind her you only know what she tells you here — you don't auto-scan her app data for privacy reasons.",
+    "Texas RDA regulatory specifics: always add 'verify with TSBDE'.",
+    "No diagnoses. No medical/legal/tax advice masquerading as certainty. Refer to professionals for those.",
   ].filter(Boolean).join("\n\n");
 }
 
-async function callClaude(userText) {
+export async function callClaude(userText, opts = {}) {
   const cfg = state.brain;
   if (!cfg.apiKey) throw new Error("No API key configured");
 
   const body = {
     model: cfg.model || "claude-opus-4-7",
-    max_tokens: 1500,
+    max_tokens: opts.maxTokens || 1500,
     system: [
-      { type: "text", text: systemPrompt(), cache_control: { type: "ephemeral" } },
+      { type: "text", text: opts.systemOverride || systemPrompt(opts.tone), cache_control: { type: "ephemeral" } },
     ],
-    messages: [
+    messages: opts.messages || [
       ...cfg.history.slice(-10).map((m) => ({ role: m.role, content: m.text })),
       { role: "user", content: userText },
     ],
@@ -169,15 +267,33 @@ async function callClaude(userText) {
   return textBlock?.text || "(no response)";
 }
 
-function renderHeader() {
+function renderHeader(rerender) {
   const hasKey = !!state.brain.apiKey;
-  return h("section", { class: "card" }, [
+  const currentTone = toneByKey(state.brain?.tone || "friend");
+  const card = h("section", { class: "card" }, [
     h("h2", {}, "The Brain"),
     h("div", { class: "sub" },
       hasKey
-        ? `Claude-powered. Model: ${state.brain.model}. Messages are sent directly from your phone to Anthropic.`
-        : "Running in local mode — answers come from your app. Connect a Claude key in Settings for a full assistant."),
+        ? `Claude-powered. Current mode: ${currentTone.emoji} ${currentTone.label}.`
+        : "Running in local mode — answers come from your app. Connect Claude in Settings for the full experience."),
   ]);
+
+  // Tone picker
+  card.append(h("h3", { class: "tone-label" }, "How do you need me right now?"));
+  const toneGrid = h("div", { class: "tone-grid" });
+  TONES.forEach((t) => {
+    toneGrid.append(h("button", {
+      class: "tone-btn" + ((state.brain?.tone || "friend") === t.key ? " active" : ""),
+      onclick: () => { state.brain.tone = t.key; save(); rerender(); },
+    }, [
+      h("div", { class: "tone-emoji" }, t.emoji),
+      h("div", { class: "tone-name" }, t.label),
+    ]));
+  });
+  card.append(toneGrid);
+  card.append(h("div", { class: "tone-tagline" }, currentTone.tagline));
+
+  return card;
 }
 
 function renderChat(rerender) {
@@ -276,9 +392,263 @@ function quickAsk(text, rerender) {
 }
 
 export function renderBrain(mount, { rerender }) {
-  mount.append(renderHeader());
+  mount.append(renderHeader(rerender));
+  mount.append(renderVentModeCard(rerender));
   mount.append(renderChat(rerender));
   if (!(state.brain.history || []).length) mount.append(renderStarters(rerender));
+}
+
+function renderVentModeCard(rerender) {
+  return h("section", { class: "card vent-card" }, [
+    h("h2", {}, "🫂 Vent Mode"),
+    h("div", { class: "sub" }, "Hold the mic. Pour it all out. Yell if you want to. I'll listen, then reflect back what I heard."),
+    h("div", { class: "btn-row" }, [
+      h("button", {
+        class: "btn",
+        onclick: () => openVentMode(),
+      }, "Start venting →"),
+    ]),
+  ]);
+}
+
+/* ---------- VENT MODE ---------- */
+
+function openVentMode() {
+  const overlay = document.createElement("div");
+  overlay.className = "vent-overlay";
+  document.body.append(overlay);
+
+  let stage = "intro"; // intro → recording → summary
+  let transcript = "";
+
+  function render() {
+    overlay.innerHTML = "";
+    const inner = h("div", { class: "vent-inner" });
+    overlay.append(inner);
+
+    if (stage === "intro") renderIntro(inner);
+    else if (stage === "recording") renderRecording(inner);
+    else if (stage === "summary") renderSummary(inner);
+  }
+
+  function renderIntro(mount) {
+    mount.append(h("button", { class: "vent-close", onclick: () => overlay.remove() }, "×"));
+    mount.append(h("div", { class: "vent-hero" }, [
+      h("div", { class: "vent-emoji" }, "🫂"),
+      h("h1", {}, "Vent Mode"),
+      h("p", {}, "You know how good it feels to just say everything out loud? Do that now."),
+      h("p", { class: "vent-sub" }, "Tap the mic. Talk for as long as you want. Yell, cry, ramble, trail off — doesn't matter. When you're done, tap stop. I'll reflect back what I heard and gently name what stood out."),
+      h("div", { class: "btn-row", style: "justify-content:center; margin-top:20px" }, [
+        h("button", {
+          class: "btn vent-big-btn",
+          onclick: () => { stage = "recording"; render(); },
+        }, "🎙️ I'm ready"),
+      ]),
+    ]));
+  }
+
+  function renderRecording(mount) {
+    mount.append(h("button", { class: "vent-close", onclick: () => overlay.remove() }, "×"));
+    const ta = h("textarea", {
+      class: "vent-textarea",
+      placeholder: "Your words will appear here as you talk…",
+    });
+
+    // Build our own recording UI instead of the small mic button
+    const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let recognition = null;
+    let listening = false;
+    let committed = "";
+    let elapsed = 0;
+    let timer = null;
+
+    const statusEl = h("div", { class: "vent-status" }, "Tap to start talking");
+    const timerEl = h("div", { class: "vent-timer" }, "00:00");
+    const bigBtn = h("button", { class: "vent-mic" }, "🎙️");
+
+    function tick() {
+      elapsed++;
+      const m = String(Math.floor(elapsed / 60)).padStart(2, "0");
+      const s = String(elapsed % 60).padStart(2, "0");
+      timerEl.textContent = `${m}:${s}`;
+    }
+
+    function start() {
+      if (listening) return;
+      if (!Rec) {
+        statusEl.textContent = "Your browser doesn't support voice. Type it all instead.";
+        return;
+      }
+      recognition = new Rec();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = "en-US";
+      committed = ta.value;
+
+      recognition.onresult = (e) => {
+        let interim = "";
+        let final = "";
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          if (e.results[i].isFinal) final += e.results[i][0].transcript;
+          else interim += e.results[i][0].transcript;
+        }
+        if (final) committed = (committed + " " + final.trim()).trim();
+        ta.value = committed + (interim ? " " + interim : "");
+      };
+      recognition.onerror = (e) => {
+        if (e.error === "not-allowed") {
+          statusEl.textContent = "Mic blocked. Allow access in your browser.";
+        }
+        stop();
+      };
+      recognition.onend = () => {
+        listening = false;
+        bigBtn.classList.remove("rec");
+        statusEl.textContent = "Paused. Tap mic to keep going.";
+        ta.value = committed;
+      };
+
+      try {
+        recognition.start();
+        listening = true;
+        bigBtn.classList.add("rec");
+        statusEl.textContent = "Listening. Keep going.";
+        if (!timer) timer = setInterval(tick, 1000);
+      } catch {}
+    }
+
+    function stop() {
+      if (listening && recognition) {
+        try { recognition.stop(); } catch {}
+      }
+    }
+
+    bigBtn.addEventListener("click", () => {
+      if (listening) stop();
+      else start();
+    });
+
+    mount.append(h("div", { class: "vent-hero" }, [
+      bigBtn,
+      statusEl,
+      timerEl,
+      ta,
+      h("div", { class: "btn-row", style: "justify-content:center; margin-top:12px; flex-wrap:wrap; gap:8px" }, [
+        h("button", {
+          class: "btn secondary",
+          onclick: () => {
+            stop();
+            if (timer) { clearInterval(timer); timer = null; }
+            stage = "intro";
+            render();
+          },
+        }, "Back"),
+        h("button", {
+          class: "btn",
+          onclick: () => {
+            stop();
+            if (timer) { clearInterval(timer); timer = null; }
+            transcript = (committed || ta.value || "").trim();
+            if (!transcript) { statusEl.textContent = "I didn't catch any words yet — keep going."; return; }
+            stage = "summary";
+            render();
+          },
+        }, "I'm done · reflect back"),
+      ]),
+    ]));
+  }
+
+  function renderSummary(mount) {
+    mount.append(h("button", { class: "vent-close", onclick: () => overlay.remove() }, "×"));
+
+    const result = h("div", { class: "vent-reflection" });
+    mount.append(h("div", { class: "vent-hero" }, [
+      h("h1", {}, "Here's what I heard"),
+      h("div", { class: "vent-transcript" }, transcript),
+      result,
+      h("div", { class: "btn-row", style: "justify-content:center; margin-top:12px" }, [
+        h("button", { class: "btn secondary", onclick: () => overlay.remove() }, "Done"),
+        h("button", {
+          class: "btn",
+          onclick: () => {
+            if (!state.brain.apiKey) {
+              alert("Connect your Claude key in Settings → Brain for AI reflection. You can still save the transcript below.");
+              return;
+            }
+            reflectOnVent(transcript, result);
+          },
+        }, "Get AI reflection"),
+        h("button", {
+          class: "btn secondary",
+          onclick: () => {
+            const blob = new Blob([transcript], { type: "text/plain" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `vent-${new Date().toISOString().slice(0, 10)}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+          },
+        }, "Save transcript"),
+      ]),
+    ]));
+
+    if (state.brain.apiKey) reflectOnVent(transcript, result);
+  }
+
+  render();
+}
+
+async function reflectOnVent(transcript, resultEl) {
+  resultEl.innerHTML = "";
+  resultEl.append(h("div", { class: "meta" }, "Listening to what you said…"));
+
+  const first = state.profile?.firstName || "you";
+  const system =
+    `You just listened to ${first} vent. She used push-to-talk, so this is a raw, unfiltered dump of what's going on for her right now. ` +
+    "Your job: reflect back what you heard like a wise friend who was actually listening. Don't solve. Don't minimize. Don't moralize. " +
+    "Return 4 sections in this order, each with a short heading (bold markdown) and 2-4 sentences underneath:\n\n" +
+    "**What I heard you say** — the core themes you noticed, in her own words where possible.\n" +
+    "**What stood out** — the one thing that seems to be weighing heaviest, or the contradiction she may not see.\n" +
+    "**Where you're right** — the places her instincts sound sound. Back her up.\n" +
+    "**A gentle pushback** — the place where she might be being unfair to herself, or avoiding something. Kind but honest. Skip this section if there isn't one.\n\n" +
+    "End with one single line: 'Do you want to keep talking?' — nothing else after that. No follow-up questions. No 'I'm here for you'. Just that one question.";
+
+  try {
+    const text = await callClaude(transcript, {
+      systemOverride: system,
+      maxTokens: 1500,
+      messages: [{ role: "user", content: transcript }],
+    });
+    resultEl.innerHTML = "";
+    const frag = document.createElement("div");
+    frag.innerHTML = text
+      .replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]))
+      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+      .replace(/\n/g, "<br>");
+    resultEl.append(frag);
+  } catch (err) {
+    resultEl.innerHTML = "";
+    resultEl.append(h("div", { class: "alert bad" }, err.message || "Couldn't get reflection"));
+  }
+}
+
+async function callClaudeRaw(body) {
+  const cfg = state.brain;
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": cfg.apiKey,
+      "anthropic-version": "2023-06-01",
+      "anthropic-dangerous-direct-browser-access": "true",
+    },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(`Claude ${res.status}`);
+  const data = await res.json();
+  const textBlock = (data.content || []).find((x) => x.type === "text");
+  return textBlock?.text || "";
 }
 
 export { MODEL_OPTIONS };

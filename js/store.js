@@ -18,6 +18,7 @@ const defaults = () => ({
     model: "claude-opus-4-7",
     history: [],
     systemExtras: "",
+    tone: "friend",       // one of TONES in tools/brain.js
   },
   income: { deposits: [], bills: [] },
   booking: { clients: [], appointments: [] },
