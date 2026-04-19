@@ -2,6 +2,8 @@ import { state, save, uid } from "../store.js";
 import { h, toast, confirmAction } from "../util.js";
 import { currentBrand } from "../branding.js";
 import { scanForConcerns, logConcern } from "../safety-net.js";
+import { isPaid, isInTrial, brainMinutesLeftToday, creditBrainMinutes, hasActiveVoiceTopup } from "../plan.js";
+import { showVoiceTopupPaywall, voiceStatusLine } from "../voice-topup.js";
 
 // Claude API defaults — per claude-api skill guidance: default to Opus 4.7.
 const MODEL_OPTIONS = [
@@ -310,6 +312,24 @@ function renderHeader(rerender) {
         : "Running in local mode — answers come from your app. Connect Claude in Settings for the full experience."),
   ]);
 
+  // Voice minute status: active top-up OR daily-limit remaining on free tier
+  const topupStatus = voiceStatusLine();
+  if (topupStatus) {
+    card.append(h("div", { class: "alert ok", style: "margin-top:10px" }, topupStatus));
+  } else if (!isPaid() && !isInTrial()) {
+    const mins = brainMinutesLeftToday();
+    const msg = mins > 0
+      ? `🎙️ ${mins} free voice minute${mins === 1 ? "" : "s"} left today`
+      : `🎙️ Free voice minutes are up for today`;
+    card.append(h("div", { class: "alert" + (mins === 0 ? " warn" : ""), style: "margin-top:10px; display:flex; justify-content:space-between; align-items:center; gap:8px" }, [
+      h("span", {}, msg),
+      mins === 0 && h("button", {
+        class: "btn small",
+        onclick: () => showVoiceTopupPaywall({ onClose: rerender }),
+      }, "Keep talking →"),
+    ]));
+  }
+
   // Tone picker
   card.append(h("h3", { class: "tone-label" }, "How do you need me right now?"));
   const toneGrid = h("div", { class: "tone-grid" });
@@ -339,6 +359,14 @@ function renderChat(rerender) {
       const input = form.querySelector("textarea");
       const text = input.value.trim();
       if (!text) return;
+
+      // Voice-time gate: free tier gets 5 min/day. When out, show top-up paywall.
+      if (!isPaid() && !isInTrial() && !hasActiveVoiceTopup() && brainMinutesLeftToday() <= 0) {
+        showVoiceTopupPaywall({ onClose: rerender });
+        return;
+      }
+      // Credit a rough cost per exchange (estimate: 30 seconds of voice / typed message)
+      creditBrainMinutes(0.5);
 
       state.brain.history.push({ id: uid(), role: "user", text, at: Date.now() });
       save();

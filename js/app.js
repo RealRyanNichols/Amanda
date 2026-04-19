@@ -153,6 +153,28 @@ function handleStripeReturn() {
   if (!itemId) return false;
   if (!state.purchases) state.purchases = {};
   state.purchases[itemId] = { unlockedAt: Date.now(), via: "stripe" };
+
+  // Voice time top-ups: credit the unlocked hours
+  let toastMsg = "Payment received — unlocked ✓";
+  if (itemId === "voice-1day" || itemId === "voice-3day" || itemId === "voice-week") {
+    import("./stripe-config.js").then(({ voiceTopupHours }) => {
+      const hours = voiceTopupHours(itemId);
+      import("./plan.js").then(({ creditVoiceTopup }) => {
+        creditVoiceTopup(hours);
+      });
+    });
+    const days = itemId === "voice-1day" ? "24 hours" : itemId === "voice-3day" ? "3 days" : "7 days";
+    toastMsg = `Voice unlimited for ${days} ✓`;
+  }
+  // Subscription purchases: flip plan tier
+  if (itemId === "core-monthly" || itemId === "core-annual") {
+    if (!state.plan) state.plan = {};
+    state.plan.tier = itemId === "core-annual" ? "core_annual" : "core";
+    toastMsg = "Welcome aboard — everything unlocked ✓";
+  }
+  if (itemId === "brain-pro")   { if (!state.plan) state.plan = {}; state.plan.brainTier = "pro"; }
+  if (itemId === "brain-ultra") { if (!state.plan) state.plan = {}; state.plan.brainTier = "ultra"; }
+
   save();
   // Clean the URL so refresh doesn't re-trigger
   history.replaceState({}, document.title, location.pathname);
@@ -160,7 +182,7 @@ function handleStripeReturn() {
   setTimeout(() => {
     const toast = document.createElement("div");
     toast.className = "toast show";
-    toast.textContent = "Payment received — unlocked ✓";
+    toast.textContent = toastMsg;
     document.body.append(toast);
     setTimeout(() => toast.remove(), 3500);
   }, 500);

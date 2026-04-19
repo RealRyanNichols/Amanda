@@ -137,8 +137,27 @@ export const FREE_BIBLE_TRANSLATIONS = "*"; // wildcard = all
 
 export function brainMinutesLeftToday() {
   if (isPaid() || isInTrial()) return Infinity;
+  // Voice top-up (micro-purchase) grants unlimited until a timestamp
+  if (hasActiveVoiceTopup()) return Infinity;
   const used = state.plan?.brainMinutesToday || 0;
   return Math.max(0, FREE_BRAIN_MINUTES_DAY - used);
+}
+
+export function hasActiveVoiceTopup() {
+  const until = state.plan?.voiceUnlimitedUntil;
+  return until && Date.now() < until;
+}
+
+export function voiceTopupExpiresAt() {
+  return state.plan?.voiceUnlimitedUntil || 0;
+}
+
+export function creditVoiceTopup(hours) {
+  if (!state.plan) state.plan = {};
+  // If there's already an active top-up, extend it; otherwise start from now
+  const base = Math.max(Date.now(), state.plan.voiceUnlimitedUntil || 0);
+  state.plan.voiceUnlimitedUntil = base + hours * 60 * 60 * 1000;
+  save();
 }
 
 export function creditBrainMinutes(minutes) {

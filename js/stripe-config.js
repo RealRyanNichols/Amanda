@@ -47,7 +47,23 @@ export const STRIPE_LINKS = {
   // Core subscription ($19/mo) — primary SaaS subscription
   "core-monthly":   { paymentLink: "" },
   "core-annual":    { paymentLink: "" },
+
+  // VOICE TIME TOP-UPS — the high-converting friction-point purchases.
+  // When a free user hits the 5-min/day voice cap in Brain or elsewhere,
+  // we offer these as one-tap Apple Pay purchases. Credits hit state.plan
+  // after Stripe redirects back.
+  //
+  // Pricing model (Ryan's call): roughly $1/day of unlimited voice.
+  // One-time charges. No recurring.
+  "voice-1day":     { paymentLink: "", hours: 24,  label: "24 hours unlimited voice",    price: "$1" },
+  "voice-3day":     { paymentLink: "", hours: 72,  label: "3 days unlimited voice",      price: "$3" },
+  "voice-week":     { paymentLink: "", hours: 168, label: "7 days unlimited voice",      price: "$5" },
 };
+
+// Helper: given an item id, return the hours of voice unlimited access it unlocks
+export function voiceTopupHours(itemId) {
+  return STRIPE_LINKS[itemId]?.hours || 0;
+}
 
 export function getPaymentLink(itemId) {
   return STRIPE_LINKS[itemId]?.paymentLink || "";

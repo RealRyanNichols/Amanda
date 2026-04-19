@@ -1092,6 +1092,52 @@ body[data-brand="pda"] .bible-content {
     var(--bg-elev));
 }
 
+/* Voice top-up paywall (micro-purchase at friction point) */
+.voice-topup-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0, 0, 0, 0.82);
+  display: grid; place-items: center;
+  padding: 20px; animation: safetyIn .3s ease;
+}
+.voice-topup-card {
+  width: 100%; max-width: 440px;
+  background: var(--bg-elev);
+  border: 1px solid var(--accent);
+  border-radius: 18px;
+  padding: 24px 22px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+}
+.voice-topup-options {
+  display: flex; flex-direction: column; gap: 10px;
+}
+.voice-topup-opt {
+  appearance: none; border: 1px solid var(--border);
+  background: var(--bg-elev-2); color: var(--text);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px; cursor: pointer; font-family: inherit;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px;
+  text-align: left;
+  transition: border-color .15s, background .15s;
+}
+.voice-topup-opt:hover, .voice-topup-opt:active {
+  border-color: var(--accent);
+  background: color-mix(in oklab, var(--accent) 14%, var(--bg-elev-2));
+}
+.voice-topup-opt-price {
+  font-size: 1.5rem; font-weight: 800;
+  color: var(--accent);
+  align-self: center;
+  grid-row: span 2;
+}
+.voice-topup-opt-label { font-weight: 700; font-size: 1rem; }
+.voice-topup-opt-sub { color: var(--text-dim); font-size: .8125rem; }
+.voice-topup-footer {
+  margin-top: 14px; text-align: center;
+  color: var(--text-dim); font-size: .8125rem; font-style: italic;
+}
+
 /* Upgrade wall (locked tab) */
 .upgrade-wall {
   text-align: center;
