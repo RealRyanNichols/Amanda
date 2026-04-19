@@ -4,6 +4,14 @@ Ryan — when you fire up Claude desktop (or Claude Co-worker), paste any of the
 
 Last commit on branch `claude/amanda-business-tools-RpCj8`: check `git log -1`.
 
+## 🎯 Current state snapshot
+
+**What's built:** Complete mobile-first PWA with 17 feature tabs, offline support, PIN lock, multi-step onboarding, BYOK Claude integration, voice dictation, full KJV Bible reader, floating Brain bubble on every page with 10 relational tones (tough-love, mama bear, dad, sister, friend, teacher, cheerleader, confidant, spiritual, childlike), Vent Mode therapist flow, social content planner with AI caption writer, Letters to Thomas with templates + voice + AI tidy + exports, Baby Year milestone tracker, Brain Wallet document vault, Habits tracker, global Search, unified Calendar with .ics export, Meals + Grocery, Academy school suite with Texas RDA course authoring, Income with AI tough-love revenue trends, Store tab with 6 micro-purchases placeholder.
+
+**What's validated:** Amanda said "THAT'S AMAZING!!" and told Ryan she'd pay $20-30/mo.
+
+**Pricing locked (per Ryan):** **$19/mo** (or $190/yr — 2 months free) base tier covers all 17 tabs. Micro-purchases in the Store tab for extras.
+
 ---
 
 ## The current state (quick brief for whoever picks this up)
@@ -104,33 +112,54 @@ me the migration SQL first, before writing any code.
 
 ---
 
-## 3. Stripe subscription billing
+## 3. Stripe subscription billing — single tier + micro-purchases
 
-Paste this after Supabase auth is working:
+Paste this after Supabase auth is working. **This replaces the earlier tiered plan — Ryan decided to go $19 base + IAP store.**
 
 ```
-Add Stripe subscriptions with these tiers:
+Add Stripe billing with ONE subscription + multiple one-time or
+add-on subscriptions (micro-purchases). Structure:
 
-- Free: 7-day full-feature trial (no card needed), then read-only
-- Solo: $19/mo or $190/yr — full features, single user
-- Pro: $29/mo or $290/yr — full features, export everything, priority
-  support (flag for now, no real support system yet)
-- Academy: $49/mo or $490/yr — adds multi-instructor support for
-  schools that will come in a later phase; includes everything
+BASE SUBSCRIPTION (required):
+- "Core" — $19/mo or $190/yr (annual = 2 months free)
+- 7-day free trial, no card required upfront
+- Unlocks all 17 feature tabs fully
+- Includes: Brain chat (30/month on Claude Haiku 4.5), AI caption
+  writer (5/month), AI letter tidy-up (5/month)
 
-Use Stripe Checkout (not Elements) for simplicity. Webhook to a
-Supabase Edge Function that updates users.subscription_status. Gate
-premium features behind subscription_status = 'active' | 'trialing'.
+MICRO-PURCHASES (from in-app Store tab, see js/tools/store.js):
+- Brain Pro: $10/mo add-on — unlimited Claude Opus 4.7
+- Caption Pack: $5 one-time — 50 caption generations
+- Letter Tidy Pack: $3 one-time — 20 voice cleanups
+- Vault 5GB: $5/mo — cloud-backed encrypted vault storage
+- Family Plan: $10/mo — 4 shared seats
+- Theme Pack: $4 one-time — 6 custom themes
 
-Start with:
-1. Stripe Products + Prices (I'll create them in the dashboard,
-   paste you the price IDs after)
-2. A Supabase Edge Function: stripe-webhook.ts handling
-   checkout.session.completed, customer.subscription.updated,
-   customer.subscription.deleted
-3. Client-side: a "Subscribe" button in Settings → add a "Billing"
-   card. When free-trial ends, show an in-app modal prompting upgrade.
-4. Stripe Customer Portal link so users can cancel themselves
+Implementation:
+1. Stripe Products + Prices in the dashboard:
+   - price_core_monthly ($19), price_core_annual ($190)
+   - price_brain_pro ($10/mo), price_vault_5gb ($5/mo),
+     price_family_4 ($10/mo)
+   - price_caption_pack ($5 one-time), price_tidy_pack ($3 one-time),
+     price_theme_pack ($4 one-time)
+2. Supabase Edge Function: stripe-webhook.ts handling
+   checkout.session.completed (for one-time)
+   customer.subscription.created/updated/deleted
+   Updates two tables: users.subscription_status + user_purchases
+   (a map of {price_id: { activated_at, expires_at, credits_left }}).
+3. Replace the mock handlePurchase() in js/tools/store.js with real
+   Stripe Checkout redirects. Preserve the current state.purchases
+   local schema so existing UI keeps working.
+4. Client-side usage-gating:
+   - For one-time packs: decrement credits_left on each use
+   - For Brain Pro: check has_active("brain_pro") before calling
+     Opus; fall back to Haiku if not
+5. Stripe Customer Portal link in Settings → Billing card.
+
+Revenue math (confirm with Ryan):
+- 100 subs × $19 base = $1,900/mo (+ ~30% IAP uplift = ~$2,470)
+- 1,000 × $19 = $19,000/mo (+ IAP = ~$25k)
+- 10,000 × $19 = $190,000/mo (+ IAP = ~$250k)
 ```
 
 ---
@@ -311,7 +340,105 @@ them at /legal/privacy.md and /legal/terms.md.
 
 ---
 
-## 10. Reset notes
+## 10. Founder milestone goals (Ryan's tracker)
+
+Track these in a hidden founder-only view once Supabase is wired up.
+Subscriber count pulled from Stripe API.
+
+| Subs | Base MRR ($19) | With ~30% IAP uplift | Annual |
+|---|---|---|---|
+| 100 | $1,900 | $2,470 | $29.6k |
+| 250 | $4,750 | $6,175 | $74k |
+| 500 | $9,500 | $12,350 | $148k |
+| **1,000** | **$19,000** | **$24,700** | **$296k** |
+| 2,000 | $38,000 | $49,400 | $593k |
+| **5,000** | **$95,000** | **$123,500** | **$1.48M** |
+| 10,000 | $190,000 | $247,000 | $2.96M |
+| 25,000 | $475,000 | $617,500 | $7.41M |
+| 50,000 | $950,000 | $1.23M | $14.83M |
+| 100,000 | $1.9M | $2.47M | $29.65M |
+| 150,000 | $2.85M | $3.7M | $44.5M |
+| 200,000 | $3.8M | $4.94M | $59.3M |
+| 250,000 | $4.75M | $6.18M | $74.1M |
+| 500,000 | $9.5M | $12.35M | $148.3M |
+| 600,000 | $11.4M | $14.82M | $177.9M |
+| 750,000 | $14.25M | $18.53M | $222.3M |
+| **1,000,000** | **$19M** | **$24.7M** | **$296.5M** |
+
+**Build a milestone celebration trigger:**
+
+```
+Add a Supabase cron (or webhook-triggered check) that runs daily
+and counts active subscribers from Stripe. When we cross a milestone
+(100, 250, 500, 1k, 2k, 5k, 10k, 25k, 50k, 100k, 150k, 200k, 250k,
+500k, 600k, 750k, 1M), do three things:
+1. Store the milestone + timestamp in a founder_milestones table
+2. Send Ryan an SMS via Twilio: "We just crossed [N] subs. $X MRR."
+3. Auto-post a celebratory screenshot to an internal Slack channel
+   (or his choice of notification)
+
+Then build a /founder admin route visible only to an allowlist
+(ryan@...). Shows current sub count, MRR, IAP revenue, top 10
+users by engagement, churn over last 30d.
+```
+
+---
+
+## 11. Product name + domain
+
+See `NAMES.md` in the repo root. Top 3 candidates: TendHQ, HandsFullApp,
+TheBrainForHer. Ryan verifies availability on Cloudflare Registrar
+and buys before launch.
+
+Once name is chosen, run this prompt:
+
+```
+We chose the name [NAME] with domain [DOMAIN]. Please:
+
+1. Rename the PWA manifest.webmanifest (name + short_name)
+2. Update the welcome screen copy and the default branding in
+   js/branding.js
+3. Replace the ◆ brand mark with a simple logo SVG we'll iterate
+4. Set up Cloudflare Pages to deploy the built app to the new domain
+5. Point the apex record to GitHub Pages (or migrate off Pages to
+   Cloudflare Pages entirely)
+6. Update README and DESKTOP_HANDOFF to reference the new name
+7. Generate 5 launch-post captions for IG/TikTok with the new name
+```
+
+---
+
+## 12. Landing page (marketing site)
+
+See `marketing/` directory in the repo (stub exists). Build it out
+with Astro:
+
+```
+Replace the marketing/ stub with a complete Astro-based marketing
+site deployable to Cloudflare Pages:
+
+- Hero: "A home for your business and your life"
+  + phone mockup (use a screenshot of the Home tab)
+  + "Try free for 7 days — no card" CTA
+- 3 feature highlights (3-column on desktop, stacked on mobile):
+  * Income Stabilizer — safe-to-spend math from your deposits
+  * Letters to [their baby] — voice-dictated keepsakes, AI tidies
+  * Brain (AI in 10 tones) — like having a mentor, friend, mom
+- Social proof placeholder (Amanda testimonial when ready)
+- Pricing card: $19/mo or $190/yr — single tier, 7-day free trial
+- FAQ: privacy (your data stays yours), offline support,
+  cancel anytime, not medical/legal/tax advice
+- Footer: Privacy Policy + Terms links
+- SEO: og:image, structured data for SaaS pricing
+- Mobile-first, same visual language as the app
+
+Run it through a Core Web Vitals check before shipping — aim for
+95+ Performance on mobile.
+```
+
+---
+
+## Reset notes
 
 If something goes wrong and you want to pick up from a specific
 point, these commits are key checkpoints:

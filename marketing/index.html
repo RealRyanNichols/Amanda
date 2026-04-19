@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1020" />
+  <title>Amanda's Toolkit — A home for your business and your life</title>
+  <meta name="description" content="Built for moms who run it all. Your business, your family, your faith — one gentle home that fits in your pocket. Free 7-day trial." />
+  <meta property="og:title" content="Amanda's Toolkit" />
+  <meta property="og:description" content="A home for your business and your life." />
+  <meta property="og:type" content="website" />
+  <link rel="icon" href="../assets/icon.svg" type="image/svg+xml" />
+  <style>
+    :root {
+      --bg: #0b1020;
+      --bg-2: #121933;
+      --text: #e9ecff;
+      --dim: #a7b0d6;
+      --accent: #7c9cff;
+      --accent-strong: #5a7dff;
+      --ok: #4ade80;
+      --border: #232c55;
+      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: var(--font);
+      background: radial-gradient(1200px 600px at 10% -10%, rgba(124,156,255,.12), transparent 60%),
+                  radial-gradient(800px 500px at 110% 10%, rgba(111,224,212,.08), transparent 60%),
+                  var(--bg);
+      color: var(--text);
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+    /* Nav */
+    nav { padding: 20px 0; }
+    nav .container { display: flex; justify-content: space-between; align-items: center; }
+    .logo {
+      display: flex; align-items: center; gap: 10px;
+      font-weight: 700; font-size: 1.125rem;
+    }
+    .logo-mark {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+      display: grid; place-items: center;
+      color: #0b1020; font-weight: 800;
+    }
+    .nav-cta {
+      background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+      color: #0b1020; font-weight: 700;
+      padding: 10px 20px; border-radius: 999px;
+      text-decoration: none;
+    }
+
+    /* Hero */
+    .hero {
+      padding: 60px 0 80px;
+      text-align: center;
+    }
+    .hero h1 {
+      font-size: clamp(2rem, 6vw, 3.75rem);
+      font-weight: 800;
+      line-height: 1.1;
+      margin: 0 0 20px;
+      max-width: 780px;
+      margin-inline: auto;
+    }
+    .hero .tagline {
+      font-size: clamp(1.0625rem, 2vw, 1.25rem);
+      color: var(--dim);
+      max-width: 620px;
+      margin: 0 auto 32px;
+    }
+    .hero-cta {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+      color: #0b1020;
+      font-weight: 700;
+      padding: 16px 32px;
+      border-radius: 999px;
+      font-size: 1.0625rem;
+      text-decoration: none;
+      box-shadow: 0 20px 40px rgba(124, 156, 255, 0.35);
+      transition: transform .15s;
+    }
+    .hero-cta:hover { transform: translateY(-2px); text-decoration: none; }
+    .hero-subcta {
+      display: block; margin-top: 12px; color: var(--dim); font-size: .9375rem;
+    }
+
+    /* Features */
+    .features {
+      padding: 60px 0;
+      border-top: 1px solid var(--border);
+    }
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-top: 40px;
+    }
+    @media (max-width: 768px) {
+      .feature-grid { grid-template-columns: 1fr; gap: 16px; }
+    }
+    .feature {
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+    }
+    .feature h3 {
+      font-size: 1.125rem;
+      margin: 0 0 10px;
+    }
+    .feature p {
+      color: var(--dim);
+      margin: 0;
+      font-size: .9375rem;
+    }
+    .feature-emoji {
+      font-size: 2.5rem;
+      margin-bottom: 16px;
+    }
+
+    /* Section headings */
+    h2.section {
+      font-size: clamp(1.5rem, 3.5vw, 2.25rem);
+      text-align: center;
+      margin: 0 0 16px;
+    }
+    .section-sub {
+      color: var(--dim);
+      text-align: center;
+      max-width: 600px;
+      margin: 0 auto;
+      font-size: 1rem;
+    }
+
+    /* Pricing */
+    .pricing {
+      padding: 80px 0;
+      border-top: 1px solid var(--border);
+      text-align: center;
+    }
+    .price-card {
+      max-width: 420px;
+      margin: 40px auto 0;
+      background: var(--bg-2);
+      border: 2px solid var(--accent);
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 20px 60px rgba(124, 156, 255, 0.25);
+    }
+    .price-amount {
+      font-size: 3.5rem;
+      font-weight: 800;
+      margin: 20px 0 4px;
+    }
+    .price-amount span { font-size: 1.125rem; color: var(--dim); font-weight: 400; }
+    .price-annual {
+      color: var(--ok); font-size: .9375rem; font-weight: 600;
+      margin-bottom: 20px;
+    }
+    .price-features {
+      text-align: left;
+      margin: 24px 0;
+      padding: 0;
+      list-style: none;
+    }
+    .price-features li {
+      padding: 8px 0;
+      color: var(--dim);
+    }
+    .price-features li::before {
+      content: "✓  "; color: var(--ok); font-weight: 700;
+    }
+
+    /* FAQ */
+    .faq {
+      padding: 80px 0;
+      border-top: 1px solid var(--border);
+    }
+    details {
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin: 12px 0;
+    }
+    details summary {
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 1rem;
+    }
+    details[open] summary { margin-bottom: 10px; }
+    details p { color: var(--dim); margin: 0; font-size: .9375rem; }
+
+    /* Footer */
+    footer {
+      padding: 40px 0;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      color: var(--dim);
+      font-size: .875rem;
+    }
+    footer a { color: var(--dim); margin: 0 10px; }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="container">
+      <div class="logo">
+        <div class="logo-mark">◆</div>
+        <span>Amanda's Toolkit</span>
+      </div>
+      <a href="#start" class="nav-cta">Try free for 7 days</a>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="container">
+      <h1>A home for your business and your life.</h1>
+      <p class="tagline">
+        One gentle place for your income, your calendar, your kids, your faith,
+        your business, and your thoughts. Built for moms who run it all.
+      </p>
+      <a href="#start" class="hero-cta">Start 7-day free trial →</a>
+      <span class="hero-subcta">No card required. Cancel anytime.</span>
+    </div>
+  </section>
+
+  <section class="features">
+    <div class="container">
+      <h2 class="section">It holds everything.</h2>
+      <p class="section-sub">Money, motherhood, business, faith — under one roof you can carry in your pocket.</p>
+
+      <div class="feature-grid">
+        <div class="feature">
+          <div class="feature-emoji">💵</div>
+          <h3>Income Stabilizer</h3>
+          <p>Log your deposits. I do the math. "Safe to spend this week" tells you what you can actually afford — no guessing, no shame.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-emoji">💌</div>
+          <h3>Letters to your baby</h3>
+          <p>Hold the mic and talk. I transcribe. AI cleans up the ums without changing your voice. A keepsake diary for them to read one day.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-emoji">✨</div>
+          <h3>The Brain</h3>
+          <p>AI that becomes whoever you need right now — a friend, a mentor, your mama, a tough-love coach. Pick a tone. Vent. Get real talk.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-emoji">📅</div>
+          <h3>One calendar</h3>
+          <p>Appointments, bills, kids' school events, social posts, doctor visits. All in one view. Add to your iPhone or Google Calendar in one tap.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-emoji">✝️</div>
+          <h3>Bible built in</h3>
+          <p>Full KJV. Big buttons, easy to flip. Highlight verses, bookmark anywhere, read offline. A daily verse waiting on your home screen.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-emoji">📣</div>
+          <h3>Social planner + AI captions</h3>
+          <p>Draft posts for Instagram, TikTok, and Facebook. Claude writes three caption options for every photo. Save what works.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="pricing" id="start">
+    <div class="container">
+      <h2 class="section">One simple price.</h2>
+      <p class="section-sub">Everything included. No upsells for basics.</p>
+
+      <div class="price-card">
+        <div class="price-amount">$19<span>/mo</span></div>
+        <div class="price-annual">or $190/year — save 2 months</div>
+        <ul class="price-features">
+          <li>Every feature, every tab</li>
+          <li>Works offline</li>
+          <li>Your data stays on your device</li>
+          <li>Voice dictation everywhere</li>
+          <li>30 AI chats / month included</li>
+          <li>Export anything, anytime</li>
+          <li>7-day free trial — no card required</li>
+        </ul>
+        <a href="#" class="hero-cta" style="width: 100%; justify-content: center;">Start free trial</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="faq">
+    <div class="container">
+      <h2 class="section">Questions other moms asked.</h2>
+
+      <details>
+        <summary>Where is my data stored?</summary>
+        <p>Locally on your device first. You can optionally back it up to our encrypted cloud. We never sell your data. We never train AI on your data. You can export everything as JSON any time.</p>
+      </details>
+
+      <details>
+        <summary>What if I cancel?</summary>
+        <p>Your data stays on your device. You still have your letters, your bookmarks, your photos. Cancel any time from Settings — no phone calls, no guilt trips.</p>
+      </details>
+
+      <details>
+        <summary>Does it work offline?</summary>
+        <p>Yes. After first load, everything works without a signal. Great for flights, hospital stays, the drive to grandma's.</p>
+      </details>
+
+      <details>
+        <summary>Is this a medical / financial / legal tool?</summary>
+        <p>No. It's a gentle helper for tracking what matters to you. For medical, legal, or tax decisions — please talk to a professional.</p>
+      </details>
+
+      <details>
+        <summary>Who built this?</summary>
+        <p>A husband built it for his fiancée — an actual mom, business owner, and faith-led woman who was carrying too much in too many apps. She loved it, so we made it for you too.</p>
+      </details>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+      Built with love. <br/>
+      <a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a> · <a href="mailto:hello@example.com">Contact</a>
+    </div>
+  </footer>
+</body>
+</html>
