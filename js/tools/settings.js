@@ -3,6 +3,13 @@ import { h, toast, confirmAction } from "../util.js";
 import { ROLES, INTERESTS, setPin, hasPin } from "../auth.js";
 import { MODEL_OPTIONS } from "./brain.js";
 
+// Capture the beforeinstallprompt event for a friendly in-app install button (Chrome/Edge/Android).
+let deferredInstallPrompt = null;
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+});
+
 function renderProfileCard(rerender) {
   const p = state.profile || {};
   const card = h("section", { class: "card" }, [
@@ -169,9 +176,54 @@ function renderDataCard(rerender) {
   return card;
 }
 
+function renderInstallCard() {
+  const isStandalone =
+    window.matchMedia?.("(display-mode: standalone)").matches ||
+    window.navigator.standalone === true;
+  if (isStandalone) {
+    return h("section", { class: "card" }, [
+      h("h2", {}, "Installed ✓"),
+      h("div", { class: "sub" }, "Running as an app on your home screen. Nice."),
+    ]);
+  }
+
+  const ua = navigator.userAgent;
+  const isIOS = /iPad|iPhone|iPod/.test(ua);
+  const card = h("section", { class: "card" }, [
+    h("h2", {}, "Install as an app"),
+    h("div", { class: "sub" }, "Get a real app icon on your home screen. No App Store needed."),
+  ]);
+
+  if (isIOS) {
+    card.append(h("div", { class: "alert ok", style: "margin-top:6px" },
+      "iPhone: tap the Share button in Safari, then 'Add to Home Screen'. It'll launch full-screen like a native app."));
+  } else if (deferredInstallPrompt) {
+    card.append(h("div", { class: "btn-row", style: "margin-top:6px" }, [
+      h("button", {
+        class: "btn",
+        onclick: async () => {
+          try {
+            deferredInstallPrompt.prompt();
+            const { outcome } = await deferredInstallPrompt.userChoice;
+            if (outcome === "accepted") toast("Installed");
+            deferredInstallPrompt = null;
+          } catch {
+            toast("Install not available right now");
+          }
+        },
+      }, "Install app"),
+    ]));
+  } else {
+    card.append(h("div", { class: "alert", style: "margin-top:6px" },
+      "Android Chrome: open the browser menu (⋮) and tap 'Install app'. On desktop Chrome, look for the install icon in the address bar."));
+  }
+  return card;
+}
+
 export function renderSettings(mount, { rerender }) {
   mount.append(renderProfileCard(rerender));
   mount.append(renderBrainCard(rerender));
   mount.append(renderSecurityCard(rerender));
+  mount.append(renderInstallCard());
   mount.append(renderDataCard(rerender));
 }

@@ -111,6 +111,14 @@ function wireExportImport() {
 }
 
 (function boot() {
+  // Register service worker for offline + installability (PWA).
+  // Fails silently on http://, file://, or unsupported browsers.
+  if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("./sw.js").catch(() => {});
+    });
+  }
+
   if (needsOnboarding()) {
     renderWelcome(() => { bootApp(); });
     return;
