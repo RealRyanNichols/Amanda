@@ -19,6 +19,7 @@ import {
   signOut,
   currentUser,
 } from "../supabase.js";
+import { syncPushAll, syncPullAll } from "../sync.js";
 
 function renderNotConfigured() {
   return h("section", { class: "card" }, [
@@ -146,16 +147,40 @@ function renderSignedIn(container, user, rerender) {
   container.innerHTML = "";
   container.append(h("div", { class: "alert ok" },
     `Signed in as ${user.email}`));
-  container.append(h("div", { class: "btn-row", style: "margin-top:10px" }, [
+
+  container.append(h("div", { class: "btn-row", style: "margin-top:10px; flex-wrap:wrap" }, [
+    h("button", {
+      class: "btn",
+      onclick: async () => {
+        toast("Syncing…");
+        try {
+          await syncPushAll();
+          toast("Up to date");
+        } catch (e) { toast("Sync failed — try again"); }
+      },
+    }, "↑ Push my local data"),
+    h("button", {
+      class: "btn secondary",
+      onclick: async () => {
+        if (!confirm("Pull remote data and OVERWRITE what's on this device? Use this if you just signed in on a new phone.")) return;
+        toast("Pulling…");
+        try {
+          await syncPullAll();
+          toast("Restored from your account");
+          rerender();
+        } catch (e) { toast("Pull failed — try again"); }
+      },
+    }, "↓ Pull remote data"),
     h("button", {
       class: "btn secondary",
       onclick: async () => {
         await signOut();
-        toast("Signed out");
+        toast("Signed out — your local data stays on this device");
         rerender();
       },
     }, "Sign out"),
   ]));
+
   container.append(h("div", { class: "pda-contact", style: "margin-top:14px" },
-    "Sync layer wires next — once you're signed in everywhere your data follows you."));
+    "Your data auto-syncs in the background every few seconds after you change something. Push and Pull are manual overrides for edge cases (switching phones, recovering a backup)."));
 }

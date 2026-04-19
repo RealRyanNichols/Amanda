@@ -1,5 +1,6 @@
-import { state, save, exportJson, importJson } from "./store.js";
+import { state, save, exportJson, importJson, setOnSave } from "./store.js";
 import { toast } from "./util.js";
+import { initSync, queueSync } from "./sync.js";
 import { applyBrand, initBrandToggle } from "./branding.js";
 import { renderWelcome, renderLock, needsOnboarding, hasPin, enabledTabsForProfile } from "./auth.js";
 import { renderDashboard } from "./tools/dashboard.js";
@@ -67,6 +68,11 @@ function bootApp() {
   syncTabVisibility();
   render();
   mountFloatingBrain();
+  // Register debounced sync push on every local save. initSync() attaches
+  // the auth-state listener + pulls remote data when she signs in.
+  setOnSave(() => queueSync());
+  initSync().catch((e) => console.warn("[sync init]", e));
+  document.addEventListener("sync:pulled", render);
   document.addEventListener("tabs:refresh", syncTabVisibility);
 }
 

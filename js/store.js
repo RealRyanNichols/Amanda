@@ -133,8 +133,14 @@ function load() {
 
 export const state = load();
 
+// Callback hook — app.js registers sync.queueSync() here so every local
+// save triggers a debounced remote push. Avoids circular imports.
+let _onSave = null;
+export function setOnSave(fn) { _onSave = fn; }
+
 export function save() {
   localStorage.setItem(KEY, JSON.stringify(state));
+  if (_onSave) { try { _onSave(); } catch {} }
 }
 
 export function exportJson() {
