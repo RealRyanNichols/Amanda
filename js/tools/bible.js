@@ -11,6 +11,7 @@ import { h, toast, confirmAction, todayISO } from "../util.js";
 // see js/plan.js FREE_BIBLE_TRANSLATIONS for the founder's covenant.
 // Do not import plan gates here. Do not add lock logic. God's word is
 // never held hostage.
+import { renderPlanCard, todayReadings } from "./bible-plans.js";
 
 const BOOKS = [
   { name: "Genesis",       chapters: 50, ot: true },
@@ -176,6 +177,9 @@ function renderBrowse(rerender) {
     b.requestedTranslations.length > 0 && h("div", { class: "meta", style: "margin-top:8px" },
       `Requested: ${b.requestedTranslations.join(", ")}`),
   ]));
+
+  // Reading plan card (below the translation picker) — always visible
+  wrap.append(renderPlanCard(rerender));
 
   // Continue reading card (if there's a recent location)
   const lastBook = b.currentBook;

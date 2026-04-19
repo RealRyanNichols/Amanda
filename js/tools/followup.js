@@ -292,8 +292,69 @@ function remove(lead, rerender) {
   rerender();
 }
 
+function renderAnalytics() {
+  const leads = state.followup?.leads || [];
+  if (leads.length < 3) return null;
+
+  const closed = leads.filter((l) => l.closed);
+  const won = closed.filter((l) => (l.outcome || "") === "won");
+  const lost = closed.length - won.length;
+  const conv = closed.length > 0 ? Math.round((won.length / closed.length) * 100) : 0;
+
+  // Revenue per source
+  const bySource = {};
+  for (const l of leads) {
+    const src = (l.source || "").trim() || "Unknown";
+    bySource[src] = bySource[src] || { total: 0, won: 0, lost: 0, open: 0 };
+    bySource[src].total++;
+    if (!l.closed) bySource[src].open++;
+    else if ((l.outcome || "") === "won") bySource[src].won++;
+    else bySource[src].lost++;
+  }
+  const sources = Object.entries(bySource).sort((a, b) => b[1].won - a[1].won);
+
+  const card = h("section", { class: "card" }, [
+    h("h2", {}, "Pipeline analytics"),
+    h("div", { class: "sub" }, "Real numbers from your leads. No guessing."),
+    h("div", { class: "stat-grid" }, [
+      h("div", { class: "stat ok" }, [
+        h("div", { class: "label" }, "Won"),
+        h("div", { class: "value" }, won.length),
+      ]),
+      h("div", { class: "stat" }, [
+        h("div", { class: "label" }, "Conversion"),
+        h("div", { class: "value" }, conv + "%"),
+      ]),
+      h("div", { class: "stat warn" }, [
+        h("div", { class: "label" }, "Open"),
+        h("div", { class: "value" }, leads.length - closed.length),
+      ]),
+    ]),
+  ]);
+
+  if (sources.length) {
+    card.append(h("h3", { style: "margin:14px 0 6px; font-size:13px; color:var(--text-dim); text-transform:uppercase; letter-spacing:.8px" }, "By source"));
+    const list = h("div", { class: "list" });
+    sources.slice(0, 6).forEach(([src, stats]) => {
+      const rate = stats.won + stats.lost > 0 ? Math.round((stats.won / (stats.won + stats.lost)) * 100) : 0;
+      list.append(h("div", { class: "item" }, [
+        h("div", {}, [
+          h("div", { class: "title" }, src),
+          h("div", { class: "meta" },
+            `${stats.total} leads · ${stats.won} won · ${stats.lost} lost${stats.open ? " · " + stats.open + " open" : ""}${stats.won + stats.lost > 0 ? " · " + rate + "% convert" : ""}`),
+        ]),
+      ]));
+    });
+    card.append(list);
+  }
+
+  return card;
+}
+
 export function renderFollowup(mount, { rerender }) {
   mount.append(renderStats());
+  const analytics = renderAnalytics();
+  if (analytics) mount.append(analytics);
   mount.append(renderForm(rerender));
   mount.append(renderLeads(rerender));
 }

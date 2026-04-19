@@ -73,7 +73,36 @@ function bootApp() {
   setOnSave(() => queueSync());
   initSync().catch((e) => console.warn("[sync init]", e));
   document.addEventListener("sync:pulled", render);
+  document.addEventListener("sync:realtime", render);
   document.addEventListener("tabs:refresh", syncTabVisibility);
+
+  // Restore-your-data prompt — if the sync layer detects a new device
+  // (local empty + remote has data), surface an actionable banner.
+  document.addEventListener("sync:restore-available", () => {
+    if (document.querySelector(".restore-banner")) return;
+    const banner = document.createElement("div");
+    banner.className = "restore-banner";
+    banner.innerHTML = `
+      <div class="restore-text">
+        <strong>Welcome back.</strong> We found data in your account from another device. Restore it here?
+      </div>
+    `;
+    const restore = document.createElement("button");
+    restore.className = "btn small";
+    restore.textContent = "Restore";
+    restore.addEventListener("click", async () => {
+      banner.remove();
+      const { syncPullAll } = await import("./sync.js");
+      await syncPullAll();
+      render();
+    });
+    const dismiss = document.createElement("button");
+    dismiss.className = "btn small secondary";
+    dismiss.textContent = "Not now";
+    dismiss.addEventListener("click", () => banner.remove());
+    banner.append(restore, dismiss);
+    document.body.append(banner);
+  });
 }
 
 function syncTabVisibility() {

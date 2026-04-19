@@ -88,7 +88,6 @@ const SLICES = [
       id: p.id, user_id: uid,
       text: p.text, answered: !!p.answered, answered_at: p.answeredAt || null,
       answer_note: p.answerNote || "",
-      created_at: p.createdAt ? (p.createdAt.length === 10 ? p.createdAt + "T00:00:00Z" : p.createdAt) : undefined,
     }),
     fromRow: (r) => ({
       id: r.id, text: r.text, answered: r.answered,
@@ -102,11 +101,24 @@ const SLICES = [
     toRow: (uid, l) => ({
       id: l.id, user_id: uid,
       body: l.body, author: l.author || "", template: l.template || "",
-      created_at: l.createdAt ? new Date(l.createdAt).toISOString() : undefined,
     }),
     fromRow: (r) => ({
       id: r.id, body: r.body, author: r.author, template: r.template,
       createdAt: r.created_at ? new Date(r.created_at).getTime() : Date.now(),
+    }),
+  },
+  {
+    table: "life_pregnancy_visits",
+    path: ["life", "pregnancy", "appointments"],
+    toRow: (uid, v) => ({
+      id: v.id, user_id: uid, date: v.date,
+      provider: v.provider || "", weeks: v.weeks || null,
+      weight: v.weight || "", notes: v.notes || "",
+      photos: v.photos || [],
+    }),
+    fromRow: (r) => ({
+      id: r.id, date: r.date, provider: r.provider, weeks: r.weeks,
+      weight: r.weight, notes: r.notes, photos: r.photos || [],
     }),
   },
   {
@@ -116,7 +128,6 @@ const SLICES = [
       id: e.id, user_id: uid, date: e.date,
       text: e.text || "", tags: e.tags || [],
       severity: e.severity || 2, asked_doctor: !!e.askedDoctor,
-      created_at: e.createdAt ? new Date(e.createdAt).toISOString() : undefined,
     }),
     fromRow: (r) => ({
       id: r.id, date: r.date, text: r.text,
@@ -126,13 +137,44 @@ const SLICES = [
     }),
   },
   {
+    table: "life_gratitude",
+    path: ["life", "gratitude", "entries"],
+    toRow: (uid, e) => ({ id: e.id, user_id: uid, date: e.date, things: e.things || [] }),
+    fromRow: (r) => ({ id: r.id, date: r.date, things: r.things || [] }),
+  },
+  {
+    table: "life_family_kids",
+    path: ["life", "family", "kids"],
+    toRow: (uid, k) => ({
+      id: k.id, user_id: uid, name: k.name,
+      grade: k.grade || "", age: k.age ?? null,
+      school: k.school || "", dropoff: k.dropoff || "",
+      pickup: k.pickup || "", fav: k.fav || "",
+    }),
+    fromRow: (r) => ({
+      id: r.id, name: r.name, grade: r.grade, age: r.age,
+      school: r.school, dropoff: r.dropoff, pickup: r.pickup, fav: r.fav,
+    }),
+  },
+  {
+    table: "life_family_supporters",
+    path: ["life", "family", "supporters"],
+    toRow: (uid, s) => ({ id: s.id, user_id: uid, name: s.name, relation: s.relation || "", phone: s.phone || "" }),
+    fromRow: (r) => ({ id: r.id, name: r.name, relation: r.relation, phone: r.phone }),
+  },
+  {
+    table: "life_love_notes",
+    path: ["life", "loveNotes", "notes"],
+    toRow: (uid, n) => ({ id: n.id, user_id: uid, occasion: n.occasion, body: n.body || "", opened: !!n.opened }),
+    fromRow: (r) => ({ id: r.id, occasion: r.occasion, body: r.body, opened: r.opened }),
+  },
+  {
     table: "wishes",
     path: ["wishes"],
     toRow: (uid, w) => ({
       id: w.id, user_id: uid,
       text: w.text, kind: w.kind, notes: w.notes || "",
       status: w.status || "active",
-      created_at: w.createdAt ? new Date(w.createdAt).toISOString() : undefined,
     }),
     fromRow: (r) => ({
       id: r.id, text: r.text, kind: r.kind, notes: r.notes,
@@ -147,12 +189,171 @@ const SLICES = [
       id: hb.id, user_id: uid,
       label: hb.label, emoji: hb.emoji || "✨",
       category: hb.category || "custom", schedule: hb.schedule || "daily",
-      created_at: hb.createdAt ? new Date(hb.createdAt).toISOString() : undefined,
     }),
     fromRow: (r) => ({
       id: r.id, label: r.label, emoji: r.emoji,
       category: r.category, schedule: r.schedule,
       createdAt: r.created_at ? new Date(r.created_at).getTime() : Date.now(),
+    }),
+  },
+  {
+    table: "metime_sessions",
+    path: ["metime", "sessions"],
+    toRow: (uid, s) => ({
+      id: s.id, user_id: uid,
+      started_at: s.startedAt ? new Date(s.startedAt).toISOString() : new Date().toISOString(),
+      ended_at: s.endedAt ? new Date(s.endedAt).toISOString() : null,
+      minutes: s.minutes || null,
+      activity: s.activity || "", activity_label: s.activityLabel || "",
+      reflection: s.reflection || "",
+    }),
+    fromRow: (r) => ({
+      id: r.id,
+      startedAt: r.started_at ? new Date(r.started_at).getTime() : Date.now(),
+      endedAt: r.ended_at ? new Date(r.ended_at).getTime() : null,
+      minutes: r.minutes,
+      activity: r.activity, activityLabel: r.activity_label,
+      reflection: r.reflection,
+    }),
+  },
+  {
+    table: "vault_items",
+    path: ["vault", "items"],
+    toRow: (uid, v) => ({
+      id: v.id, user_id: uid,
+      title: v.title, category: v.category || "Other",
+      note: v.note || "",
+      data_url: v.dataUrl || null,
+      mime: v.mime || "image/jpeg",
+      from_capture_id: v.fromCaptureId || null,
+    }),
+    fromRow: (r) => ({
+      id: r.id, title: r.title, category: r.category,
+      note: r.note, dataUrl: r.data_url, mime: r.mime,
+      fromCaptureId: r.from_capture_id,
+      createdAt: r.created_at ? new Date(r.created_at).getTime() : Date.now(),
+    }),
+  },
+  {
+    table: "meals_grocery",
+    path: ["meals", "grocery"],
+    toRow: (uid, g) => ({ id: g.id, user_id: uid, item: g.item, category: g.category || "Other", done: !!g.done, from_recipe: g.fromRecipe || null }),
+    fromRow: (r) => ({ id: r.id, item: r.item, category: r.category, done: r.done, fromRecipe: r.from_recipe }),
+  },
+  {
+    table: "meals_recipes",
+    path: ["meals", "recipes"],
+    toRow: (uid, r) => ({ id: r.id, user_id: uid, name: r.name, ingredients: r.ingredients || [], steps: r.steps || "" }),
+    fromRow: (r) => ({ id: r.id, name: r.name, ingredients: r.ingredients || [], steps: r.steps }),
+  },
+  {
+    table: "social_posts",
+    path: ["social", "posts"],
+    toRow: (uid, p) => ({
+      id: p.id, user_id: uid,
+      body: p.body, platforms: p.platforms || ["instagram"],
+      status: p.status || "draft",
+      scheduled_for: p.scheduledFor || null,
+      photo_data_url: p.photoDataUrl || null,
+      from_capture_id: p.fromCaptureId || null,
+    }),
+    fromRow: (r) => ({
+      id: r.id, body: r.body, platforms: r.platforms,
+      status: r.status, scheduledFor: r.scheduled_for,
+      photoDataUrl: r.photo_data_url,
+      fromCaptureId: r.from_capture_id,
+      createdAt: r.created_at ? new Date(r.created_at).getTime() : Date.now(),
+    }),
+  },
+  {
+    table: "social_hashtag_sets",
+    path: ["social", "hashtagSets"],
+    toRow: (uid, s) => ({ id: s.id, user_id: uid, name: s.name, tags: s.tags }),
+    fromRow: (r) => ({ id: r.id, name: r.name, tags: r.tags }),
+  },
+  {
+    table: "academy_programs",
+    path: ["academy", "programs"],
+    toRow: (uid, p) => ({
+      id: p.id, user_id: uid, name: p.name,
+      start_date: p.startDate || null, end_date: p.endDate || null,
+      tuition: Number(p.tuition) || 0, total_hours: p.totalHours || 0,
+    }),
+    fromRow: (r) => ({
+      id: r.id, name: r.name,
+      startDate: r.start_date, endDate: r.end_date,
+      tuition: Number(r.tuition), totalHours: r.total_hours,
+    }),
+  },
+  {
+    table: "academy_students",
+    path: ["academy", "students"],
+    toRow: (uid, s) => ({
+      id: s.id, user_id: uid, program_id: s.programId || null,
+      first_name: s.firstName, last_name: s.lastName,
+      phone: s.phone || "", email: s.email || "",
+      enrolled_date: s.enrolledDate || null,
+      status: s.status || "enrolled",
+      tuition_paid: Number(s.tuitionPaid) || 0,
+      hours: s.hours || {}, requirements: s.requirements || {},
+      attendance: s.attendance || {}, notes: s.notes || "",
+    }),
+    fromRow: (r) => ({
+      id: r.id, programId: r.program_id,
+      firstName: r.first_name, lastName: r.last_name,
+      phone: r.phone, email: r.email,
+      enrolledDate: r.enrolled_date, status: r.status,
+      tuitionPaid: Number(r.tuition_paid),
+      hours: r.hours || {}, requirements: r.requirements || {},
+      attendance: r.attendance || {}, notes: r.notes || "",
+    }),
+  },
+  {
+    table: "captures",
+    path: ["captures"],
+    toRow: (uid, c) => ({
+      id: c.id, user_id: uid,
+      intent: c.intent || "auto", note: c.note || "",
+      summary: c.summary || "", kind: c.kind || "note",
+      raw: c.raw || {},
+      photo_data_url: c.photoDataUrl || null,
+      filed_to: c.filedTo || null, destination_id: c.destinationId || null,
+    }),
+    fromRow: (r) => ({
+      id: r.id, intent: r.intent, note: r.note,
+      summary: r.summary, kind: r.kind, raw: r.raw || {},
+      photoDataUrl: r.photo_data_url,
+      filedTo: r.filed_to, destinationId: r.destination_id,
+      createdAt: r.created_at ? new Date(r.created_at).getTime() : Date.now(),
+    }),
+  },
+  {
+    table: "baby_year_milestones",
+    path: ["babyYear", "milestones"],
+    toRow: (uid, m) => ({
+      id: m.id, user_id: uid, title: m.title,
+      due_months: m.dueMonths || 0,
+      completed_at: m.completedAt || null,
+      note: m.note || "", photo_url: m.photoUrl || "",
+    }),
+    fromRow: (r) => ({
+      id: r.id, title: r.title, dueMonths: r.due_months,
+      completedAt: r.completed_at, note: r.note,
+      photoUrl: r.photo_url,
+    }),
+  },
+  {
+    table: "baby_year_growth",
+    path: ["babyYear", "growthLog"],
+    toRow: (uid, g) => ({
+      id: g.id, user_id: uid, date: g.date,
+      lbs: Number(g.lbs) || 0, oz: Number(g.oz) || 0,
+      inches: Number(g.inches) || 0, notes: g.notes || "",
+    }),
+    fromRow: (r) => ({
+      id: r.id, date: r.date,
+      lbs: Number(r.lbs), oz: Number(r.oz),
+      inches: Number(r.inches), notes: r.notes,
     }),
   },
 ];
@@ -275,6 +476,132 @@ export function queueSync(delay = 3000) {
   pushTimer = setTimeout(() => { syncPushAll().catch(() => {}); }, delay);
 }
 
+// ============ REALTIME SUBSCRIPTIONS ============
+// When a row changes on ANOTHER device (or from a partner / Edge Function),
+// Supabase pushes the event here via postgres_changes. We update local
+// state in place and dispatch a re-render so the UI reflects it live.
+
+let _realtimeChannel = null;
+
+async function attachRealtime(userId) {
+  if (_realtimeChannel) return;
+  const sb = await getSupabase();
+  const ch = sb.channel(`user-${userId}-sync`);
+
+  // Subscribe to every synced table, filtered to this user's rows only
+  for (const slice of SLICES) {
+    ch.on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: slice.table, filter: `user_id=eq.${userId}` },
+      (payload) => applyRealtimeChange(slice, payload)
+    );
+  }
+  // Profile too (no user_id column — the id IS the user)
+  ch.on(
+    "postgres_changes",
+    { event: "*", schema: "public", table: "profiles", filter: `id=eq.${userId}` },
+    (payload) => {
+      // Skip our own echo: if the new row matches what's already local, no-op
+      const newRow = payload.new;
+      if (!newRow) return;
+      pullProfileFromRow(newRow);
+      save();
+      document.dispatchEvent(new CustomEvent("sync:pulled"));
+    }
+  );
+  ch.subscribe((status) => {
+    if (status === "SUBSCRIBED") console.log("[sync] realtime connected");
+  });
+  _realtimeChannel = ch;
+}
+
+async function detachRealtime() {
+  if (!_realtimeChannel) return;
+  const sb = await getSupabase();
+  await sb.removeChannel(_realtimeChannel);
+  _realtimeChannel = null;
+}
+
+function applyRealtimeChange(slice, payload) {
+  const local = getPath(state, slice.path);
+  if (!Array.isArray(local)) return;
+  const { eventType, new: newRow, old: oldRow } = payload;
+  const id = (newRow || oldRow)?.id;
+  if (!id) return;
+
+  if (eventType === "DELETE") {
+    const next = local.filter((x) => x.id !== id);
+    if (next.length !== local.length) {
+      setPath(state, slice.path, next);
+      save();
+      document.dispatchEvent(new CustomEvent("sync:realtime", { detail: { table: slice.table, event: "delete" } }));
+    }
+    return;
+  }
+  if (!newRow) return;
+  const mapped = slice.fromRow(newRow);
+  const idx = local.findIndex((x) => x.id === id);
+  if (idx >= 0) local[idx] = mapped;
+  else local.push(mapped);
+  save();
+  document.dispatchEvent(new CustomEvent("sync:realtime", { detail: { table: slice.table, event: eventType.toLowerCase() } }));
+}
+
+// Helper used by realtime profile subscription
+function pullProfileFromRow(data) {
+  if (!state.profile) state.profile = {};
+  if (!state.plan) state.plan = {};
+  if (data.first_name != null)    state.profile.firstName = data.first_name;
+  if (data.partner_name != null)  state.profile.partnerName = data.partner_name;
+  if (data.business_name != null) state.profile.businessName = data.business_name;
+  if (data.brand)                 state.brand = data.brand;
+  if (data.roles)                 state.profile.roles = data.roles;
+  if (data.interests)             state.profile.interests = data.interests;
+  state.profile.setupDone = !!data.setup_done;
+  state.plan.tier = data.tier || "trial";
+  if (data.trial_started_at)      state.plan.trialStartedAt = new Date(data.trial_started_at).getTime();
+  state.plan.brainTier = data.brain_tier || "haiku";
+  if (data.voice_unlimited_until) state.plan.voiceUnlimitedUntil = new Date(data.voice_unlimited_until).getTime();
+}
+
+// Heuristic: after signing in, does this device have barely any local data
+// while remote has a lot? If so, she's probably on a new phone — prompt her
+// to restore. If local + remote both have data, we already pulled + merged
+// in syncPullAll, so nothing to ask.
+function localLooksEmpty() {
+  const sizes = [
+    (state.income?.deposits || []).length,
+    (state.income?.bills || []).length,
+    (state.followup?.leads || []).length,
+    (state.booking?.appointments || []).length,
+    (state.life?.pregnancy?.letters || []).length,
+    (state.life?.faith?.prayers || []).length,
+  ];
+  const total = sizes.reduce((a, b) => a + b, 0);
+  return total === 0;
+}
+
+async function remoteHasData(userId) {
+  try {
+    const sb = await getSupabase();
+    // Check a couple of heavy-use tables for any rows at all
+    const checks = ["income_deposits", "followup_leads", "life_pregnancy_letters", "life_faith_prayers"];
+    for (const t of checks) {
+      const { count } = await sb.from(t).select("id", { count: "exact", head: true }).eq("user_id", userId);
+      if ((count || 0) > 0) return true;
+    }
+    return false;
+  } catch { return false; }
+}
+
+async function maybePromptRestore(userId) {
+  if (!localLooksEmpty()) return;
+  const hasRemote = await remoteHasData(userId);
+  if (!hasRemote) return;
+  // Show a non-blocking restore prompt via event so UI layer handles it
+  document.dispatchEvent(new CustomEvent("sync:restore-available"));
+}
+
 export async function initSync() {
   if (!isSupabaseConfigured()) return;
   if (authListenerAttached) return;
@@ -284,16 +611,18 @@ export async function initSync() {
   const user = await currentUser();
   if (user) {
     await syncPullAll();
+    await attachRealtime(user.id);
   }
 
   // Listen for future auth changes
-  onAuthStateChange(async ({ event }) => {
+  onAuthStateChange(async ({ event, session }) => {
     if (event === "SIGNED_IN") {
+      await maybePromptRestore(session.user.id);
       await syncPullAll();
-      // trigger a re-render if possible
       document.dispatchEvent(new CustomEvent("sync:pulled"));
+      if (session?.user?.id) await attachRealtime(session.user.id);
     } else if (event === "SIGNED_OUT") {
-      // Local state stays; just stop syncing
+      await detachRealtime();
       console.log("[sync] signed out — staying local");
     }
   });

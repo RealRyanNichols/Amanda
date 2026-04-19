@@ -579,7 +579,22 @@ function renderLetters(rerender, name) {
         class: "btn secondary",
         type: "button",
         onclick: () => exportAllLetters(name, rerender),
-      }, "Export all"),
+      }, "Export as .txt"),
+      (p.letters.length > 0) && h("button", {
+        class: "btn secondary",
+        type: "button",
+        onclick: async () => {
+          toast("Building your keepsake PDF…");
+          try {
+            const { exportLettersAsPDF } = await import("../pdf-export.js");
+            await exportLettersAsPDF(p.letters, name || "baby");
+            toast("PDF ready");
+          } catch (err) {
+            toast("PDF export failed — try .txt instead");
+            console.warn(err);
+          }
+        },
+      }, "📖 Export as keepsake PDF"),
     ]),
   ]);
   card.append(form);

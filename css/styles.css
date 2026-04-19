@@ -1092,6 +1092,35 @@ body[data-brand="pda"] .bible-content {
     var(--bg-elev));
 }
 
+/* Restore-your-data banner (sign-in on new device) */
+.restore-banner {
+  position: fixed;
+  left: 50%;
+  bottom: calc(140px + var(--safe-bottom));
+  transform: translateX(-50%);
+  z-index: 95;
+  width: min(92vw, 460px);
+  background: var(--bg-elev);
+  border: 1px solid var(--accent);
+  border-radius: 14px;
+  padding: 12px 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+  animation: safetyIn .3s ease;
+}
+.restore-text { flex: 1; min-width: 200px; font-size: .875rem; line-height: 1.4; }
+
+/* Bible reading plan — daily references list */
+.reading-list {
+  margin: 10px 0 0;
+  padding: 0 0 0 18px;
+  font-family: Georgia, serif;
+  font-size: 1.0625rem;
+  line-height: 1.8;
+  color: var(--text);
+}
+.reading-list li { margin: 4px 0; }
+
 /* Body journal — "How I'm feeling" inside Pregnancy */
 .body-journal {
   background: linear-gradient(160deg,
