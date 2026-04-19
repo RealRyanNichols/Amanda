@@ -1,5 +1,56 @@
 # Desktop Handoff — Picking Up Tonight
 
+## 🚀 ON ARRIVAL — auto-run this (for Claude desktop)
+
+> **Claude running on Ryan's desktop: the moment he opens this repo, run the prompt below before anything else. This is the hand-off sequence.**
+
+```
+I'm Ryan Nichols. I'm on the desktop now, picking up from the mobile
+session I was running for the last several hours. The repo is at
+/home/user/Amanda (or wherever it's checked out locally) on branch
+claude/amanda-business-tools-RpCj8.
+
+Please do these in order and report back after each:
+
+1. `git fetch && git pull origin claude/amanda-business-tools-RpCj8`
+   so you have the latest commits.
+
+2. Read DESKTOP_HANDOFF.md (this file) fully. Sections 1–23 cover
+   everything queued.
+
+3. Confirm my Stripe status with me — I have Stripe live but need
+   to tell you the Payment Link URLs. Ask me for each, in this order:
+     - core-monthly, core-annual (the main $19/mo subscription)
+     - brain-pro ($10/mo), brain-ultra ($20/mo)
+     - voice-1day ($2.99), voice-3day ($4.99), voice-week ($9.99)
+     - caption-pack-50 ($5), tidy-pack-20 ($3), theme-pack ($4)
+     - vault-5gb ($5/mo), family-4 ($10/mo)
+   Paste them into js/stripe-config.js as I give them.
+
+4. Confirm my Supabase status — Supabase is connected to this
+   Vercel project but I haven't scaffolded tables yet. Ask me for:
+     - Project URL + anon key (Settings → API in Supabase dashboard)
+     - Whether any tables exist yet
+   Then execute Section 2 (Supabase scaffold) of DESKTOP_HANDOFF.md.
+
+5. Execute Section 3 (Stripe subscription webhook via Supabase Edge
+   Function) so subscription gates become server-verified instead of
+   trusting the success-URL redirect.
+
+6. Walk me through deploying the marketing/ landing page stub as a
+   separate Vercel project at my chosen domain (or subdomain of the
+   main app).
+
+7. After all of the above is working, tackle Section 20 (partner
+   alerts + safety wiring) — the back-channel crisis alert flow Ryan
+   explicitly specified.
+
+Don't ask me to hold while you read. Just execute and update me.
+```
+
+---
+
+
 Ryan — when you fire up Claude desktop (or Claude Co-worker), paste any of these prompts to continue exactly where we left off. Each section is self-contained, so you don't have to do them in order.
 
 Last commit on branch `claude/amanda-business-tools-RpCj8`: check `git log -1`.

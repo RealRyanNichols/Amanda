@@ -14,9 +14,9 @@ export function showVoiceTopupPaywall({ onClose } = {}) {
   overlay.className = "voice-topup-overlay";
 
   const options = [
-    { id: "voice-1day", label: "24 hours", price: "$1",  sub: "Best for a long car ride or a venting evening" },
-    { id: "voice-3day", label: "3 days",   price: "$3",  sub: "Our most popular" },
-    { id: "voice-week", label: "7 days",   price: "$5",  sub: "Best value — save 28%" },
+    { id: "voice-1day", label: "24 hours", price: "$2.99", sub: "For a long car ride or a venting evening" },
+    { id: "voice-3day", label: "3 days",   price: "$4.99", sub: "Our most popular" },
+    { id: "voice-week", label: "7 days",   price: "$9.99", sub: "Best value · save 33%" },
   ];
 
   const cards = options.map((opt) => {
