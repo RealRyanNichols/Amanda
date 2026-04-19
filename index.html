@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1020" />
+  <title>Amanda's Toolkit</title>
+  <link rel="stylesheet" href="./css/styles.css" />
+  <link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='78' font-size='80'>💎</text></svg>" />
+</head>
+<body data-brand="default">
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">◆</div>
+      <div class="brand-text">
+        <div class="brand-title" id="brandTitle">Amanda's Toolkit</div>
+        <div class="brand-sub" id="brandSub">Five tools. One place.</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <label class="brand-toggle">
+        <input type="checkbox" id="brandToggle" />
+        <span class="brand-toggle-label">PDA branding</span>
+      </label>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Tools">
+    <button class="tab" role="tab" data-tab="income" aria-selected="true">
+      <span class="tab-icon">💵</span><span class="tab-label">Income</span>
+    </button>
+    <button class="tab" role="tab" data-tab="booking">
+      <span class="tab-icon">📅</span><span class="tab-label">Booking</span>
+    </button>
+    <button class="tab" role="tab" data-tab="career">
+      <span class="tab-icon">🧭</span><span class="tab-label">Career</span>
+    </button>
+    <button class="tab" role="tab" data-tab="overload">
+      <span class="tab-icon">🧠</span><span class="tab-label">Organize</span>
+    </button>
+    <button class="tab" role="tab" data-tab="followup">
+      <span class="tab-icon">📲</span><span class="tab-label">Leads</span>
+    </button>
+  </nav>
+
+  <main id="app"></main>
+
+  <footer class="app-footer">
+    <span>Built with love for Amanda Williams</span>
+    <button id="exportBtn" class="link-btn" type="button">Export data</button>
+    <button id="importBtn" class="link-btn" type="button">Import</button>
+    <input id="importFile" type="file" accept="application/json" hidden />
+  </footer>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>
