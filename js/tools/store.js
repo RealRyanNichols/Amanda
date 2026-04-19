@@ -1,5 +1,6 @@
 import { state, save } from "../store.js";
 import { h, toast } from "../util.js";
+import { getPaymentLink, hasStripeLive } from "../stripe-config.js";
 
 // Store — displays the micro-purchase catalog. Actual Stripe wiring happens
 // on desktop phase; for now, tapping "Unlock" flips a local flag so the
@@ -101,7 +102,14 @@ function handlePurchase(item) {
     toast("Removed");
     return true;
   }
-  // Stripe placeholder — shows the checkout modal mockup.
+  // If a real Stripe Payment Link is configured for this item, redirect there.
+  // Otherwise fall back to the preview-mode unlock (for local testing).
+  const paymentLink = getPaymentLink(item.id);
+  if (paymentLink) {
+    window.location.href = paymentLink;
+    return false;
+  }
+  // No Stripe link wired yet — preview mode.
   showCheckoutMock(item);
   return false;
 }

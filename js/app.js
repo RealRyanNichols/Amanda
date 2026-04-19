@@ -134,6 +134,31 @@ function wireExportImport() {
   });
 }
 
+function handleStripeReturn() {
+  // Stripe Payment Link redirects back with ?stripe_success=1&item=<id>
+  // on successful checkout. Unlock the item locally and celebrate.
+  // Server-side verification comes with Supabase webhooks (desktop phase);
+  // for now we trust the redirect (acceptable for solo-device launch).
+  const params = new URLSearchParams(location.search);
+  if (params.get("stripe_success") !== "1") return false;
+  const itemId = params.get("item");
+  if (!itemId) return false;
+  if (!state.purchases) state.purchases = {};
+  state.purchases[itemId] = { unlockedAt: Date.now(), via: "stripe" };
+  save();
+  // Clean the URL so refresh doesn't re-trigger
+  history.replaceState({}, document.title, location.pathname);
+  // Show celebration after boot
+  setTimeout(() => {
+    const toast = document.createElement("div");
+    toast.className = "toast show";
+    toast.textContent = "Payment received — unlocked ✓";
+    document.body.append(toast);
+    setTimeout(() => toast.remove(), 3500);
+  }, 500);
+  return true;
+}
+
 (function boot() {
   // Register service worker for offline + installability (PWA).
   // Fails silently on http://, file://, or unsupported browsers.
@@ -142,6 +167,9 @@ function wireExportImport() {
       navigator.serviceWorker.register("./sw.js").catch(() => {});
     });
   }
+
+  // Handle any Stripe checkout return before routing
+  handleStripeReturn();
 
   if (needsOnboarding()) {
     renderWelcome(() => { bootApp(); });
