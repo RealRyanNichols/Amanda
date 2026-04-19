@@ -35,6 +35,19 @@ const defaults = () => ({
     grocery: [],
     recipes: [],
   },
+  habits: {
+    seeded: false,
+    items: [],           // { id, label, emoji, schedule: 'daily'|'weekly', target, createdAt }
+    log: {},             // "habitId:YYYY-MM-DD" → true
+  },
+  vault: {
+    items: [],           // { id, title, category, dataUrl, mime, note, createdAt }
+  },
+  babyYear: {
+    milestones: [],      // { id, title, due: "ageMonths:N", completedAt, photoUrl, note }
+    seeded: false,
+    growthLog: [],       // { id, date, weeks, lbs, oz, inches, notes }
+  },
   social: {
     activeView: "profiles",
     profiles: {

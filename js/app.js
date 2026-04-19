@@ -16,12 +16,20 @@ import { renderMeals } from "./tools/meals.js";
 import { renderSocial } from "./tools/social.js";
 import { renderCalendar } from "./tools/calendar.js";
 import { renderBible } from "./tools/bible.js";
+import { renderHabits } from "./tools/habits.js";
+import { renderBabyYear } from "./tools/baby-year.js";
+import { renderSearch } from "./tools/search.js";
+import { renderVault } from "./tools/vault.js";
 
 const TOOLS = {
   dashboard: renderDashboard,
   brain: renderBrain,
   calendar: renderCalendar,
   bible: renderBible,
+  search: renderSearch,
+  habits: renderHabits,
+  vault: renderVault,
+  babyyear: renderBabyYear,
   income: renderIncome,
   booking: renderBooking,
   career: renderCareer,

@@ -53,7 +53,7 @@ export function needsOnboarding() { return !state.profile?.setupDone; }
 // Compute enabled tabs based on the user's roles (if they haven't overridden).
 export function enabledTabsForProfile(profile) {
   if (profile.enabledTabs && Array.isArray(profile.enabledTabs)) return profile.enabledTabs;
-  const always = ["dashboard", "calendar", "overload", "brain", "settings"];
+  const always = ["dashboard", "calendar", "search", "habits", "vault", "overload", "brain", "settings"];
   const tabs = new Set(always);
   const roles = profile.roles || [];
 
@@ -71,6 +71,8 @@ export function enabledTabsForProfile(profile) {
   }
   // Bible tab: faith-forward
   if (roles.includes("faith")) tabs.add("bible");
+  // Baby Year tab: once Thomas is born (pregnant role — they'll keep using it forever)
+  if (roles.includes("pregnant") || roles.includes("mom")) tabs.add("babyyear");
   // Meals tab: moms mostly, plus default
   if (roles.includes("mom") || roles.includes("pregnant")) {
     tabs.add("meals");

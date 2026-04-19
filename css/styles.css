@@ -715,6 +715,124 @@ body[data-brand="pda"] .bible-content {
   padding: 24px;
 }
 
+/* Habit tracker */
+.habit-today {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 10px;
+}
+.habit-tile {
+  appearance: none;
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: var(--radius-sm);
+  padding: 14px 10px;
+  cursor: pointer;
+  font-family: inherit;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  min-height: 100px;
+  transition: border-color .15s, background .15s;
+}
+.habit-tile.done {
+  background: color-mix(in oklab, var(--ok) 22%, var(--bg-elev-2));
+  border-color: color-mix(in oklab, var(--ok) 55%, var(--border));
+  color: var(--ok);
+}
+.habit-emoji { font-size: 2rem; line-height: 1; }
+.habit-label { font-size: .8125rem; text-align: center; line-height: 1.3; }
+.habit-streak { font-size: .75rem; font-weight: 700; }
+
+.habit-week {
+  display: flex; flex-direction: column; gap: 4px;
+  overflow-x: auto;
+}
+.habit-week-row {
+  display: grid;
+  grid-template-columns: 140px repeat(7, 1fr);
+  gap: 4px;
+  min-width: 420px;
+}
+.habit-week-row.header {
+  font-size: .6875rem; color: var(--text-dim); text-transform: uppercase;
+  letter-spacing: .6px; text-align: center;
+}
+.habit-week-day { text-align: center; padding: 4px; }
+.habit-week-label {
+  font-size: .8125rem; padding: 8px 4px; overflow: hidden;
+  white-space: nowrap; text-overflow: ellipsis;
+}
+.habit-week-cell {
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  aspect-ratio: 1;
+  display: grid; place-items: center;
+  font-size: .875rem;
+}
+.habit-week-cell.done {
+  background: color-mix(in oklab, var(--ok) 30%, var(--bg-elev-2));
+  color: var(--ok);
+  border-color: color-mix(in oklab, var(--ok) 50%, var(--border));
+}
+
+/* Baby-year milestones */
+.baby-year-bracket {
+  margin: 0 0 8px; padding: 8px 12px;
+  background: var(--bg-elev-2); border-radius: var(--radius-sm);
+  font-size: .8125rem; color: var(--text-dim);
+  text-transform: uppercase; letter-spacing: 1px;
+}
+.baby-year-bracket.now {
+  color: var(--accent);
+  background: color-mix(in oklab, var(--accent) 15%, var(--bg-elev-2));
+}
+.milestone-item.done { opacity: .75; }
+.milestone-item.done .title { text-decoration: line-through; }
+.milestone-note { font-style: italic; margin-top: 4px; }
+.milestone-photo {
+  width: 60px; height: 60px; object-fit: cover;
+  border-radius: 8px; cursor: zoom-in; flex-shrink: 0;
+}
+
+/* Search */
+.search-item { cursor: pointer; }
+.search-item:hover { border-color: var(--accent); }
+
+/* Vault */
+.vault-preview img {
+  max-width: 100%; max-height: 200px;
+  border-radius: 8px; margin-top: 8px;
+}
+.vault-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 8px;
+}
+.vault-tile {
+  position: relative; margin: 0; cursor: pointer;
+  border: 1px solid var(--border); border-radius: 8px;
+  overflow: hidden; background: var(--bg-elev-2);
+}
+.vault-tile img {
+  width: 100%; height: 100%; aspect-ratio: 1;
+  object-fit: cover; display: block;
+}
+.vault-tile figcaption {
+  padding: 6px 8px; font-size: .75rem;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  background: var(--bg);
+}
+.vault-viewer {
+  background: var(--bg-elev); border: 1px solid var(--border);
+  border-radius: 12px; padding: 16px; max-width: 520px; width: 100%;
+  max-height: 90vh; overflow: auto; cursor: auto;
+}
+.vault-viewer img {
+  width: 100%; max-height: 60vh; object-fit: contain;
+  border-radius: 8px; background: var(--bg);
+}
+.vault-viewer-meta { margin-top: 10px; }
+
 /* Calendar */
 .cal-dow {
   display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px;
