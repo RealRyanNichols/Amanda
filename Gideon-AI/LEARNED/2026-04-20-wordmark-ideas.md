@@ -2,14 +2,22 @@
 
 Captured for future wordmark / logotype iterations.
 
-## "G-as-A" concept
+## "G-as-A" concept — the real idea is AIDEON
 
-Ryan brainstorm: *"Maybe the G in Gideon could look like an A and it's
-IDN Gideon I don't know. I'm just playing around with things."*
+Ryan clarified 2026-04-20 (second message): *"The A eye for Gideon was
+supposed to be AIDEON. IG was supposed to look like an A but that's
+it. The G just looks like an A so it would be AIDEON."*
 
-Parse: treat the G-glyph as visually interchangeable with an A, so the
-wordmark could read as either **GIDEON** or **AIDN / AIDEN** depending
-on how hard you look. Rorschach-style logotype.
+Parse: the **G** glyph is drawn so that it reads visually as an **A**.
+Everything else in the wordmark is unchanged — I-D-E-O-N follow
+normally. So the word reads:
+
+- Correctly: **GIDEON** (when you know the brand)
+- First-glance / stylized: **AIDEON** (when the G's aperture looks
+  like an A's crossbar + angled strokes)
+
+The hidden reading "AIDEON" contains **AI** in the first two letters
+— a literal product-category Easter egg baked into the name.
 
 Why it's interesting:
 - "Aiden" is a common first name — Celtic origin meaning "little fire."
