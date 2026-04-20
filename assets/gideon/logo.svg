@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Gideon mark — clay jar cracked open revealing a flame.
+  Reads as flame at small sizes; jar-with-flame at larger sizes.
+  Palette: bronze/gold (jar) + flame gradient.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="gdn-flame" x1="32" y1="8" x2="32" y2="48" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FF6B2C"/>
+      <stop offset="0.55" stop-color="#D4A855"/>
+      <stop offset="1" stop-color="#C8913E"/>
+    </linearGradient>
+    <linearGradient id="gdn-jar" x1="16" y1="32" x2="48" y2="56" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#C8913E"/>
+      <stop offset="1" stop-color="#7E5A26"/>
+    </linearGradient>
+    <filter id="gdn-glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="1.4" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Left half of broken jar -->
+  <path d="M22 36 L14 52 L28 52 L30 40 Z"
+        fill="url(#gdn-jar)" opacity="0.92"/>
+  <!-- Right half of broken jar -->
+  <path d="M42 36 L50 52 L36 52 L34 40 Z"
+        fill="url(#gdn-jar)" opacity="0.92"/>
+  <!-- Crack line between halves (bottom seam) -->
+  <path d="M32 40 L32 52" stroke="#0A0E1A" stroke-width="1.2" stroke-linecap="round"/>
+
+  <!-- Central flame — two sharp triangular points converging up -->
+  <path d="M32 6
+           C 28 16, 24 20, 26 30
+           C 22 26, 22 22, 20 28
+           C 18 36, 26 44, 32 44
+           C 38 44, 46 36, 44 28
+           C 42 22, 42 26, 38 30
+           C 40 20, 36 16, 32 6 Z"
+        fill="url(#gdn-flame)"
+        filter="url(#gdn-glow)"/>
+
+  <!-- Inner flame core — parchment-cream for contrast + "sword" vertical line -->
+  <path d="M32 14
+           C 30 22, 29 26, 30 32
+           C 32 34, 32 34, 34 32
+           C 35 26, 34 22, 32 14 Z"
+        fill="#F4EFE4" opacity="0.88"/>
+
+  <!-- Implied sword vertical — a thin highlight down the flame's core -->
+  <line x1="32" y1="16" x2="32" y2="38"
+        stroke="#F4EFE4" stroke-width="0.6" stroke-linecap="round" opacity="0.55"/>
+</svg>

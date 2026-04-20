@@ -1,0 +1,176 @@
+const KEY = "amanda-toolkit:v1";
+
+const defaults = () => ({
+  brand: "default",
+  profile: {
+    firstName: "",
+    partnerName: "",
+    businessName: "",
+    setupDone: false,
+    roles: [],
+    interests: [],
+    enabledTabs: null,
+  },
+  auth: { pinHash: "", salt: "" },
+  brain: {
+    provider: "",
+    apiKey: "",
+    model: "claude-opus-4-7",
+    history: [],
+    systemExtras: "",
+    tone: "friend",       // one of TONES in tools/brain.js
+    shareData: false,     // opt-in: include a compact summary of her data in Claude requests
+  },
+  income: { deposits: [], bills: [] },
+  booking: { clients: [], appointments: [] },
+  career: { selected: "dental-assisting", completedSteps: {} },
+  overload: { brainDump: "", tasks: [] },
+  followup: { leads: [] },
+  academy: {
+    activeView: "students",
+    programs: [],
+    students: [],
+    course: { seeded: false, modules: [] },
+  },
+  meals: {
+    plan: {},
+    grocery: [],
+    recipes: [],
+  },
+  habits: {
+    seeded: false,
+    items: [],           // { id, label, emoji, schedule: 'daily'|'weekly', target, createdAt }
+    log: {},             // "habitId:YYYY-MM-DD" → true
+  },
+  vault: {
+    items: [],           // { id, title, category, dataUrl, mime, note, createdAt }
+  },
+  purchases: {},         // { [itemId]: { unlockedAt } }
+  plan: {
+    tier: "trial",       // 'trial' | 'free' | 'core' | 'ultra' (tiers updated by backend when Supabase live)
+    trialStartedAt: null,
+    brainMinutesToday: 0,
+    brainMinutesDate: "", // date key for daily reset
+  },
+  dashboard: {
+    // order: ordered list of card keys. If null, we use the default order.
+    order: null,
+    // hidden: set of card keys she's hidden.
+    hidden: [],
+    // layout: "list" | "rolling"
+    layout: "list",
+  },
+  metime: {
+    weeklyGoalHours: 2,          // her weekly commitment
+    sessions: [],                // { id, startedAt, endedAt, minutes, activity, reflection }
+    missReasons: [],             // { id, date, reason } when she skips a week
+    rewards: [],                 // unlocked rewards she's earned via streaks
+    currentSessionStart: null,   // timestamp if a session is live
+  },
+  wishes: [],                    // { id, text, kind: 'wish'|'desire'|'fear'|'goal', notes, createdAt }
+  safetyNet: {
+    trustedName: "",
+    trustedRelation: "",
+    trustedPhone: "",
+    countryCode: "US",           // determines which crisis line defaults
+    consentPartnerAlerts: false, // user must opt in; only used when backend live
+    silentMonitoring: true,      // user can disable; default on
+    flagged: [],                 // { id, source, text, intent, confidence, reasoning, at }
+  },
+  timeSaved: {
+    totalMinutes: 0,             // lifetime cumulative
+    weekMinutes: 0,              // this week
+    weekStart: "",               // ISO Monday
+  },
+  babyYear: {
+    milestones: [],      // { id, title, due: "ageMonths:N", completedAt, photoUrl, note }
+    seeded: false,
+    growthLog: [],       // { id, date, weeks, lbs, oz, inches, notes }
+  },
+  social: {
+    activeView: "profiles",
+    profiles: {
+      facebook:  { handle: "", url: "" },
+      instagram: { handle: "", url: "" },
+      tiktok:    { handle: "", url: "" },
+      x:         { handle: "", url: "" },
+      linkedin:  { handle: "", url: "" },
+    },
+    // One-time paste of her public bio. We reuse it as a default signature
+    // and in caption templates so her posts sound like her, not generic.
+    bio: "",
+    posts: [],
+    hashtagSets: [],
+  },
+  life: {
+    activeView: "faith",
+    partnerName: "",
+    faith: { prayers: [], notes: "" },
+    family: { kids: [], events: [], supporters: [] },
+    pregnancy: {
+      babyName: "",
+      dueDate: "",
+      lastMenstrualPeriod: "",
+      appointments: [],
+      kickSessions: [],
+      hospitalBag: { seeded: false, items: [] },
+      symptoms: [],
+      letters: [],
+      bodyLog: [],           // { id, date, text, tags[], severity, askedDoctor, createdAt }
+      lastPatternShownAt: 0, // timestamp — don't nag with same pattern daily
+      dismissedPatterns: {}, // { symptomKey: lastDismissedTimestamp }
+    },
+    loveNotes: { seeded: false, notes: [] },
+    gratitude: { entries: [] },
+    // Heart — where she's at relationally. Status-driven, never assumes a
+    // partner is the goal. All fields stay on her device only unless she
+    // explicitly exports.
+    heart: {
+      status: "",              // "" | peace | open | getting-to-know | together | complicated | private
+      reflections: [],         // { id, createdAt, text, tags[] }
+      traitAssessment: {},     // { [trait.key]: "strong" | "ok" | "concern" | "unknown" }
+      askedHim: [],            // { id, askedAt, question, hisAnswer }
+      lastStatusChangeAt: 0,
+    },
+  },
+});
+
+function load() {
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (!raw) return defaults();
+    const parsed = JSON.parse(raw);
+    return { ...defaults(), ...parsed };
+  } catch {
+    return defaults();
+  }
+}
+
+export const state = load();
+
+// Callback hook — app.js registers sync.queueSync() here so every local
+// save triggers a debounced remote push. Avoids circular imports.
+let _onSave = null;
+export function setOnSave(fn) { _onSave = fn; }
+
+export function save() {
+  localStorage.setItem(KEY, JSON.stringify(state));
+  if (_onSave) { try { _onSave(); } catch {} }
+}
+
+export function exportJson() {
+  return JSON.stringify(state, null, 2);
+}
+
+export function importJson(text) {
+  const parsed = JSON.parse(text);
+  Object.assign(state, { ...defaults(), ...parsed });
+  save();
+}
+
+export function resetAll() {
+  Object.assign(state, defaults());
+  save();
+}
+
+export const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);

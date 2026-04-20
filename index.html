@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1020" />
+  <title>The Nest</title>
+  <link rel="stylesheet" href="./css/styles.css" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="./assets/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="./assets/icon-192.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Toolkit" />
+</head>
+<body data-brand="default">
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">◆</div>
+      <div class="brand-text">
+        <div class="brand-title" id="brandTitle">The Nest</div>
+        <div class="brand-sub" id="brandSub">Built for moms who run it all.</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <label class="brand-toggle">
+        <input type="checkbox" id="brandToggle" />
+        <span class="brand-toggle-label">PDA branding</span>
+      </label>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Tools">
+    <button class="tab" role="tab" data-tab="dashboard" aria-selected="true">
+      <span class="tab-icon">🏠</span><span class="tab-label">Home</span>
+    </button>
+    <button class="tab" role="tab" data-tab="mommy">
+      <span class="tab-icon">👶</span><span class="tab-label">Mommy</span>
+    </button>
+    <button class="tab" role="tab" data-tab="brain">
+      <span class="tab-icon">✨</span><span class="tab-label">Gideon AI</span>
+    </button>
+    <button class="tab" role="tab" data-tab="capture">
+      <span class="tab-icon">📸</span><span class="tab-label">Capture</span>
+    </button>
+    <button class="tab" role="tab" data-tab="calendar">
+      <span class="tab-icon">🗓️</span><span class="tab-label">Calendar</span>
+    </button>
+    <button class="tab" role="tab" data-tab="bible">
+      <span class="tab-icon">✝️</span><span class="tab-label">Bible</span>
+    </button>
+    <button class="tab" role="tab" data-tab="search">
+      <span class="tab-icon">🔎</span><span class="tab-label">Search</span>
+    </button>
+    <button class="tab" role="tab" data-tab="habits">
+      <span class="tab-icon">🎯</span><span class="tab-label">Habits</span>
+    </button>
+    <button class="tab" role="tab" data-tab="metime">
+      <span class="tab-icon">💖</span><span class="tab-label">Me Time</span>
+    </button>
+    <button class="tab" role="tab" data-tab="vault">
+      <span class="tab-icon">🔐</span><span class="tab-label">Vault</span>
+    </button>
+    <button class="tab" role="tab" data-tab="babyyear">
+      <span class="tab-icon">🍼</span><span class="tab-label">Baby Year</span>
+    </button>
+    <button class="tab" role="tab" data-tab="store">
+      <span class="tab-icon">🛍️</span><span class="tab-label">Store</span>
+    </button>
+    <button class="tab" role="tab" data-tab="income">
+      <span class="tab-icon">💵</span><span class="tab-label">Income</span>
+    </button>
+    <button class="tab" role="tab" data-tab="booking">
+      <span class="tab-icon">📅</span><span class="tab-label">Booking</span>
+    </button>
+    <button class="tab" role="tab" data-tab="career">
+      <span class="tab-icon">🧭</span><span class="tab-label">Career</span>
+    </button>
+    <button class="tab" role="tab" data-tab="academy">
+      <span class="tab-icon">🎓</span><span class="tab-label">Academy</span>
+    </button>
+    <button class="tab" role="tab" data-tab="meals">
+      <span class="tab-icon">🍽️</span><span class="tab-label">Meals</span>
+    </button>
+    <button class="tab" role="tab" data-tab="overload">
+      <span class="tab-icon">🗂</span><span class="tab-label">Organize</span>
+    </button>
+    <button class="tab" role="tab" data-tab="followup">
+      <span class="tab-icon">📲</span><span class="tab-label">Leads</span>
+    </button>
+    <button class="tab" role="tab" data-tab="social">
+      <span class="tab-icon">📣</span><span class="tab-label">Social</span>
+    </button>
+    <button class="tab" role="tab" data-tab="life">
+      <span class="tab-icon">🌿</span><span class="tab-label">Life</span>
+    </button>
+    <button class="tab" role="tab" data-tab="account">
+      <span class="tab-icon">👤</span><span class="tab-label">Account</span>
+    </button>
+    <button class="tab" role="tab" data-tab="settings">
+      <span class="tab-icon">⚙️</span><span class="tab-label">Settings</span>
+    </button>
+  </nav>
+
+  <main id="app"></main>
+
+  <footer class="app-footer">
+    <span>Built with love 💛</span>
+    <div class="footer-actions">
+      <button id="settingsBtn" class="link-btn" type="button">PIN</button>
+      <button id="exportBtn" class="link-btn" type="button">Export</button>
+      <button id="importBtn" class="link-btn" type="button">Import</button>
+    </div>
+    <input id="importFile" type="file" accept="application/json" hidden />
+  </footer>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>

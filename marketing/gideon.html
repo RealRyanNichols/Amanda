@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Gideon — Truth, tested.</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="description" content="An AI for operators — with evidence. Gideon learns from a network of real people building real things. Built by Ryan Nichols."/>
+<meta name="theme-color" content="#0A0E1A"/>
+
+<!-- Open Graph -->
+<meta property="og:title" content="Gideon — Truth, tested."/>
+<meta property="og:description" content="An AI for operators — with evidence."/>
+<meta property="og:type" content="website"/>
+<meta property="og:image" content="/assets/gideon/logo.svg"/>
+
+<link rel="icon" type="image/svg+xml" href="/assets/gideon/logo.svg"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --night:    #0A0E1A;
+    --midnight: #131826;
+    --slate:    #1E2538;
+    --slate-2:  #2A324A;
+    --ink:      #F4EFE4;
+    --mist:     #9CA3B8;
+    --mist-2:   #6F7794;
+    --gold:     #D4A855;
+    --ember:    #C8913E;
+    --flame:    #FF6B2C;
+    --truth:    #7DD3A8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 16px; -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    background: var(--night);
+    color: var(--ink);
+    line-height: 1.55;
+    letter-spacing: -0.005em;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; text-decoration: none; }
+
+  /* Top bar */
+  .nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    padding: 20px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    z-index: 100;
+    background: linear-gradient(to bottom, rgba(10,14,26,0.92), rgba(10,14,26,0.6) 70%, transparent);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+  .nav-brand {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+    font-size: 0.875rem;
+  }
+  .nav-brand img { width: 28px; height: 28px; }
+  .nav-cta {
+    padding: 9px 18px;
+    background: var(--gold);
+    color: var(--night);
+    border-radius: 999px;
+    font-size: 0.8125rem; font-weight: 600;
+    transition: transform .12s ease, box-shadow .15s ease;
+  }
+  .nav-cta:hover { transform: translateY(-1px); box-shadow: 0 10px 30px rgba(212,168,85,0.3); }
+
+  /* Hero */
+  .hero {
+    min-height: 100svh;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 120px 24px 80px;
+    max-width: 1120px;
+    margin: 0 auto;
+    position: relative;
+  }
+  .hero::before {
+    content: "";
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(600px 400px at 20% 30%, rgba(255, 107, 44, 0.08), transparent 60%),
+      radial-gradient(800px 500px at 90% 10%, rgba(212, 168, 85, 0.06), transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .hero > * { position: relative; z-index: 1; }
+
+  .hero-kicker {
+    font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--gold); font-weight: 600;
+    margin-bottom: 24px;
+    display: inline-flex; align-items: center; gap: 10px;
+  }
+  .hero-kicker-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--flame);
+    box-shadow: 0 0 12px var(--flame);
+    animation: pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:.4}50%{opacity:1} }
+
+  .hero h1 {
+    font-size: clamp(2.5rem, 8vw, 5.25rem);
+    line-height: 0.98;
+    letter-spacing: -0.03em;
+    font-weight: 700;
+    max-width: 900px;
+    margin-bottom: 28px;
+  }
+  .hero h1 .accent {
+    background: linear-gradient(135deg, var(--gold) 0%, var(--ink) 50%, var(--gold) 100%);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .hero-sub {
+    font-size: clamp(1.0625rem, 2vw, 1.3125rem);
+    color: var(--mist);
+    max-width: 640px;
+    margin-bottom: 40px;
+    line-height: 1.5;
+  }
+
+  .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+  .btn-primary, .btn-ghost {
+    padding: 14px 24px;
+    border-radius: 999px;
+    font-size: 0.9375rem; font-weight: 600;
+    display: inline-flex; align-items: center; gap: 8px;
+    transition: all .15s ease;
+    border: 1.5px solid transparent;
+  }
+  .btn-primary {
+    background: var(--gold);
+    color: var(--night);
+    box-shadow: 0 8px 30px rgba(212,168,85,0.25);
+  }
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 40px rgba(212,168,85,0.35);
+  }
+  .btn-ghost {
+    background: transparent;
+    color: var(--ink);
+    border-color: rgba(244,239,228,0.2);
+  }
+  .btn-ghost:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* The flame logo spot */
+  .hero-mark {
+    position: absolute; top: 20%; right: 4%;
+    width: 280px; height: 280px;
+    opacity: 0.18;
+    pointer-events: none;
+    filter: blur(0.5px);
+    animation: flicker 6s ease-in-out infinite;
+  }
+  @keyframes flicker {
+    0%,100% { opacity: 0.18; transform: scale(1); }
+    50%     { opacity: 0.28; transform: scale(1.04); }
+  }
+  @media (max-width: 720px) {
+    .hero-mark { width: 180px; height: 180px; top: 10%; right: -30px; opacity: 0.12; }
+  }
+
+  /* Proof band */
+  .proof {
+    padding: 28px 24px;
+    border-top: 1px solid rgba(244,239,228,0.08);
+    border-bottom: 1px solid rgba(244,239,228,0.08);
+    max-width: 1120px; margin: 0 auto;
+    display: flex; flex-wrap: wrap; gap: 24px 48px;
+    justify-content: center;
+    color: var(--mist-2);
+    font-size: 0.8125rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  /* Sections */
+  section { padding: 100px 24px; max-width: 1120px; margin: 0 auto; }
+  @media (max-width: 720px) { section { padding: 72px 20px; } }
+  .eyebrow {
+    display: inline-block;
+    font-size: 0.75rem; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--gold); font-weight: 600; margin-bottom: 16px;
+  }
+  section h2 {
+    font-size: clamp(1.875rem, 4.5vw, 3rem);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    font-weight: 700;
+    max-width: 720px;
+    margin-bottom: 20px;
+  }
+  section .lede {
+    color: var(--mist);
+    font-size: 1.0625rem;
+    max-width: 620px;
+    line-height: 1.6;
+  }
+
+  /* Three-column feature grid */
+  .features {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-top: 56px;
+  }
+  @media (max-width: 880px) { .features { grid-template-columns: 1fr; gap: 16px; } }
+  .feature {
+    padding: 28px;
+    background: var(--midnight);
+    border: 1px solid rgba(244,239,228,0.06);
+    border-radius: 20px;
+    transition: all .2s ease;
+  }
+  .feature:hover {
+    border-color: rgba(212,168,85,0.25);
+    transform: translateY(-2px);
+  }
+  .feature-icon {
+    width: 40px; height: 40px; border-radius: 12px;
+    background: linear-gradient(135deg, var(--flame) 0%, var(--gold) 100%);
+    display: grid; place-items: center;
+    color: var(--night); font-weight: 700;
+    margin-bottom: 20px;
+  }
+  .feature h3 { font-size: 1.125rem; font-weight: 600; margin-bottom: 8px; letter-spacing: -0.01em; }
+  .feature p { color: var(--mist); font-size: 0.9375rem; line-height: 1.55; }
+
+  /* Story / Judges 7 moment */
+  .story {
+    background: linear-gradient(180deg, var(--night) 0%, var(--midnight) 100%);
+    border-top: 1px solid rgba(244,239,228,0.06);
+    border-bottom: 1px solid rgba(244,239,228,0.06);
+    padding: 120px 24px;
+  }
+  .story-wrap { max-width: 780px; margin: 0 auto; }
+  .story-quote {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: clamp(1.375rem, 3vw, 1.875rem);
+    line-height: 1.35;
+    color: var(--ink);
+    margin: 24px 0;
+    padding-left: 20px;
+    border-left: 2px solid var(--gold);
+  }
+  .story cite {
+    display: block; margin-top: 8px;
+    color: var(--mist-2);
+    font-size: 0.875rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-style: normal;
+    font-family: 'Inter', sans-serif;
+  }
+
+  /* Final CTA */
+  .cta-final {
+    text-align: center; padding: 140px 24px;
+    max-width: 680px; margin: 0 auto;
+  }
+  .cta-final h2 { margin: 0 auto 20px; }
+
+  footer {
+    border-top: 1px solid rgba(244,239,228,0.06);
+    padding: 40px 24px;
+    text-align: center;
+    color: var(--mist-2);
+    font-size: 0.8125rem;
+  }
+  footer a { color: var(--mist); }
+</style>
+</head>
+
+<body>
+
+<nav class="nav">
+  <div class="nav-brand">
+    <img src="/assets/gideon/logo.svg" alt="Gideon mark"/>
+    <span>Gideon</span>
+  </div>
+  <a href="#access" class="nav-cta">Get access</a>
+</nav>
+
+<header class="hero">
+  <img class="hero-mark" src="/assets/gideon/logo.svg" alt="" aria-hidden="true"/>
+  <div class="hero-kicker">
+    <span class="hero-kicker-dot"></span>
+    <span>A Ryan Nichols product</span>
+  </div>
+  <h1>Your AI,<br><span class="accent">with evidence.</span></h1>
+  <p class="hero-sub">
+    Gideon learns from a network of real operators building real things —
+    then serves that wisdom back to you, tested and tagged, at exactly
+    the moment you need it. Not another chatbot. A tool with receipts.
+  </p>
+  <div class="hero-actions">
+    <a href="#access" class="btn-primary">Request access →</a>
+    <a href="#story"  class="btn-ghost">See the story</a>
+  </div>
+</header>
+
+<div class="proof">
+  <span>Built for operators</span>
+  <span>•</span>
+  <span>Evidence over opinion</span>
+  <span>•</span>
+  <span>Cross-product intelligence</span>
+</div>
+
+<section>
+  <span class="eyebrow">What Gideon does</span>
+  <h2>Three hundred against one hundred thirty-five thousand.</h2>
+  <p class="lede">
+    The original Gideon won because he tested the signal (the fleece,
+    twice), reduced his force to the ones still watching (300 of 32,000),
+    and struck at midnight with torches hidden in clay jars. This Gideon
+    runs on the same principles.
+  </p>
+
+  <div class="features">
+    <div class="feature">
+      <div class="feature-icon">01</div>
+      <h3>Tested signal</h3>
+      <p>Every answer is tagged with how many operators in the network
+         have actually tried it, what worked, what failed. If Gideon
+         doesn't have evidence, he says so — and stays quiet until he does.</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">02</div>
+      <h3>Shared memory</h3>
+      <p>Ryan Nichols operates across sales, education, healthcare, and
+         family tech. Gideon learns in one product, applies in another.
+         Deduplicated, tagged, tier-gated. Your knowledge gets compound
+         interest.</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">03</div>
+      <h3>Light, hidden</h3>
+      <p>Gideon stays quiet until the moment matters. No chatty preamble.
+         No hedging. When the question comes, he breaks the jar: the
+         right answer, the right citation, the right next step.</p>
+    </div>
+  </div>
+</section>
+
+<section class="story" id="story">
+  <div class="story-wrap">
+    <span class="eyebrow">Why Gideon</span>
+    <h2>A man chosen from the weakest clan, who tested the signal before he moved.</h2>
+    <blockquote class="story-quote">
+      "And Gideon said unto God, If thou wilt save Israel by mine hand,
+      as thou hast said, behold, I will put a fleece of wool in the floor…"
+      <cite>Judges 6:36</cite>
+    </blockquote>
+    <p class="lede">
+      Gideon didn't win because he was biggest. He won because he was
+      chosen, he was ready, and he tested what he was told before he
+      acted. The product takes the same posture. Evidence first. Motion
+      second. Noise never.
+    </p>
+    <blockquote class="story-quote" style="margin-top:40px">
+      "…the three hundred blew the trumpets, and the LORD set every
+      man's sword against his fellow, even throughout all the host."
+      <cite>Judges 7:22</cite>
+    </blockquote>
+  </div>
+</section>
+
+<section class="cta-final" id="access">
+  <span class="eyebrow">Access</span>
+  <h2>Gideon is currently <em>invitation only</em>.</h2>
+  <p class="lede" style="margin: 0 auto 32px">
+    Early access goes to the operators already inside Ryan's products —
+    The Nest, Lead Flow Pro, Premier Dental Academy, RepWatcher. Want in?
+  </p>
+  <a href="mailto:ryan@realryannichols.com?subject=Gideon%20early%20access" class="btn-primary">
+    Request an invitation →
+  </a>
+</section>
+
+<footer>
+  <p>
+    Built by <a href="https://realryannichols.com" rel="noopener">Ryan Nichols</a>
+    · Gideon runs across
+    <a href="/">The Nest</a>,
+    Lead Flow Pro, RepWatcher, and Premier Dental Academy of Longview.
+  </p>
+  <p style="margin-top: 12px; opacity: 0.7; font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase;">
+    The sword of the LORD, and of Gideon.
+  </p>
+</footer>
+
+</body>
+</html>
