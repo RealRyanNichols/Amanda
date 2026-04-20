@@ -333,7 +333,7 @@ function renderHeader(rerender) {
     h("div", { class: "ember-header-row" }, [
       h("div", { class: "ember-title" }, [
         h("span", { class: "ember-spark" }, "✨"),
-        h("span", {}, "Ember"),
+        h("span", {}, "Gideon"),
       ]),
       h("button", {
         class: "chip ember-tone-chip",
@@ -347,7 +347,7 @@ function renderHeader(rerender) {
     h("div", { class: "sub" },
       hasKey
         ? "Your curated wisdom layer, tuned to you. Ask anything."
-        : "Running in local mode. Connect Claude in Settings to unlock the full Ember."),
+        : "Running in local mode. Connect Claude in Settings to unlock full Gideon."),
   ]);
 
   // Voice minute status: active top-up OR daily-limit remaining on free tier

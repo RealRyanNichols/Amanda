@@ -1793,20 +1793,61 @@ body[data-brand="pda"] .bible-content {
   margin: 14px 0 8px; font-size: .75rem;
   color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px;
 }
-/* Ember header — compact identity + collapsible tone picker */
+/* =========================================================
+   GIDEON — palette overrides for the AI tab.
+   Applied via .card.ember-header scope (card itself). Gives
+   the Gideon tab a distinctly premium, bronze-on-night feel
+   that signals "this is a different product inside The Nest".
+   Palette per Gideon-AI/DESIGN.md.
+   ========================================================= */
+:root {
+  --g-night:    #0A0E1A;
+  --g-midnight: #131826;
+  --g-slate:    #1E2538;
+  --g-ink:      #F4EFE4;
+  --g-mist:     #9CA3B8;
+  --g-gold:     #D4A855;
+  --g-ember:    #C8913E;
+  --g-flame:    #FF6B2C;
+}
+
+/* Gideon header — premium, gold-on-night */
+.ember-header {
+  background: linear-gradient(135deg, var(--g-night) 0%, var(--g-midnight) 60%, var(--g-slate) 100%);
+  border: 1px solid color-mix(in oklab, var(--g-gold) 22%, transparent);
+  box-shadow: 0 12px 48px rgba(10, 14, 26, 0.5), inset 0 1px 0 rgba(244, 239, 228, 0.04);
+}
 .ember-header-row {
   display: flex; align-items: center; justify-content: space-between;
   gap: 12px; margin-bottom: 4px;
 }
 .ember-title {
-  display: inline-flex; align-items: center; gap: 8px;
-  font-size: 1.375rem; font-weight: 700; letter-spacing: -0.015em;
-  background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+  display: inline-flex; align-items: center; gap: 10px;
+  font-size: 1.625rem; font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, var(--g-gold) 0%, var(--g-ink) 50%, var(--g-gold) 100%);
   -webkit-background-clip: text; background-clip: text;
   -webkit-text-fill-color: transparent;
+  font-family: var(--font);
 }
-.ember-spark { font-size: 1.25rem; }
-.ember-tone-chip { font-weight: 500; }
+.ember-spark {
+  width: 28px; height: 28px;
+  background-image: url('../assets/gideon/logo.svg');
+  background-size: contain; background-repeat: no-repeat; background-position: center;
+  display: inline-block;
+}
+.ember-header .sub { color: var(--g-mist); }
+.ember-tone-chip {
+  font-weight: 500;
+  background: color-mix(in oklab, var(--g-gold) 14%, var(--g-slate));
+  border-color: color-mix(in oklab, var(--g-gold) 35%, transparent);
+  color: var(--g-ink);
+}
+.ember-tone-chip:hover {
+  border-color: color-mix(in oklab, var(--g-gold) 60%, transparent);
+  color: var(--g-ink);
+}
 .tone-expand {
   margin-top: 14px;
   padding-top: 14px;
