@@ -324,12 +324,30 @@ export async function callClaude(userText, opts = {}) {
 function renderHeader(rerender) {
   const hasKey = !!state.brain.apiKey;
   const currentTone = toneByKey(state.brain?.tone || "friend");
-  const card = h("section", { class: "card" }, [
-    h("h2", {}, "The Brain"),
+  const toneOpen = !!state.brain?.toneMenuOpen;
+
+  // Compact header — just product identity + one-line status.
+  // The tone picker (10+ options) is tucked behind a single chip to
+  // eliminate the old "wall of emoji boxes at the top" feeling.
+  const card = h("section", { class: "card ember-header" }, [
+    h("div", { class: "ember-header-row" }, [
+      h("div", { class: "ember-title" }, [
+        h("span", { class: "ember-spark" }, "✨"),
+        h("span", {}, "Ember"),
+      ]),
+      h("button", {
+        class: "chip ember-tone-chip",
+        onclick: () => {
+          state.brain.toneMenuOpen = !toneOpen;
+          save();
+          rerender();
+        },
+      }, `${currentTone.emoji} ${currentTone.label} ▾`),
+    ]),
     h("div", { class: "sub" },
       hasKey
-        ? `Claude-powered. Current mode: ${currentTone.emoji} ${currentTone.label}.`
-        : "Running in local mode — answers come from your app. Connect Claude in Settings for the full experience."),
+        ? "Your curated wisdom layer, tuned to you. Ask anything."
+        : "Running in local mode. Connect Claude in Settings to unlock the full Ember."),
   ]);
 
   // Voice minute status: active top-up OR daily-limit remaining on free tier
@@ -351,20 +369,33 @@ function renderHeader(rerender) {
     ]));
   }
 
-  // Tone picker
-  card.append(h("h3", { class: "tone-label" }, "How do you need me right now?"));
-  const toneGrid = h("div", { class: "tone-grid" });
-  TONES.forEach((t) => {
-    toneGrid.append(h("button", {
-      class: "tone-btn" + ((state.brain?.tone || "friend") === t.key ? " active" : ""),
-      onclick: () => { state.brain.tone = t.key; save(); rerender(); },
-    }, [
-      h("div", { class: "tone-emoji" }, t.emoji),
-      h("div", { class: "tone-name" }, t.label),
+  // Tone picker — only rendered when the chip is expanded. Keeps the
+  // primary screen uncluttered.
+  if (toneOpen) {
+    card.append(h("div", { class: "tone-expand" }, [
+      h("div", { class: "sub", style: "margin-bottom:8px" },
+        "Pick how you want me to show up. You can change this any time."),
+      (() => {
+        const toneGrid = h("div", { class: "tone-grid" });
+        TONES.forEach((t) => {
+          toneGrid.append(h("button", {
+            class: "tone-btn" + ((state.brain?.tone || "friend") === t.key ? " active" : ""),
+            onclick: () => {
+              state.brain.tone = t.key;
+              state.brain.toneMenuOpen = false; // collapse after choosing
+              save();
+              rerender();
+            },
+          }, [
+            h("div", { class: "tone-emoji" }, t.emoji),
+            h("div", { class: "tone-name" }, t.label),
+          ]));
+        });
+        return toneGrid;
+      })(),
+      h("div", { class: "tone-tagline" }, currentTone.tagline),
     ]));
-  });
-  card.append(toneGrid);
-  card.append(h("div", { class: "tone-tagline" }, currentTone.tagline));
+  }
 
   return card;
 }

@@ -183,19 +183,25 @@ function renderVerseCard() {
     h("div", { class: "verse-text" }, `"${v.text}"`),
   ]);
 
-  const status = h("div", { class: "meta", style: "margin-top:6px" },
-    alreadyStudied ? "📖 You studied this." :
-    alreadyRead    ? "✓ You've read this one." : "");
-  card.append(status);
+  // Big primary "mark read" control — the card itself is tappable AND
+  // there's a dedicated full-width pill. No more hunting for a tiny button.
+  const primaryMark = h("button", {
+    class: "verse-mark-primary" + (alreadyRead ? " done" : ""),
+    onclick: () => markRead(v.ref),
+  }, [
+    h("span", { class: "verse-mark-check" }, alreadyRead ? "✓" : "+"),
+    h("span", {}, alreadyStudied
+      ? "Marked as studied 📖"
+      : alreadyRead
+        ? "Marked as read ✓  (tap Study this for deeper)"
+        : "Tap once when you've read it"),
+  ]);
+  card.append(primaryMark);
 
   const contextZone = h("div", { class: "verse-context", style: "display:none; margin-top:12px" });
   card.append(contextZone);
 
-  const actions = h("div", { class: "btn-row", style: "margin-top:12px; flex-wrap:wrap; gap:8px" });
-  const readBtn = h("button", {
-    class: "btn small" + (alreadyRead ? " secondary" : ""),
-    onclick: () => markRead(v.ref),
-  }, alreadyRead ? "✓ Read" : "✓ I read it");
+  const actions = h("div", { class: "btn-row", style: "margin-top:10px; flex-wrap:wrap; gap:8px" });
   const studyBtn = h("button", {
     class: "btn small secondary",
     onclick: () => toggleStudy(v, contextZone, studyBtn),
@@ -215,9 +221,42 @@ function renderVerseCard() {
       text: `"${v.text}" — ${v.ref}`,
     }),
   }, "📤 Share");
-
-  actions.append(readBtn, studyBtn, nextBtn, openBible, shareBtn);
+  actions.append(studyBtn, nextBtn, openBible, shareBtn);
   card.append(actions);
+
+  // Dwell-time auto-mark. If she's looked at the card for ≥8 seconds
+  // AND hasn't tapped to mark it yet, we quietly log it as read and
+  // update the UI. This catches the "I read it but forgot to tap"
+  // case Ryan flagged.
+  if (!alreadyRead) {
+    let timer = null;
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          if (!timer) {
+            timer = setTimeout(() => {
+              // Double-check state is still unread before writing.
+              const fresh = scriptureState();
+              if (!fresh.readVerses[readKey]) {
+                fresh.readVerses[readKey] = new Date().toISOString();
+                save();
+                // Quietly update the primary button in place.
+                primaryMark.classList.add("done");
+                primaryMark.querySelector(".verse-mark-check").textContent = "✓";
+                primaryMark.childNodes[1].textContent = "Counted as read — keep going 🌱";
+              }
+            }, 8000);
+          }
+        } else if (timer) {
+          clearTimeout(timer);
+          timer = null;
+        }
+      });
+    }, { threshold: 0.6 });
+    // Defer observation until card is in the DOM.
+    setTimeout(() => observer.observe(card), 0);
+  }
+
   return card;
 }
 

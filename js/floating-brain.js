@@ -65,7 +65,7 @@ function openDrawer() {
 
   drawer.append(h("div", { class: "fab-header" }, [
     h("div", {}, [
-      h("div", { class: "fab-title" }, "✨ The Brain"),
+      h("div", { class: "fab-title" }, "✨ Ember"),
       h("div", { class: "fab-sub" }, `On ${tabName} · ${tone.emoji} ${tone.label}`),
     ]),
     h("button", { class: "fab-close", onclick: closeDrawer }, "×"),
@@ -150,7 +150,7 @@ function openDrawer() {
         if (btn) btn.click();
         closeDrawer();
       },
-    }, "Full Brain →"),
+    }, "Open Ember →"),
   ]));
 
   document.body.append(drawer);

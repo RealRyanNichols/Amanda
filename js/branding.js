@@ -2,8 +2,13 @@ import { state, save } from "./store.js";
 
 const BRANDS = {
   default: {
-    title: "Amanda's Toolkit",
-    sub: "A home for moms and families who run it all.",
+    // Brand name = "The Nest". Personalizes to "<FirstName>'s Nest" at
+    // render time (see applyBrand below) when the user's first name is
+    // set. The word "Toolkit" is retired — it felt utilitarian; "Nest"
+    // reads as a warm, private, mom-owned space (same vibe as iCloud /
+    // Google Drive — a place to keep your life).
+    title: "The Nest",
+    sub: "Built for moms who run it all.",
     mark: "◆",
     logo: null,
     business: null,
@@ -60,7 +65,14 @@ export function applyBrand() {
   const titleEl = document.getElementById("brandTitle");
   const subEl = document.getElementById("brandSub");
   const markEl = document.querySelector(".brand-mark");
-  if (titleEl) titleEl.textContent = b.title;
+  // Personalize the default "The Nest" title with her name when we have
+  // it. "Amanda's Nest" reads warmer than a generic product label.
+  let displayTitle = b.title;
+  if (state.brand === "default") {
+    const firstName = (state.profile?.firstName || "").trim();
+    if (firstName) displayTitle = `${firstName}'s Nest`;
+  }
+  if (titleEl) titleEl.textContent = displayTitle;
   if (subEl) subEl.textContent = b.sub;
   if (markEl) {
     markEl.textContent = "";

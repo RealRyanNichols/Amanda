@@ -86,14 +86,14 @@ function renderBrainCard(rerender) {
   const brain = state.brain;
   const hasKey = !!brain.apiKey;
   const card = h("section", { class: "card" }, [
-    h("h2", {}, "The Brain (AI assistant)"),
-    h("div", { class: "sub" }, "Connect your Anthropic key for a full Claude-powered assistant inside the app. Without a key, the Brain still helps using local search."),
+    h("h2", {}, "Ember (your AI companion)"),
+    h("div", { class: "sub" }, "Connect your Anthropic key to unlock the full Ember — otherwise she runs in a helpful local-only mode using your app data."),
   ]);
 
   card.append(h("div", { class: "alert " + (hasKey ? "ok" : "warn"), style: "margin-bottom:10px" },
     hasKey
       ? `Claude connected. Using ${brain.model}. Your key stays on this device.`
-      : "No Claude key set. The Brain will run in local-only mode."));
+      : "No Claude key set. Ember will run in local-only mode."));
 
   card.append(h("label", { class: "field" }, [
     "Anthropic API key (sk-ant-...)",
