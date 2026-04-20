@@ -111,3 +111,134 @@ a portable primitive, not a per-app chatbot.
 The master brand name across all products is **"The Brain"**. Product-
 specific overlays (Ember, etc.) exist when the product's audience wants
 a softer voice.
+
+---
+
+## 2026-04-20 — Ryan's product brief for The Brain (verbatim direction)
+
+Captured from conversation. **Every Ryan Nichols repo should read this**
+before adding to the Brain feature.
+
+### What the Brain actually is
+
+The Brain is **Ryan's own AI product** — not a per-app chatbot.
+
+- It wraps Claude today, but it has its **own prompts, its own data
+  layer, its own personality**.
+- It **collects its own data** from paying members across the Ryan
+  Nichols portfolio.
+- It **stores that data** in a way that lets the Brain recall it when a
+  later user's question is relevant. Notes taken in one product inform
+  answers in another.
+- It is **gender-neutral** by default. Not feminine ("Ember" misses the
+  mark for the product's identity — Ember stays as a *skin* inside the
+  mom-app only, if at all). The master product reads as strong,
+  warrior-like, foundational.
+
+### Name direction (still open — Ryan to pick)
+
+Themes Ryan wants baked in:
+- Greek / ethos
+- Christian / foundational / patriarch
+- Love of country / God / Jesus
+- Warrior energy
+- Truth, justice, evidence, investigate, gather
+- Love + family
+
+NOT feminine. Ember was considered then rejected; **EMBR** with flame
+mark was floated as a stylized alternative but not committed.
+
+Candidate names Claude proposed (Ryan picks; nothing built in the UI
+until then):
+
+| Name      | Reading                                                                                 |
+|-----------|-----------------------------------------------------------------------------------------|
+| **LOGOS** | Greek for "word/reason"; John 1:1 ("In the beginning was the Word, and the Word was with God, and the Word was God"). Christ as Logos. Root of all "-logy" words — logic, theology, biology. Simultaneously Greek ✓, Christian ✓, foundational ✓, truth/reason ✓, data/information ✓, gender-neutral ✓. Strongest single candidate. |
+| **SENTINEL** | Watchman — Biblical watchmen on the walls (Ezekiel 33). Truth + justice + evidence watcher. Masculine default but not exclusive. |
+| **ARGUS**   | Greek myth — the hundred-eyed giant who sees everything. Patron of investigators. Short, strong, masculine. |
+| **AEGIS**   | Shield of Zeus/Athena — Greek mythological armor. Strong protective-AI framing. |
+| **PALADIN** | Holy warrior. Christian crusader imagery. Defender of truth. |
+| **ATLAS**   | Carries the world (the data). Greek, strong, heroic, gender-neutral. |
+| **EMBR**    | Stylized "ember" + flame mark — if Ryan wants to keep the visual. Softer, still works for either audience. |
+
+**Claude's recommendation:** `LOGOS`. Uniquely hits every theme Ryan
+listed — Greek, Christian-foundational (Logos = Christ per John 1:1),
+gender-neutral, about truth + reason + data, ancient-yet-modern, ownable
+as a product brand. Supports future product lines (LogosForSales,
+LogosForMoms, etc.) without getting twee.
+
+Runners-up: SENTINEL (strong watchman frame), ARGUS (investigator frame).
+
+### Data architecture (Claude's proposal, awaiting Ryan's sign-off)
+
+Ryan's ask: "I need to keep a lot of data. If the Brain has the same
+data twice, snip it and leave a note that says I've had it 10 times and
+the note is 10× shorter than keeping the double."
+
+Proposed schema (Supabase, new table):
+
+```
+brain_memory
+  id              uuid pk
+  owner_user_id   uuid      -- Ryan (the product owner), not the end user
+  project         text      -- 'nest' | 'leadflowpro' | 'repwatcher' | ...
+  source_user_id  uuid      -- which member contributed it
+  kind            text      -- 'tactic' | 'script' | 'story' | 'question' | 'answer' | 'note'
+  content         text      -- the actual text
+  content_hash    text      -- normalized lowercase alnum-only hash for dedup
+  embedding       vector    -- optional later; enables semantic dedup
+  occurrences     int       -- incremented on duplicate hit
+  first_seen_at   timestamptz
+  last_seen_at    timestamptz
+  summary         text      -- Claude-generated short form when content > 500 chars
+  tags            text[]
+  access_tier     text      -- 'public' | 'core' | 'ultra' — who can pull it
+```
+
+Dedup flow:
+1. Incoming text → normalize (lowercase, strip punctuation, collapse
+   whitespace) → hash.
+2. If `content_hash` exists: `occurrences++`, update `last_seen_at`,
+   append source_user_id to a tally. **Don't write a second row.**
+3. If length > 500 chars AND occurrences >= 3: call Claude once to
+   produce a ≤100-char summary, store in `summary`, keep `content` as
+   archival cold storage we can prune later if disk gets tight.
+4. At query time: pull by tag + access_tier, rank by occurrences DESC
+   (common wisdom bubbles up), return summary when present, fallback to
+   first 200 chars of content.
+
+Cross-project recall:
+- Notes collected in `project='leadflowpro'` can answer questions in
+  `project='nest'` if tagged compatibly (e.g. `tags: ['business',
+  'onboarding', 'objection-handling']`).
+- Queries can scope: "only this project" vs. "Ryan's whole knowledge
+  base" — a toggle in the customer's Brain settings. Top tier gets the
+  whole base; middle tier gets only their project.
+
+### Rollout order
+
+1. (this repo) Ship the table migration + `brain-memory.js` helpers
+   (add / query / dedup). No UI yet — just the ingestion path.
+2. Start silently writing memories when Ryan uses the Brain in any of
+   his apps (opt-in, with a "contribute to the Brain" setting).
+3. Roll the retrieval path into each product's Claude system prompt
+   ("here are the top 5 relevant memories from the Brain's knowledge
+   base: …").
+4. Add an operator dashboard (Ryan-only tier) showing what's in the
+   Brain, what's high-occurrence, what looks like junk to prune.
+5. Wire the same module into leadflowpro.com + repwatcher.com as they
+   come online.
+
+### Open questions for Ryan
+
+1. Name — LOGOS, SENTINEL, ARGUS, AEGIS, PALADIN, ATLAS, EMBR, or none
+   of the above?
+2. Does the Brain ingest user content automatically, or only when a user
+   explicitly "contributes"? (Auto = more data; explicit = clearer
+   consent, no compliance headaches.)
+3. Is the Brain's knowledge base **Ryan-authored only** (you write the
+   wisdom, Claude retrieves it) or **crowd-sourced from paying members**
+   (their usage becomes the dataset)? The second is more powerful but
+   raises IP + privacy questions.
+4. Who owns the memories legally — Ryan? The contributing user? Both?
+   (Important to state in TOS early.)
