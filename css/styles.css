@@ -1,22 +1,29 @@
 :root {
-  --bg: #0b1020;
-  --bg-elev: #121933;
-  --bg-elev-2: #182247;
-  --text: #e9ecff;
-  --text-dim: #a7b0d6;
-  --accent: #7c9cff;
-  --accent-strong: #5a7dff;
-  --ok: #4ade80;
-  --warn: #facc15;
-  --bad: #f87171;
-  --border: #232c55;
-  --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
-  --radius: 14px;
-  --radius-sm: 10px;
+  /* Warmer, rounder 2026 palette — moves away from cold navy toward a
+     soft warm-charcoal with peach/rose accents. Easier on the eyes, more
+     modern, a touch feminine without being cutesy. */
+  --bg: #14121c;
+  --bg-elev: #1e1a28;
+  --bg-elev-2: #2a2336;
+  --text: #f5f0f7;
+  --text-dim: #b8b0c5;
+  --accent: #f4a8b4;            /* soft rose — warm, friendly */
+  --accent-strong: #e6748a;     /* deeper rose for hover/active */
+  --accent-secondary: #c8a8ed;  /* lavender for secondary accents */
+  --ok: #7dd3a8;
+  --warn: #f5c77a;
+  --bad: #f28a8a;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.14);
+  --shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+  --shadow-soft: 0 2px 12px rgba(0, 0, 0, 0.18);
+  --radius: 22px;       /* bumped from 14 — everything feels softer */
+  --radius-sm: 16px;    /* bumped from 10 */
+  --radius-lg: 28px;    /* hero cards, sheets */
   --tap: 44px;
   --page-max: 760px;
   --page-pad-x: 16px;
-  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
@@ -24,12 +31,15 @@
 }
 
 body[data-brand="pda"] {
-  --bg: #06131f;
-  --bg-elev: #0b2236;
-  --bg-elev-2: #10324f;
-  --accent: #6fe0d4;
-  --accent-strong: #2fc9b7;
-  --border: #16415f;
+  /* PDA teal stays — but warmer foundation so the brand reads as warm,
+     not clinical. */
+  --bg: #0f1a22;
+  --bg-elev: #15283a;
+  --bg-elev-2: #1e3a52;
+  --accent: #7dd5cb;
+  --accent-strong: #3fc0b0;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.14);
 }
 
 * { box-sizing: border-box; }
@@ -41,10 +51,15 @@ html {
 html, body { margin: 0; padding: 0; }
 body {
   font-family: var(--font);
+  /* Warm aurora — rose + lavender + peach glows over a near-black base.
+     Gives the app a "late-evening in a warm room" feel instead of
+     "corporate dashboard". */
   background:
-    radial-gradient(1200px 600px at 10% -10%, rgba(124,156,255,.12), transparent 60%),
-    radial-gradient(800px 500px at 110% 10%, rgba(111,224,212,.08), transparent 60%),
+    radial-gradient(1200px 700px at 15% -10%, rgba(244, 168, 180, 0.14), transparent 62%),
+    radial-gradient(900px 500px at 115% 8%, rgba(200, 168, 237, 0.11), transparent 60%),
+    radial-gradient(700px 400px at 50% 110%, rgba(245, 199, 122, 0.07), transparent 60%),
     var(--bg);
+  background-attachment: fixed;
   color: var(--text);
   min-height: 100dvh;
   padding-bottom: calc(120px + var(--safe-bottom));
@@ -52,6 +67,7 @@ body {
   /* safe-area side padding so notched phones don't clip content in landscape */
   padding-left: var(--safe-left);
   padding-right: var(--safe-right);
+  letter-spacing: -0.005em;
 }
 
 /* Header */
@@ -112,19 +128,25 @@ body {
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
   padding: 10px 12px;
   min-height: var(--tap);
-  border-radius: var(--radius-sm);
+  border-radius: 18px;
   background: var(--bg-elev);
   border: 1px solid var(--border);
   color: var(--text-dim);
   font-size: .75rem; font-weight: 600;
   cursor: pointer;
+  transition: all .14s ease;
   transition: transform .08s ease, background .2s ease, color .2s ease, border-color .2s ease;
 }
 .tab .tab-icon { font-size: 1.125rem; line-height: 1; }
 .tab[aria-selected="true"] {
-  background: var(--bg-elev-2); color: var(--text);
-  border-color: color-mix(in oklab, var(--accent) 60%, var(--border));
+  background: linear-gradient(135deg,
+    color-mix(in oklab, var(--accent) 22%, var(--bg-elev-2)),
+    color-mix(in oklab, var(--accent-secondary) 14%, var(--bg-elev-2)));
+  color: var(--text);
+  border-color: color-mix(in oklab, var(--accent) 45%, transparent);
+  box-shadow: 0 4px 18px rgba(244, 168, 180, 0.18);
 }
+.tab:hover { border-color: var(--border-strong); color: var(--text); }
 .tab:active { transform: scale(.98); }
 
 /* Tablet / desktop: tabs can just lay flat without scroll once there's room */
@@ -149,12 +171,14 @@ main {
   background: var(--bg-elev);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 16px;
+  padding: 20px;
   margin: 0 0 14px;
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
-.card h2 { margin: 0 0 4px; font-size: 1rem; line-height: 1.3; }
-.card .sub { color: var(--text-dim); font-size: .8125rem; margin-bottom: 12px; line-height: 1.4; }
+.card h2 { margin: 0 0 6px; font-size: 1.0625rem; line-height: 1.3; font-weight: 600; letter-spacing: -0.01em; }
+.card .sub { color: var(--text-dim); font-size: .875rem; margin-bottom: 12px; line-height: 1.5; }
 
 /* Stats grid: 3-up, wraps cleanly */
 .stat-grid {
@@ -204,63 +228,79 @@ input, select, textarea, button { font-family: inherit; }
 input[type="text"],
 input[type="number"],
 input[type="date"],
+input[type="datetime-local"],
+input[type="time"],
 input[type="tel"],
 input[type="email"],
 input[type="password"],
+input[type="url"],
+input[type="search"],
 select,
 textarea {
-  background: var(--bg-elev-2); color: var(--text);
+  background: color-mix(in oklab, var(--bg-elev-2) 92%, transparent);
+  color: var(--text);
   border: 1px solid var(--border); border-radius: var(--radius-sm);
-  padding: 12px;
+  padding: 14px 16px;
   font-size: 1rem; /* 16px */
   line-height: 1.35;
   width: 100%;
   min-height: var(--tap);
+  font-family: inherit;
+  transition: border-color .12s ease, background .12s ease;
 }
-textarea { min-height: 96px; resize: vertical; }
+textarea { min-height: 96px; resize: vertical; border-radius: var(--radius-sm); }
 input:focus, select:focus, textarea:focus {
-  outline: 2px solid color-mix(in oklab, var(--accent) 60%, transparent);
-  outline-offset: 1px;
-  border-color: var(--accent);
+  outline: none;
+  border-color: color-mix(in oklab, var(--accent) 55%, var(--border));
+  background: var(--bg-elev-2);
+  box-shadow: 0 0 0 3px rgba(244, 168, 180, 0.12);
 }
+input::placeholder, textarea::placeholder { color: color-mix(in oklab, var(--text-dim) 75%, transparent); }
 
 /* Buttons — always comfortable to tap */
 .btn {
   appearance: none; -webkit-appearance: none; border: 0;
   background: linear-gradient(135deg, var(--accent), var(--accent-strong));
-  color: #0b1020; font-weight: 700; font-size: .9375rem;
-  padding: 12px 16px;
+  color: #2a1520; font-weight: 600; font-size: .9375rem;
+  padding: 12px 18px;
   min-height: var(--tap);
-  border-radius: var(--radius-sm);
+  border-radius: 999px;   /* pill-shape — maximally soft/modern */
   cursor: pointer;
-  box-shadow: var(--shadow);
+  box-shadow: 0 4px 16px rgba(230, 116, 138, 0.22), inset 0 1px 0 rgba(255,255,255,0.18);
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  transition: transform .08s ease, box-shadow .15s ease;
+  letter-spacing: -0.005em;
 }
+.btn:hover { box-shadow: 0 6px 20px rgba(230, 116, 138, 0.28), inset 0 1px 0 rgba(255,255,255,0.22); }
+.btn:active { transform: scale(0.97); }
 .btn.secondary {
   background: var(--bg-elev-2); color: var(--text);
-  border: 1px solid var(--border); box-shadow: none; font-weight: 600;
+  border: 1px solid var(--border-strong); box-shadow: none; font-weight: 500;
 }
+.btn.secondary:hover { background: color-mix(in oklab, var(--bg-elev-2) 80%, var(--accent)); }
 .btn.danger {
   background: transparent; color: var(--bad);
   border: 1px solid color-mix(in oklab, var(--bad) 40%, var(--border));
-  box-shadow: none; font-weight: 600;
+  box-shadow: none; font-weight: 500;
 }
 .btn.small {
-  padding: 8px 12px; font-size: .8125rem;
+  padding: 8px 14px; font-size: .8125rem;
   min-height: 36px;
 }
-.btn:active { transform: translateY(1px); }
+.btn.tiny { padding: 5px 10px; font-size: 0.75rem; min-height: 28px; }
 .btn-row { display: flex; flex-wrap: wrap; gap: 8px; }
 
 /* Lists and items */
 .list { display: flex; flex-direction: column; gap: 8px; }
 .item {
   background: var(--bg-elev-2); border: 1px solid var(--border);
-  border-radius: var(--radius-sm); padding: 12px;
+  border-radius: var(--radius-sm); padding: 14px 16px;
   display: flex; justify-content: space-between; gap: 10px; align-items: flex-start;
   flex-wrap: wrap;
   min-width: 0;
+  transition: border-color .12s ease;
 }
+.item:hover { border-color: var(--border-strong); }
 .item > div { min-width: 0; }
 .item .meta {
   font-size: .8125rem; color: var(--text-dim); margin-top: 2px;
@@ -359,8 +399,15 @@ details.pathway ol li strong { color: var(--text); }
   font-size: .8125rem; cursor: pointer;
   min-height: 36px;
   display: inline-flex; align-items: center;
+  transition: all .12s ease;
+  letter-spacing: -0.005em;
 }
-.chip.active { color: var(--text); border-color: var(--accent); }
+.chip:hover { border-color: var(--border-strong); color: var(--text); }
+.chip.active {
+  color: #2a1520; border-color: transparent;
+  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  font-weight: 600;
+}
 
 .script-box {
   background: var(--bg); border: 1px dashed var(--border); border-radius: var(--radius-sm);
@@ -1594,10 +1641,10 @@ body[data-brand="pda"] .bible-content {
   font-size: .9375rem;
 }
 .fab-bubble {
-  max-width: 90%;
-  padding: 8px 12px;
-  border-radius: 14px;
-  font-size: .875rem;
+  max-width: 94%;
+  padding: 12px 16px;
+  border-radius: 20px;
+  font-size: .9375rem;
   line-height: 1.5;
   word-break: break-word;
   border: 1px solid var(--border);
@@ -1612,6 +1659,70 @@ body[data-brand="pda"] .bible-content {
   background: var(--bg-elev-2);
 }
 .fab-bubble.pending { opacity: .6; font-style: italic; }
+
+/* Stacked recommendations — AskUserQuestion-style options list */
+.fab-options {
+  display: flex; flex-direction: column; gap: 8px;
+  margin-top: 12px;
+}
+.fab-option {
+  text-align: left;
+  background: color-mix(in oklab, var(--accent) 8%, var(--bg-elev));
+  border: 1px solid color-mix(in oklab, var(--accent) 18%, var(--border));
+  border-radius: 16px;
+  padding: 12px 14px;
+  cursor: pointer;
+  color: var(--text);
+  transition: all .14s ease;
+  display: flex; flex-direction: column; gap: 3px;
+}
+.fab-option:hover {
+  border-color: color-mix(in oklab, var(--accent) 45%, var(--border));
+  background: color-mix(in oklab, var(--accent) 14%, var(--bg-elev));
+  transform: translateY(-1px);
+}
+.fab-option:active { transform: scale(0.98); }
+.fab-option.recommended {
+  border-color: color-mix(in oklab, var(--accent) 55%, transparent);
+  background: linear-gradient(135deg,
+    color-mix(in oklab, var(--accent) 18%, var(--bg-elev)),
+    color-mix(in oklab, var(--accent-secondary) 12%, var(--bg-elev)));
+  box-shadow: 0 4px 16px rgba(244, 168, 180, 0.15);
+}
+.fab-option-main {
+  display: flex; align-items: center; gap: 8px;
+  flex-wrap: wrap;
+}
+.fab-option-label { font-weight: 600; font-size: 0.9375rem; }
+.fab-option-badge {
+  font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.08em;
+  padding: 2px 8px; border-radius: 999px;
+  background: var(--accent); color: #2a1520; font-weight: 700;
+}
+.fab-option-desc { font-size: 0.8125rem; color: var(--text-dim); line-height: 1.4; }
+
+.fab-option-other {
+  display: flex; gap: 6px; align-items: center;
+  margin-top: 4px;
+  padding: 4px 0;
+}
+.fab-option-other input {
+  flex: 1; min-width: 0;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 10px 14px;
+  border-radius: 999px;
+  font-size: 0.875rem;
+  outline: none;
+}
+.fab-option-other input:focus { border-color: var(--accent); }
+.fab-option-other .btn.small { padding: 8px 16px; font-size: 1rem; }
+
+.fab-bubble-actions {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  margin-top: 10px;
+}
 
 .fab-input-row {
   padding: 10px;
